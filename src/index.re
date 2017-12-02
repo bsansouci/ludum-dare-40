@@ -289,14 +289,6 @@ let draw = (state, env) => {
   Draw.background(Utils.color(~r=199, ~g=217, ~b=229, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
-  let state = {
-    ...state,
-    playerBullets:
-      List.map(
-        (bullet) => {...bullet, pos: bullet.moveBullet(bullet), time: bullet.time +. 1.},
-        state.playerBullets
-      )
-  };
   let state =
     Env.key(A, env) ? {...state, pos: {x: state.pos.x -. playerSpeed, y: state.pos.y}} : state;
   let state =
@@ -322,6 +314,39 @@ let draw = (state, env) => {
   let state = Env.keyPressed(Down, env) ? curGun.fire(state, Down) : state;
   let state = Env.keyPressed(Left, env) ? curGun.fire(state, Left) : state;
   let state = Env.keyPressed(Right, env) ? curGun.fire(state, Right) : state;
+  let state = {
+    ...state,
+    playerBullets:
+      List.map(
+        (bullet) => {...bullet, pos: bullet.moveBullet(bullet), time: bullet.time +. 1.},
+        state.playerBullets
+      )
+  };
+  let state =
+    List.fold_left(
+      (state, achievement) =>
+        if (achievement.state === Locked && achievement.condition(state, env)) {
+          {
+            ...state,
+            guns: [achievement.gun, ...state.guns],
+            equippedGun: state.equippedGun + 1,
+            achievements:
+              List.map(
+                (a) =>
+                  if (a === achievement) {
+                    {...a, state: Unlocked}
+                  } else {
+                    a
+                  },
+                state.achievements
+              )
+          }
+        } else {
+          state
+        },
+      state,
+      state.achievements
+    );
   Draw.rectf(~pos=(state.pos.x, state.pos.y), ~width=30., ~height=30., env);
   List.iter(
     ({pos, direction: _}) => {
