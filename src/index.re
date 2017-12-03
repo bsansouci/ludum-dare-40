@@ -712,6 +712,35 @@ let draw = (state, env) => {
     } else {
       state
     };
+  let state =
+    List.fold_left(
+      (state, crate: crateT) =>
+        if (Utils.intersectRectRect(
+              ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
+              ~rect1W=40.,
+              ~rect1H=40.,
+              ~rect2Pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
+              ~rect2W=40.,
+              ~rect2H=40.
+            )
+            && List.exists(
+                 (g: gunT) => g.kind === crate.kind && g.ammunition < g.maxAmmunition,
+                 state.guns
+               )) {
+          {
+            ...state,
+            guns:
+              List.map(
+                (gun) => gun.kind === crate.kind ? {...gun, ammunition: gun.maxAmmunition} : gun,
+                state.guns
+              )
+          }
+        } else {
+          {...state, crates: [crate, ...state.crates]}
+        },
+      {...state, crates: []},
+      state.crates
+    );
   let rec foldOverGuns = (state, guns, i) =>
     switch guns {
     | [] => state
@@ -748,7 +777,6 @@ let draw = (state, env) => {
         state.playerBullets
       )
   };
-
   let state =
     List.fold_left(
       (state, achievement) =>
@@ -979,7 +1007,6 @@ let draw = (state, env) => {
         (crate.pos.x, crate.pos.y +. 17. +. yOffset),
         env
       );
-
       Draw.fill(Utils.color(150, 120, 10, 255), env);
       Draw.trianglef(
         (crate.pos.x -. 4., crate.pos.y +. 10. +. yOffset),
