@@ -55,7 +55,7 @@ let gunTexPos = (kind) =>
   | Shotgun => (650, 0)
   | AlienGun1 => (64, 0)
   | AlienGun2 => (772, 0)
-  | LaserGun => (711, 0)
+  | LaserGun => (712, 0)
   | Rifle => (0, 0)
   };
 
@@ -748,6 +748,7 @@ let draw = (state, env) => {
         state.playerBullets
       )
   };
+
   let state =
     List.fold_left(
       (state, achievement) =>
@@ -965,23 +966,25 @@ let draw = (state, env) => {
         ~pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
         ~width=40.,
         ~height=40.,
-        ~texPos=(1596, 0),
+        ~texPos=(1532, 0),
         ~texWidth=64,
         ~texHeight=64,
         env
       );
-      let yOffset = sin(state.elapsedTime *. 2.) *. 2. -. 30.;
-      Draw.fill(Utils.color(220, 200, 160, 255), env);
-      /* Draw.rectf( */
-      /*   ~pos=(crate.pos.x -. 11., crate.pos.y -. 11. +. yOffset), */
-      /*   ~width=22., */
-      /*   ~height=22., */
-      /*   env */
-      /* ); */
+      let yOffset = sin(state.elapsedTime *. 2.) *. 2. -. 17.;
+      Draw.fill(Constants.white, env);
       Draw.trianglef(
-        (crate.pos.x -. 3., crate.pos.y +. 10. +. yOffset),
-        (crate.pos.x +. 3., crate.pos.y +. 10. +. yOffset),
-        (crate.pos.x, crate.pos.y +. 15. +. yOffset),
+        (crate.pos.x -. 5., crate.pos.y +. 9.5 +. yOffset),
+        (crate.pos.x +. 5., crate.pos.y +. 9.5 +. yOffset),
+        (crate.pos.x, crate.pos.y +. 17. +. yOffset),
+        env
+      );
+
+      Draw.fill(Utils.color(150, 120, 10, 255), env);
+      Draw.trianglef(
+        (crate.pos.x -. 4., crate.pos.y +. 10. +. yOffset),
+        (crate.pos.x +. 4., crate.pos.y +. 10. +. yOffset),
+        (crate.pos.x, crate.pos.y +. 16. +. yOffset),
         env
       );
       Draw.subImagef(
