@@ -373,7 +373,7 @@ let generateGun: unit => gunT = {
     let (fire, fireRate, kind) =
       switch (Utils.random(0, 5)) {
       | 0 => (makeDefaultFire(bulletSpeed, damage), 0.4, Pistol)
-      | 1 => (makeTripleShotGunFire(bulletSpeed, Utils.randomf(50., 500.), damage), 0.7, AlienGun2)
+      | 1 => (makeTripleShotGunFire(bulletSpeed, Utils.randomf(50., 300.), damage), 0.7, AlienGun2)
       | 2 => (makeRifleFire(bulletSpeed, damage), 0.7, Rifle)
       | 3 => (makeShotGunFire(bulletSpeed, Utils.randomf(50., 200.), damage), 1.5, Shotgun)
       | _ => (makeSineFire(bulletSpeed, Utils.randomf(50., 500.), damage), 0.7, AlienGun1)
@@ -391,11 +391,53 @@ let generateGun: unit => gunT = {
   }
 };
 
-let achievement0 = {state: Locked, condition: (state, _env) => state.stepTaken >= 200.};
-
-let achievement1 = {state: Locked, condition: (state, _env) => state.numberOfBulletsFired >= 10};
-
-let achievement2 = {state: Locked, condition: (state, _env) => state.enemiesKilled >= 1};
+let generateAchievements = () => {
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.stepTaken >= 200. *. (float_of_int(i) ** 2.)
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop([], 25);
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.numberOfBulletsFired >= 10 * Utils.pow(i, 2)
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop(achievements, 25);
+  let rec loop = (acc, i) =>
+    if (i < 0) {
+      acc
+    } else {
+      loop(
+        [
+          {state: Locked, condition: (state, _env) => state.enemiesKilled >= 1 * Utils.pow(i, 2)},
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  loop(achievements, 25)
+};
 
 let drawKey = (x, y, gun, state, env) => {
   let body =
@@ -416,10 +458,11 @@ let drawKey = (x, y, gun, state, env) => {
     | O => "O"
     | P => "P"
     | H => "H"
+    | G => "G"
     | J => "J"
     | K => "K"
     | L => "L"
-    | _ => assert false
+    | _ => failwith("Fuck")
     };
   Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
 };
@@ -463,7 +506,7 @@ let setup = (env) => {
     equippedGun: (-1),
     guns: [],
     playerBullets: [],
-    achievements: [achievement0, achievement1, achievement2],
+    achievements: generateAchievements(),
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
     enemies: [],
@@ -499,16 +542,6 @@ let drawForest = (state, env) => {
     )
   };
   for (i in 0 to mapSize) {
-    /*Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(mapSizePx, -10.),
-        ~height=(-64.),
-        ~width=65.,
-        ~texPos=(459, 0),
-        ~texWidth=64,
-        ~texHeight=64,
-        env
-      );*/
     Draw.subImagef(
       state.mainSpriteSheet,
       ~pos=(float_of_int(i) *. 63., 20.),
