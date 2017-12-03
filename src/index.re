@@ -586,8 +586,8 @@ let generateWave = (state) => {
   let makeMiniBosses = () => {
     let (monsterKind, maxHealth, enemySpeed, damage) =
       switch (Utils.random(1, 3)) {
-      | 1 => (BigZ, 120., 15., 100.)
-      | _ => (TallZ, 35., 55., 100.)
+      | 1 => (BigZ, 130., 15., 300.)
+      | _ => (TallZ, 35., 55., 60.)
       };
     {
       pos: genEnemyPos(),
