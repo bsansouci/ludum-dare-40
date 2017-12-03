@@ -1,5 +1,7 @@
 open Reprocessing;
 
+let fringePos = 30.;
+
 let playerSpeed = 200.;
 
 let mapSize = 20;
@@ -7,6 +9,8 @@ let mapSize = 20;
 let mapSizePx = float_of_int(mapSize * 64);
 
 let bulletSpeed = 600.;
+
+let scale = 2.;
 
 type vec2T = {
   x: float,
@@ -29,18 +33,29 @@ type enemyT = {
   maxHealth: float,
   health: float,
   pos: vec2T,
+  error: vec2T,
   speed: float
 };
 
+type gunKindT =
+  | Pistol
+  | Rifle
+  | AlienGun1
+  | AlienGun2
+  | Shotgun
+  | LaserGun;
+
 type gunT = {
-  amunition: int,
+  fireRate: float,
+  lastShotTime: float,
+  ammunition: int,
+  maxAmmunition: int,
   color: colorT,
-  keyToggle: Reprocessing_Common.KeySet.elt,
-  fire: (stateT, float, Reprocessing_Common.KeySet.elt) => stateT,
-  damage: float
+  keyToggle: Reprocessing_Events.keycodeT,
+  fire: (stateT, float, Reprocessing_Events.keycodeT) => stateT,
+  kind: gunKindT
 }
 and achievementT = {
-  gun: gunT,
   state: achievementStateT,
   condition: (stateT, glEnvT) => bool
 }
@@ -62,289 +77,325 @@ and stateT = {
 
 let add = (v1, v2) => {x: v1.x +. v2.x, y: v1.y +. v2.y};
 
-let rec defaultGun = {
-  amunition: 10,
-  damage: 400.,
-  color: Utils.color(155, 155, 0, 255),
-  keyToggle: Num_1,
-  fire: (state, deltaTime, direction) => {
-    let bulletSpeed = bulletSpeed *. deltaTime;
-    let dir =
-      switch direction {
-      | Up => {x: 0., y: -. bulletSpeed}
-      | Down => {x: 0., y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: 0.}
-      | Right => {x: bulletSpeed, y: 0.}
-      | _ => assert false
-      };
-    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
-    {
-      ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 1,
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, amunition: max(gun.amunition - 1, 0)}
-            } else {
-              gun
-            },
-          state.guns
-        ),
-      playerBullets:
-        List.nth(state.guns, state.equippedGun).amunition > 0 ?
-          [
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir,
-              moveBullet,
-              time: 0.,
-              damage: defaultGun.damage
-            },
-            ...state.playerBullets
-          ] :
-          state.playerBullets
-    }
-  }
-};
-
-let rec gunWithSpread = {
-  amunition: 10,
-  damage: 400.,
-  color: Utils.color(0, 255, 0, 255),
-  keyToggle: Num_2,
-  fire: (state, deltaTime, direction) => {
-    let otherSpeed = 100. *. deltaTime;
-    let bulletSpeed = bulletSpeed *. deltaTime;
-    let dir1 =
-      switch direction {
-      | Up => {x: -. otherSpeed, y: -. bulletSpeed}
-      | Down => {x: otherSpeed, y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: otherSpeed}
-      | Right => {x: bulletSpeed, y: -. otherSpeed}
-      | _ => assert false
-      };
-    let dir2 =
-      switch direction {
-      | Up => {x: 0., y: -. bulletSpeed}
-      | Down => {x: 0., y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: 0.}
-      | Right => {x: bulletSpeed, y: 0.}
-      | _ => assert false
-      };
-    let dir3 =
-      switch direction {
-      | Up => {x: otherSpeed, y: -. bulletSpeed}
-      | Down => {x: -. otherSpeed, y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: -. otherSpeed}
-      | Right => {x: bulletSpeed, y: otherSpeed}
-      | _ => assert false
-      };
-    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
-    {
-      ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 3,
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, amunition: max(gun.amunition - 1, 0)}
-            } else {
-              gun
-            },
-          state.guns
-        ),
-      playerBullets:
-        List.nth(state.guns, state.equippedGun).amunition > 0 ?
-          [
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir1,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSpread.damage
-            },
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir2,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSpread.damage
-            },
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir3,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSpread.damage
-            },
-            ...state.playerBullets
-          ] :
-          state.playerBullets
-    }
-  }
-};
-
-let rec gunWithSine = {
-  amunition: 10,
-  damage: 400.,
-  color: Utils.color(0, 155, 155, 255),
-  keyToggle: Num_3,
-  fire: (state, deltaTime, direction) => {
-    let otherSpeed = 100. *. deltaTime;
-    let bulletSpeed = bulletSpeed *. deltaTime;
-    let dir1 =
-      switch direction {
-      | Up => {x: -. otherSpeed, y: -. bulletSpeed}
-      | Down => {x: otherSpeed, y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: otherSpeed}
-      | Right => {x: bulletSpeed, y: -. otherSpeed}
-      | _ => assert false
-      };
-    let dir2 =
-      switch direction {
-      | Up => {x: 0., y: -. bulletSpeed}
-      | Down => {x: 0., y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: 0.}
-      | Right => {x: bulletSpeed, y: 0.}
-      | _ => assert false
-      };
-    let dir3 =
-      switch direction {
-      | Up => {x: otherSpeed, y: -. bulletSpeed}
-      | Down => {x: -. otherSpeed, y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: -. otherSpeed}
-      | Right => {x: bulletSpeed, y: otherSpeed}
-      | _ => assert false
-      };
-    let moveBullet = (bullet: bulletT) => {
-      let pos = add(bullet.pos, bullet.direction);
-      let perpendicular = {x: -. bullet.direction.y, y: bullet.direction.x};
-      let perpendicularSize =
-        sqrt(perpendicular.x *. perpendicular.x +. perpendicular.y *. perpendicular.y);
-      let perpendicular = {
-        x: perpendicular.x /. perpendicularSize,
-        y: perpendicular.y /. perpendicularSize
-      };
-      let norm = cos(bullet.time /. 5.);
-      let offset = {x: perpendicular.x *. norm *. 3., y: perpendicular.y *. norm *. 3.};
-      add(pos, offset)
+let makeDefaultFire =
+    (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let dir =
+    switch direction {
+    | Up => {x: 0., y: -. bulletSpeed}
+    | Down => {x: 0., y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: 0.}
+    | Right => {x: bulletSpeed, y: 0.}
+    | _ => assert false
     };
-    {
-      ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 3,
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, amunition: max(gun.amunition - 1, 0)}
-            } else {
-              gun
-            },
-          state.guns
-        ),
-      playerBullets:
-        List.nth(state.guns, state.equippedGun).amunition > 0 ?
-          [
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir1,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSine.damage
-            },
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir2,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSine.damage
-            },
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir3,
-              moveBullet,
-              time: 0.,
-              damage: gunWithSine.damage
-            },
-            ...state.playerBullets
-          ] :
-          state.playerBullets
-    }
+  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    guns:
+      List.mapi(
+        (i, gun) =>
+          if (i === state.equippedGun) {
+            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          } else {
+            gun
+          },
+        state.guns
+      ),
+    playerBullets:
+      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
+        [
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir, moveBullet, time: 0., damage},
+          ...state.playerBullets
+        ] :
+        state.playerBullets
   }
 };
 
-let rec gunWithTrail = {
-  amunition: 10,
-  damage: 400.,
-  color: Utils.color(0, 100, 100, 255),
-  keyToggle: Num_4,
-  fire: (state, deltaTime, direction) => {
+let makeTripleShotGunFire =
+    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let otherSpeed = otherSpeed *. deltaTime;
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let dir1 =
+    switch direction {
+    | Up => {x: -. otherSpeed, y: -. bulletSpeed}
+    | Down => {x: otherSpeed, y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: otherSpeed}
+    | Right => {x: bulletSpeed, y: -. otherSpeed}
+    | _ => assert false
+    };
+  let dir2 =
+    switch direction {
+    | Up => {x: 0., y: -. bulletSpeed}
+    | Down => {x: 0., y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: 0.}
+    | Right => {x: bulletSpeed, y: 0.}
+    | _ => assert false
+    };
+  let dir3 =
+    switch direction {
+    | Up => {x: otherSpeed, y: -. bulletSpeed}
+    | Down => {x: -. otherSpeed, y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: -. otherSpeed}
+    | Right => {x: bulletSpeed, y: otherSpeed}
+    | _ => assert false
+    };
+  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    guns:
+      List.mapi(
+        (i, gun) =>
+          if (i === state.equippedGun) {
+            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          } else {
+            gun
+          },
+        state.guns
+      ),
+    playerBullets:
+      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
+        [
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir1, moveBullet, time: 0., damage},
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir3, moveBullet, time: 0., damage},
+          ...state.playerBullets
+        ] :
+        state.playerBullets
+  }
+};
+
+let makeSineFire =
+    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let otherSpeed = otherSpeed *. deltaTime;
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let dir1 =
+    switch direction {
+    | Up => {x: -. otherSpeed, y: -. bulletSpeed}
+    | Down => {x: otherSpeed, y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: otherSpeed}
+    | Right => {x: bulletSpeed, y: -. otherSpeed}
+    | _ => assert false
+    };
+  let dir2 =
+    switch direction {
+    | Up => {x: 0., y: -. bulletSpeed}
+    | Down => {x: 0., y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: 0.}
+    | Right => {x: bulletSpeed, y: 0.}
+    | _ => assert false
+    };
+  let dir3 =
+    switch direction {
+    | Up => {x: otherSpeed, y: -. bulletSpeed}
+    | Down => {x: -. otherSpeed, y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: -. otherSpeed}
+    | Right => {x: bulletSpeed, y: otherSpeed}
+    | _ => assert false
+    };
+  let moveBullet = (bullet: bulletT) => {
+    let pos = add(bullet.pos, bullet.direction);
+    let perpendicular = {x: -. bullet.direction.y, y: bullet.direction.x};
+    let perpendicularSize =
+      sqrt(perpendicular.x *. perpendicular.x +. perpendicular.y *. perpendicular.y);
+    let perpendicular = {
+      x: perpendicular.x /. perpendicularSize,
+      y: perpendicular.y /. perpendicularSize
+    };
+    let norm = cos(bullet.time /. 5.);
+    let offset = {x: perpendicular.x *. norm *. 3., y: perpendicular.y *. norm *. 3.};
+    add(pos, offset)
+  };
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    guns:
+      List.mapi(
+        (i, gun) =>
+          if (i === state.equippedGun) {
+            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          } else {
+            gun
+          },
+        state.guns
+      ),
+    playerBullets:
+      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
+        [
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir1, moveBullet, time: 0., damage},
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir3, moveBullet, time: 0., damage},
+          ...state.playerBullets
+        ] :
+        state.playerBullets
+  }
+};
+
+let makeRifleFire =
+    (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let dir2 =
+    switch direction {
+    | Up => {x: 0., y: -. bulletSpeed}
+    | Down => {x: 0., y: bulletSpeed}
+    | Left => {x: -. bulletSpeed, y: 0.}
+    | Right => {x: bulletSpeed, y: 0.}
+    | _ => assert false
+    };
+  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    guns:
+      List.mapi(
+        (i, gun) =>
+          if (i === state.equippedGun) {
+            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          } else {
+            gun
+          },
+        state.guns
+      ),
+    playerBullets:
+      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
+        [
+          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
+          {
+            pos: add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2),
+            direction: dir2,
+            moveBullet,
+            time: 0.,
+            damage
+          },
+          {
+            pos: add(add(add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2), dir2), dir2),
+            direction: dir2,
+            moveBullet,
+            time: 0.,
+            damage
+          },
+          ...state.playerBullets
+        ] :
+        state.playerBullets
+  }
+};
+
+let makeShotGunFire =
+    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) =>
+  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
+    let otherSpeed = otherSpeed *. deltaTime;
     let bulletSpeed = bulletSpeed *. deltaTime;
-    let dir2 =
-      switch direction {
-      | Up => {x: 0., y: -. bulletSpeed}
-      | Down => {x: 0., y: bulletSpeed}
-      | Left => {x: -. bulletSpeed, y: 0.}
-      | Right => {x: bulletSpeed, y: 0.}
-      | _ => assert false
-      };
     let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+    let rec recur = (acc, i) =>
+      if (i < 0) {
+        acc
+      } else {
+        let otherSpeed = Utils.randomf(-. otherSpeed, otherSpeed);
+        let bulletSpeed = Utils.randomf(0.5, 1.) *. bulletSpeed;
+        let dir =
+          switch direction {
+          | Up => {x: -. otherSpeed, y: -. bulletSpeed}
+          | Down => {x: otherSpeed, y: bulletSpeed}
+          | Left => {x: -. bulletSpeed, y: otherSpeed}
+          | Right => {x: bulletSpeed, y: -. otherSpeed}
+          | _ => assert false
+          };
+        recur(
+          [
+            {pos: {x: state.pos.x, y: state.pos.y}, direction: dir, moveBullet, time: 0., damage},
+            ...acc
+          ],
+          i - 1
+        )
+      };
+    let newBullets = recur([], Utils.random(3, 10));
     {
       ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 3,
+      numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
       guns:
         List.mapi(
           (i, gun) =>
             if (i === state.equippedGun) {
-              {...gun, amunition: max(gun.amunition - 1, 0)}
+              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
             } else {
               gun
             },
           state.guns
         ),
-      playerBullets:
-        List.nth(state.guns, state.equippedGun).amunition > 0 ?
-          [
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir2,
-              moveBullet,
-              time: 0.,
-              damage: gunWithTrail.damage
-            },
-            {
-              pos: add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2),
-              direction: dir2,
-              moveBullet,
-              time: 0.,
-              damage: gunWithTrail.damage
-            },
-            {
-              pos: add(add(add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2), dir2), dir2),
-              direction: dir2,
-              moveBullet,
-              time: 0.,
-              damage: gunWithTrail.damage
-            },
-            ...state.playerBullets
-          ] :
-          state.playerBullets
+      playerBullets: newBullets @ state.playerBullets
+    }
+  } else {
+    state
+  };
+
+let generateGun: unit => gunT = {
+  let keyCount = ref(0);
+  let keySet = ref([]);
+  let getNextGunKey: unit => Reprocessing_Events.keycodeT =
+    () => {
+      keyCount := keyCount^ + 1;
+      switch keyCount^ {
+      | 1 => Num_1
+      | 2 => Num_2
+      | 3 => Num_3
+      | 4 => Num_4
+      | 5 => Num_5
+      | 6 => Num_6
+      | 7 => Num_7
+      | 8 => Num_8
+      | 9 => Num_9
+      | _ =>
+        let key = ref(Utils.random(0, 10));
+        while (List.mem(key^, keySet^)) {
+          key := Utils.random(0, 10)
+        };
+        keySet := [key^, ...keySet^];
+        switch key^ {
+        | 0 => T
+        | 1 => Y
+        | 2 => U
+        | 3 => I
+        | 4 => O
+        | 5 => P
+        | 6 => K
+        | 7 => J
+        | 8 => H
+        | 9 => G
+        | _ => assert false
+        }
+      }
+    };
+  () => {
+    let keyToggle = getNextGunKey();
+    let maxAmmunition = Utils.random(1, 10);
+    let damage = Utils.randomf(400., 1000.);
+    let (fire, fireRate, kind) =
+      switch (Utils.random(0, 5)) {
+      | 0 => (makeDefaultFire(bulletSpeed, damage), 0.4, Pistol)
+      | 1 => (makeTripleShotGunFire(bulletSpeed, Utils.randomf(50., 500.), damage), 0.7, AlienGun2)
+      | 2 => (makeRifleFire(bulletSpeed, damage), 0.7, Rifle)
+      | 3 => (makeShotGunFire(bulletSpeed, Utils.randomf(50., 200.), damage), 1.5, Shotgun)
+      | _ => (makeSineFire(bulletSpeed, Utils.randomf(50., 500.), damage), 0.7, AlienGun1)
+      };
+    {
+      ammunition: maxAmmunition,
+      maxAmmunition,
+      fireRate,
+      lastShotTime: 0.,
+      keyToggle,
+      fire,
+      kind,
+      color: Constants.white
     }
   }
 };
 
-let achievement1 = {
-  gun: gunWithSpread,
-  state: Locked,
-  condition: (state, _env) => state.numberOfBulletsFired >= 10
-};
+let achievement0 = {state: Locked, condition: (state, _env) => state.stepTaken >= 200.};
 
-let achievement2 = {
-  gun: gunWithSine,
-  state: Locked,
-  condition: (_state, env) => Env.keyPressed(C, env)
-};
+let achievement1 = {state: Locked, condition: (state, _env) => state.numberOfBulletsFired >= 10};
+
+let achievement2 = {state: Locked, condition: (state, _env) => state.enemiesKilled >= 1};
 
 let drawKey = (x, y, gun, state, env) => {
   let body =
@@ -355,22 +406,35 @@ let drawKey = (x, y, gun, state, env) => {
     | Num_4 => "4"
     | Num_5 => "5"
     | Num_6 => "6"
+    | Num_7 => "7"
+    | Num_8 => "8"
+    | Num_9 => "9"
+    | T => "T"
+    | Y => "Y"
+    | U => "U"
+    | I => "I"
+    | O => "O"
+    | P => "P"
+    | H => "H"
+    | J => "J"
+    | K => "K"
+    | L => "L"
     | _ => assert false
     };
   Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
 };
 
 let spawnEnemies = (state) =>
-  if (Utils.random(0, 10) === 0) {
+  if (Utils.random(0, 200) === 0) {
     let pos =
       switch (Utils.random(0, 4)) {
-      | 0 => {x: Utils.randomf(0., mapSizePx), y: (-30.)}
-      | 1 => {x: mapSizePx +. 30., y: Utils.randomf(0., mapSizePx)}
-      | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. 30.}
-      | 3 => {x: (-30.), y: Utils.randomf(0., mapSizePx)}
+      | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
+      | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
+      | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
+      | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
       | _ => assert false
       };
-    let enemy = {pos, health: 100., maxHealth: 100., speed: 100.};
+    let enemy = {pos, health: 100., maxHealth: 100., speed: 50., error: {x: 0., y: 0.}};
     {...state, enemies: [enemy, ...state.enemies]}
   } else {
     state
@@ -396,13 +460,13 @@ let setup = (env) => {
   Env.size(~width=1280, ~height=720, env);
   {
     pos: {x: 50., y: 50.},
-    equippedGun: 0,
-    guns: [defaultGun],
+    equippedGun: (-1),
+    guns: [],
     playerBullets: [],
-    achievements: [achievement1, achievement2],
-    mainFont: Draw.loadFont(~filename="assets/font/font.fnt", env),
+    achievements: [achievement0, achievement1, achievement2],
+    mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
-    enemies: [{health: 100., maxHealth: 100., pos: {x: 200., y: 200.}, speed: 30.}],
+    enemies: [],
     enemiesKilled: 0,
     numberOfBulletsFired: 0,
     damageDone: 0.,
@@ -411,8 +475,66 @@ let setup = (env) => {
   }
 };
 
+let drawForest = (state, env) => {
+  for (i in 0 to mapSize) {
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(float_of_int(i) *. 63., (-10.)),
+      ~height=(-64.),
+      ~width=65.,
+      ~texPos=(459, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    );
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(float_of_int(i) *. 63., 20.),
+      ~height=(-64.),
+      ~width=65.,
+      ~texPos=(459, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    )
+  };
+  for (i in 0 to mapSize) {
+    /*Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(mapSizePx, -10.),
+        ~height=(-64.),
+        ~width=65.,
+        ~texPos=(459, 0),
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      );*/
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(float_of_int(i) *. 63., 20.),
+      ~height=(-64.),
+      ~width=65.,
+      ~texPos=(459, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    )
+  }
+};
+
+let backgroundTileGrid = {
+  let grid = Array.make_matrix(mapSize, mapSize, 0);
+  for (_ in 0 to Utils.random(5, 20)) {
+    let x = Utils.random(0, mapSize);
+    let y = Utils.random(0, mapSize);
+    grid[x][y] = 1
+  };
+  grid
+};
+
 let draw = (state, env) => {
-  Draw.background(Utils.color(~r=199, ~g=217, ~b=229, ~a=255), env);
+  let dt = Env.deltaTime(env);
+  Draw.background(Utils.color(~r=32, ~g=59, ~b=24, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
   let prevPos = state.pos;
@@ -486,21 +608,26 @@ let draw = (state, env) => {
       )
     };
   let state = foldOverGuns(state, state.guns, 0);
-  let curGun = List.nth(state.guns, state.equippedGun);
-  let state = Env.keyPressed(Up, env) ? curGun.fire(state, Env.deltaTime(env), Up) : state;
-  let state = Env.keyPressed(Down, env) ? curGun.fire(state, Env.deltaTime(env), Down) : state;
-  let state = Env.keyPressed(Left, env) ? curGun.fire(state, Env.deltaTime(env), Left) : state;
-  let state = Env.keyPressed(Right, env) ? curGun.fire(state, Env.deltaTime(env), Right) : state;
+  let state =
+    if (state.equippedGun >= 0) {
+      let curGun = List.nth(state.guns, state.equippedGun);
+      if (state.elapsedTime -. curGun.lastShotTime > curGun.fireRate) {
+        let state = Env.key(Up, env) ? curGun.fire(state, Env.deltaTime(env), Up) : state;
+        let state = Env.key(Down, env) ? curGun.fire(state, Env.deltaTime(env), Down) : state;
+        let state = Env.key(Left, env) ? curGun.fire(state, Env.deltaTime(env), Left) : state;
+        let state = Env.key(Right, env) ? curGun.fire(state, Env.deltaTime(env), Right) : state;
+        state
+      } else {
+        state
+      }
+    } else {
+      state
+    };
   let state = {
     ...state,
     elapsedTime: state.elapsedTime +. Env.deltaTime(env),
     stepTaken: state.stepTaken +. Utils.distf((prevPos.x, prevPos.y), (state.pos.x, state.pos.y))
   };
-  /*print_string(
-    Format.sprintf
-      ("Print: %f\n")
-      (state.stepTaken)
-  );*/
   let state = spawnEnemies(state);
   let state = {
     ...state,
@@ -516,7 +643,7 @@ let draw = (state, env) => {
         if (achievement.state === Locked && achievement.condition(state, env)) {
           {
             ...state,
-            guns: [achievement.gun, ...state.guns],
+            guns: [generateGun(), ...state.guns],
             equippedGun: state.equippedGun + 1,
             achievements:
               List.map(
@@ -541,9 +668,29 @@ let draw = (state, env) => {
       List.map(
         (enemy: enemyT) => {
           let size = Utils.distf((state.pos.x, state.pos.y), (enemy.pos.x, enemy.pos.y));
-          let dx = (state.pos.x -. enemy.pos.x) /. size *. enemy.speed *. Env.deltaTime(env);
-          let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. Env.deltaTime(env);
-          {...enemy, pos: {x: enemy.pos.x +. dx, y: enemy.pos.y +. dy}}
+          let dx = (state.pos.x -. enemy.pos.x) /. size *. enemy.speed *. dt;
+          let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. dt;
+          {
+            ...enemy,
+            pos: {
+              x: enemy.pos.x +. dx +. enemy.error.x *. dt,
+              y: enemy.pos.y +. dy +. enemy.error.y *. dt
+            },
+            error: {
+              x:
+                Utils.constrain(
+                  ~amt=enemy.error.x +. Utils.randomf((-5.), 5.),
+                  ~high=enemy.speed,
+                  ~low=(-1.) *. enemy.speed
+                ),
+              y:
+                Utils.constrain(
+                  ~amt=enemy.error.y +. Utils.randomf((-5.), 5.),
+                  ~high=enemy.speed,
+                  ~low=(-1.) *. enemy.speed
+                )
+            }
+          }
         },
         state.enemies
       )
@@ -591,6 +738,12 @@ let draw = (state, env) => {
       {...state, playerBullets: []},
       state.playerBullets
     );
+  let state =
+    if (List.for_all((gun) => gun.ammunition === 0, state.guns)) {
+      {...state, guns: List.map((gun) => {...gun, ammunition: gun.maxAmmunition}, state.guns)}
+    } else {
+      state
+    };
   /* Do some math for stats */
   let state =
     List.fold_left(
@@ -604,25 +757,50 @@ let draw = (state, env) => {
       state.enemies
     );
   Draw.pushMatrix(env);
+  /*Draw.translate(
+      -. state.pos.x +. float_of_int(Env.width(env)) /. .,
+      -. state.pos.y +. float_of_int(Env.height(env)) /. .,
+      env
+    );*/
+  Draw.scale(scale, scale, env);
   Draw.translate(
-    -. state.pos.x +. float_of_int(Env.width(env)) /. 2.,
-    -. state.pos.y +. float_of_int(Env.height(env)) /. 2.,
+    -. state.pos.x +. float_of_int(Env.width(env)) /. (2. *. scale),
+    -. state.pos.y +. float_of_int(Env.height(env)) /. (2. *. scale),
     env
   );
-  for (i in 0 to mapSize) {
-    for (j in 0 to mapSize) {
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(float_of_int(i) *. 63., float_of_int(j) *. 64.),
-        ~height=64.,
-        ~width=64.,
-        ~texPos=(266, 0),
-        ~texWidth=64,
-        ~texHeight=64,
-        env
-      )
-    }
-  };
+  Array.iteri(
+    (y, row) =>
+      Array.iteri(
+        (x, id) =>
+          switch id {
+          | 0 =>
+            Draw.subImagef(
+              state.mainSpriteSheet,
+              ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
+              ~height=64.,
+              ~width=64.,
+              ~texPos=(394, 0),
+              ~texWidth=64,
+              ~texHeight=64,
+              env
+            )
+          | 1 =>
+            Draw.subImagef(
+              state.mainSpriteSheet,
+              ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
+              ~height=64.,
+              ~width=64.,
+              ~texPos=(331, 0),
+              ~texWidth=64,
+              ~texHeight=64,
+              env
+            )
+          | _ => ()
+          },
+        row
+      ),
+    backgroundTileGrid
+  );
   /* Draw the enemies */
   let sortedEnemies =
     List.sort(
@@ -637,39 +815,42 @@ let draw = (state, env) => {
       state.enemies
     );
   List.iter(
-    (enemy: enemyT) => {
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
-        ~width=40.,
-        ~height=64.,
-        ~texPos=(585, 0),
-        ~texWidth=40,
-        ~texHeight=64,
-        env
-      );
-      drawHealthBar(
-        enemy.pos.x +. 5.,
-        enemy.pos.y -. 35.,
-        5.,
-        40.,
-        enemy.health,
-        enemy.maxHealth,
-        Constants.red,
-        env
-      )
-    },
+    (enemy: enemyT) =>
+      if (enemy.pos.x > -. fringePos
+          && enemy.pos.x < mapSizePx
+          +. 30.
+          && enemy.pos.y > -. fringePos
+          && enemy.pos.y < mapSizePx
+          +. 30.) {
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
+          ~width=40.,
+          ~height=64.,
+          ~texPos=(777, 0),
+          ~texWidth=40,
+          ~texHeight=64,
+          env
+        );
+        drawHealthBar(
+          enemy.pos.x +. 5.,
+          enemy.pos.y -. 35.,
+          5.,
+          40.,
+          enemy.health,
+          enemy.maxHealth,
+          Constants.red,
+          env
+        )
+      },
     sortedEnemies
   );
-  Draw.subImagef(
-    state.mainSpriteSheet,
-    ~pos=(state.pos.x -. 20., state.pos.y -. 32.),
-    ~width=40.,
-    ~height=64.,
-    ~texPos=(128, 0),
-    ~texWidth=40,
-    ~texHeight=64,
-    env
+  List.iter(
+    ({pos, direction: _}) => {
+      Draw.fill(Constants.black, env);
+      Draw.rectf(~pos=(pos.x, pos.y), ~width=5., ~height=5., env)
+    },
+    state.playerBullets
   );
   /* Draw the player */
   Draw.subImagef(
@@ -682,36 +863,105 @@ let draw = (state, env) => {
     ~texHeight=64,
     env
   );
-  List.iter(
-    ({pos, direction: _}) => {
-      Draw.fill(Constants.black, env);
-      Draw.rectf(~pos=(pos.x, pos.y), ~width=5., ~height=5., env)
-    },
-    state.playerBullets
-  );
+  drawForest(state, env);
   Draw.popMatrix(env);
+  let length = List.length(state.guns);
   ignore @@
   List.fold_left(
     ((x, y, i), gun) => {
-      Draw.fill(gun.color, env);
-      Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=40., ~height=40., env);
-      if (i === state.equippedGun) {
-        Draw.fill(Utils.color(255, 0, 0, 255), env);
-        Draw.rectf(~pos=(x +. 35., y +. 15.), ~width=20., ~height=20., env)
+      if (length - i - 1 === state.equippedGun) {
+        Draw.fill(Utils.color(255, 255, 0, 255), env);
+        Draw.rectf(~pos=(x +. 20., y), ~width=80., ~height=80., env)
       };
-      Draw.text(
-        state.mainFont,
-        string_of_int(gun.amunition),
-        (int_of_float(x) + 70, int_of_float(y) + 10),
+      Draw.fill(Utils.color(180, 180, 180, 255), env);
+      Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=70., ~height=70., env);
+      switch gun.kind {
+      | Pistol =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(522, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      | Shotgun =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(586, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      | AlienGun1 =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(64, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      | AlienGun2 =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(708, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      | LaserGun =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(648, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      | Rifle =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(0, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
+      };
+      drawKey(x +. 30., y +. 22., gun, state, env);
+      drawHealthBar(
+        x +. 25. +. 35.,
+        y +. 64.,
+        10.,
+        70.,
+        float_of_int(gun.ammunition),
+        float_of_int(gun.maxAmmunition),
+        Utils.color(180, 180, 0, 255),
         env
       );
-      drawKey(x, y, gun, state, env);
-      (x, y +. 50., i + 1)
+      (x +. 90., y, i + 1)
     },
     (10., 20., 0),
-    state.guns
+    List.rev(state.guns)
   );
   state
 };
+
+run(~setup, ~draw, ());
 
 run(~setup, ~draw, ());

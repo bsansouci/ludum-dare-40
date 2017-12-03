@@ -93,3 +93,4 @@ char id=56 x=17 y=482 width=15 height=20 xoffset=1 yoffset=5 xadvance=14 page=0 
 char id=57 x=11 y=376 width=15 height=20 xoffset=1 yoffset=5 xadvance=14 page=0 chnl=15
 char id=48 x=11 y=398 width=15 height=20 xoffset=1 yoffset=5 xadvance=14 page=0 chnl=15
 char id=32 x=0 y=0 width=0 height=0 xoffset=1 yoffset=5 xadvance=12 page=0 chnl=15
+kernings count=0
