@@ -4,8 +4,6 @@ let fringePos = 30.;
 
 let playerSpeed = 150.;
 
-let enemySpeed = 25.;
-
 let mapSize = 20;
 
 let mapSizePx = float_of_int(mapSize * 64);
@@ -31,12 +29,19 @@ type achievementStateT =
   | Locked
   | Unlocked;
 
+type enemyKindT =
+  | NormalZ
+  | BigZ
+  | TallZ;
+
 type enemyT = {
   maxHealth: float,
   health: float,
   pos: vec2T,
   error: vec2T,
-  speed: float
+  speed: float,
+  damage: float,
+  kind: enemyKindT
 };
 
 type gunKindT =
@@ -407,7 +412,7 @@ let generateGun: unit => gunT = {
           makeTripleShotGunFire(
             bulletSpeed,
             Utils.randomf(50., 200.),
-            Utils.lerpf(400., 1000., damage)
+            Utils.lerpf(400., 700., damage)
           ),
           Utils.lerpf(0.7, 0.5, fireRate),
           Utils.lerp(1, 10, maxAmmunition)
@@ -558,18 +563,51 @@ let generateWave = (state) => {
     } else {
       list_init([f(), ...acc], f, i - 1)
     };
+  let genEnemyPos = () =>
+    switch (Utils.random(0, 4)) {
+    | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
+    | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
+    | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
+    | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
+    | _ => assert false
+    };
   let makeEnemy = () => {
-    let pos =
-      switch (Utils.random(0, 4)) {
-      | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
-      | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
-      | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
-      | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
-      | _ => assert false
-      };
-    let maxHealth = 35.;
-    {pos, health: maxHealth, maxHealth, speed: enemySpeed, error: {x: 0., y: 0.}}
+    let (monsterKind, maxHealth, enemySpeed, damage) = (NormalZ, 35., 25., 100.);
+    {
+      pos: genEnemyPos(),
+      kind: monsterKind,
+      damage,
+      health: maxHealth,
+      maxHealth,
+      speed: enemySpeed,
+      error: {x: 0., y: 0.}
+    }
   };
+  let makeMiniBosses = () => {
+    let (monsterKind, maxHealth, enemySpeed, damage) =
+      switch (Utils.random(1, 3)) {
+      | 1 => (BigZ, 120., 15., 100.)
+      | _ => (TallZ, 35., 55., 100.)
+      };
+    {
+      pos: genEnemyPos(),
+      kind: monsterKind,
+      damage,
+      health: maxHealth,
+      maxHealth,
+      speed: enemySpeed,
+      error: {x: 0., y: 0.}
+    }
+  };
+  let enemies = list_init(state.enemies, makeEnemy, enemyCount);
+  let startWaveForMiniBosses = 1;
+  let enemies =
+    if (state.waveNum >= startWaveForMiniBosses) {
+      let n = max(0, Utils.random(- state.waveNum, state.waveNum - startWaveForMiniBosses));
+      list_init(enemies, makeMiniBosses, n)
+    } else {
+      enemies
+    };
   let crateCount = Utils.random(2, 4);
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
@@ -577,7 +615,7 @@ let generateWave = (state) => {
   };
   {
     ...state,
-    enemies: list_init(state.enemies, makeEnemy, enemyCount),
+    enemies,
     crates: list_init(state.crates, makeCrate, crateCount),
     waveNum: state.waveNum + 1,
     nextWaveCountdown: 60.
@@ -612,7 +650,15 @@ let setup = (env) => {
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
     enemies: [
-      {pos: {x: 100., y: 250.}, health: 100., maxHealth: 100., speed: 60., error: {x: 5., y: 5.}}
+      {
+        pos: {x: 100., y: 250.},
+        damage: 100.,
+        kind: NormalZ,
+        health: 100.,
+        maxHealth: 100.,
+        speed: 60.,
+        error: {x: 5., y: 5.}
+      }
     ],
     enemiesKilled: 0,
     numberOfBulletsFired: 0,
@@ -811,26 +857,45 @@ let draw = (state, env) => {
           let size = Utils.distf((state.pos.x, state.pos.y), (enemy.pos.x, enemy.pos.y));
           let dx = (state.pos.x -. enemy.pos.x) /. size *. enemy.speed *. dt;
           let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. dt;
+          let error =
+            switch enemy.kind {
+            | NormalZ
+            | BigZ => {
+                x:
+                  Utils.constrain(
+                    ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
+                    ~high=enemy.speed,
+                    ~low=(-1.) *. enemy.speed
+                  ),
+                y:
+                  Utils.constrain(
+                    ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
+                    ~high=enemy.speed,
+                    ~low=(-1.) *. enemy.speed
+                  )
+              }
+            | TallZ => {
+                x:
+                  Utils.constrain(
+                    ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
+                    ~high=enemy.speed /. 4.,
+                    ~low=(-1.) *. enemy.speed /. 4.
+                  ),
+                y:
+                  Utils.constrain(
+                    ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
+                    ~high=enemy.speed /. 4.,
+                    ~low=(-1.) *. enemy.speed /. 4.
+                  )
+              }
+            };
           {
             ...enemy,
             pos: {
               x: enemy.pos.x +. dx +. enemy.error.x *. dt,
               y: enemy.pos.y +. dy +. enemy.error.y *. dt
             },
-            error: {
-              x:
-                Utils.constrain(
-                  ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
-                  ~high=enemy.speed,
-                  ~low=(-1.) *. enemy.speed
-                ),
-              y:
-                Utils.constrain(
-                  ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
-                  ~high=enemy.speed,
-                  ~low=(-1.) *. enemy.speed
-                )
-            }
+            error
           }
         },
         state.enemies
@@ -964,19 +1029,25 @@ let draw = (state, env) => {
           && enemy.pos.y > -. fringePos
           && enemy.pos.y < mapSizePx
           +. 30.) {
+        let (texPos, healthBarOffsetX, healthBarOffsetY) =
+          switch enemy.kind {
+          | NormalZ => ((842, 0), 0., 0.)
+          | BigZ => ((1026, 0), 0., 0.)
+          | TallZ => ((1391, 0), 2., (-5.))
+          };
         Draw.subImagef(
           state.mainSpriteSheet,
           ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
           ~width=40.,
           ~height=64.,
-          ~texPos=(842, 0),
+          ~texPos,
           ~texWidth=40,
           ~texHeight=64,
           env
         );
         drawHealthBar(
-          enemy.pos.x +. 5.,
-          enemy.pos.y -. 35.,
+          enemy.pos.x +. 5. +. healthBarOffsetX,
+          enemy.pos.y -. 35. +. healthBarOffsetY,
           5.,
           40.,
           enemy.health,
