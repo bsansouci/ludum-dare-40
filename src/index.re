@@ -51,7 +51,8 @@ type gunKindT =
   | AlienGun2
   | Shotgun
   | Machinegun
-  | LaserGun;
+  | LaserGun
+  | Uzi;
 
 let gunTexPos = (kind) =>
   switch kind {
@@ -62,6 +63,7 @@ let gunTexPos = (kind) =>
   | AlienGun2 => (772, 0)
   | LaserGun => (712, 0)
   | Rifle => (0, 0)
+  | Uzi => (1666, 0)
   };
 
 type crateT = {
@@ -309,8 +311,64 @@ let makeRifleFire =
   }
 };
 
+let makeUziFire =
+    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let otherNoise = ref(0.);
+  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
+    otherNoise :=
+      Utils.constrain(
+        ~amt=otherNoise^ +. Utils.randomf(-2000. *. deltaTime, 2000. *. deltaTime),
+        ~low=otherSpeed *. (-1.),
+        ~high=otherSpeed
+      );
+    let bulletSpeed = bulletSpeed *. deltaTime;
+    let otherSpeed = otherNoise^ *. deltaTime;
+    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+    let dir =
+      switch direction {
+      | Up => {x: -. otherSpeed, y: -. bulletSpeed}
+      | Down => {x: otherSpeed, y: bulletSpeed}
+      | Left => {x: -. bulletSpeed, y: otherSpeed}
+      | Right => {x: bulletSpeed, y: -. otherSpeed}
+      | _ => assert false
+      };
+    let newBullet = {
+      pos: {x: state.pos.x, y: state.pos.y},
+      direction: dir,
+      moveBullet,
+      time: 0.,
+      damage
+    };
+    {
+      ...state,
+      numberOfBulletsFired: state.numberOfBulletsFired + 1,
+      guns:
+        List.mapi(
+          (i, gun) =>
+            if (i === state.equippedGun) {
+              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+            } else {
+              gun
+            },
+          state.guns
+        ),
+      playerBullets: [newBullet, ...state.playerBullets]
+    }
+  } else {
+    state
+  }
+};
+
 let makeShotGunFire =
-    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) =>
+    (
+      bulletSpeed,
+      otherSpeed,
+      maxBullets,
+      damage,
+      state,
+      deltaTime,
+      direction: Reprocessing_Events.keycodeT
+    ) =>
   if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
     let otherSpeed = otherSpeed *. deltaTime;
     let bulletSpeed = bulletSpeed *. deltaTime;
@@ -337,7 +395,7 @@ let makeShotGunFire =
           i - 1
         )
       };
-    let newBullets = recur([], Utils.random(3, 10));
+    let newBullets = recur([], Utils.random(max(1, maxBullets - 3), maxBullets + 1));
     {
       ...state,
       numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
@@ -400,7 +458,7 @@ let generateGun: unit => gunT = {
     let damage = Utils.randomf(0., 1.);
     let fireRate = Utils.randomf(0., 1.);
     let (kind, fire, fireRate, maxAmmunition) =
-      switch (Utils.random(0, 6)) {
+      switch (Utils.random(0, 7)) {
       | 0 => (
           Pistol,
           makeDefaultFire(bulletSpeed, Utils.lerpf(400., 1000., damage)),
@@ -425,15 +483,26 @@ let generateGun: unit => gunT = {
         )
       | 3 => (
           Shotgun,
-          makeShotGunFire(bulletSpeed, Utils.randomf(50., 200.), Utils.lerpf(400., 1000., damage)),
+          makeShotGunFire(
+            bulletSpeed,
+            Utils.randomf(50., 200.),
+            15,
+            Utils.lerpf(400., 1000., damage)
+          ),
           Utils.lerpf(2.0, 1.2, fireRate),
           Utils.lerp(2, 6, maxAmmunition)
         )
       | 4 => (
           Machinegun,
           makeDefaultFire(bulletSpeed, Utils.lerpf(100., 400., damage)),
-          Utils.lerpf(0.1, 0.04, fireRate),
+          Utils.lerpf(0.2, 0.06, fireRate),
           Utils.lerp(5, 30, maxAmmunition)
+        )
+      | 5 => (
+          Uzi,
+          makeUziFire(bulletSpeed -. 200., Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
+          Utils.lerpf(0.1, 0.03, fireRate),
+          Utils.lerp(20, 50, maxAmmunition)
         )
       | _ => (
           AlienGun1,
@@ -611,7 +680,7 @@ let generateWave = (state) => {
   let crateCount = Utils.random(2, 4);
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
-    kind: Obj.magic(Utils.random(0, 7))
+    kind: Obj.magic(Utils.random(0, 8))
   };
   {
     ...state,
