@@ -2,7 +2,9 @@ open Reprocessing;
 
 let fringePos = 30.;
 
-let playerSpeed = 200.;
+let playerSpeed = 150.;
+
+let enemySpeed = 25.;
 
 let mapSize = 20;
 
@@ -43,6 +45,7 @@ type gunKindT =
   | AlienGun1
   | AlienGun2
   | Shotgun
+  | Machinegun
   | LaserGun;
 
 type gunT = {
@@ -57,7 +60,8 @@ type gunT = {
 }
 and achievementT = {
   state: achievementStateT,
-  condition: (stateT, glEnvT) => bool
+  condition: (stateT, glEnvT) => bool,
+  message: string
 }
 and stateT = {
   pos: vec2T,
@@ -68,6 +72,8 @@ and stateT = {
   mainFont: fontT,
   mainSpriteSheet: imageT,
   enemies: list(enemyT),
+  waveNum: int,
+  nextWaveCountdown: float,
   enemiesKilled: int,
   numberOfBulletsFired: int,
   damageDone: float,
@@ -368,15 +374,55 @@ let generateGun: unit => gunT = {
     };
   () => {
     let keyToggle = getNextGunKey();
-    let maxAmmunition = Utils.random(1, 10);
-    let damage = Utils.randomf(400., 1000.);
-    let (fire, fireRate, kind) =
-      switch (Utils.random(0, 5)) {
-      | 0 => (makeDefaultFire(bulletSpeed, damage), 0.4, Pistol)
-      | 1 => (makeTripleShotGunFire(bulletSpeed, Utils.randomf(50., 300.), damage), 0.7, AlienGun2)
-      | 2 => (makeRifleFire(bulletSpeed, damage), 0.7, Rifle)
-      | 3 => (makeShotGunFire(bulletSpeed, Utils.randomf(50., 200.), damage), 1.5, Shotgun)
-      | _ => (makeSineFire(bulletSpeed, Utils.randomf(50., 500.), damage), 0.7, AlienGun1)
+    let maxAmmunition = Utils.randomf(0., 1.);
+    let damage = Utils.randomf(0., 1.);
+    let fireRate = Utils.randomf(0., 1.);
+    let (kind, fire, fireRate, maxAmmunition) =
+      switch (Utils.random(0, 6)) {
+      | 0 => (
+          Pistol,
+          makeDefaultFire(bulletSpeed, Utils.lerpf(400., 1000., damage)),
+          Utils.lerpf(0.5, 0.3, fireRate),
+          Utils.lerp(1, 10, maxAmmunition)
+        )
+      | 1 => (
+          AlienGun2,
+          makeTripleShotGunFire(
+            bulletSpeed,
+            Utils.randomf(50., 200.),
+            Utils.lerpf(400., 1000., damage)
+          ),
+          Utils.lerpf(0.7, 0.5, fireRate),
+          Utils.lerp(1, 10, maxAmmunition)
+        )
+      | 2 => (
+          Rifle,
+          makeRifleFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
+          Utils.lerpf(0.7, 0.5, fireRate),
+          Utils.lerp(1, 10, maxAmmunition)
+        )
+      | 3 => (
+          Shotgun,
+          makeShotGunFire(bulletSpeed, Utils.randomf(50., 200.), Utils.lerpf(400., 1000., damage)),
+          Utils.lerpf(2.0, 1.2, fireRate),
+          Utils.lerp(2, 6, maxAmmunition)
+        )
+      | 4 => (
+          Machinegun,
+          makeDefaultFire(bulletSpeed, Utils.lerpf(100., 400., damage)),
+          Utils.lerpf(0.1, 0.04, fireRate),
+          Utils.lerp(5, 30, maxAmmunition)
+        )
+      | _ => (
+          AlienGun1,
+          makeSineFire(
+            bulletSpeed /. 2.,
+            Utils.randomf(50., 200.),
+            Utils.lerpf(400., 1000., damage)
+          ),
+          Utils.lerpf(0.7, 0.5, fireRate),
+          Utils.lerp(1, 10, maxAmmunition)
+        )
       };
     {
       ammunition: maxAmmunition,
@@ -394,13 +440,21 @@ let generateGun: unit => gunT = {
 let generateAchievements = () => {
   let rec loop = (acc, i) =>
     if (i <= 0) {
-      acc
+      [
+        {
+          state: Locked,
+          condition: (state, _env) => state.stepTaken >= 1000.,
+          message: "You walked your first 100 steps!"
+        },
+        ...acc
+      ]
     } else {
       loop(
         [
           {
             state: Locked,
-            condition: (state, _env) => state.stepTaken >= 200. *. (float_of_int(i) ** 2.)
+            condition: (state, _env) => state.stepTaken >= 10000. *. float_of_int(i),
+            message: Printf.sprintf("You walked more than %d steps!", 1000 * i)
           },
           ...acc
         ],
@@ -416,7 +470,8 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.numberOfBulletsFired >= 10 * Utils.pow(i, 2)
+            condition: (state, _env) => state.numberOfBulletsFired >= 100 * i,
+            message: Printf.sprintf("You fired more than %d bullets!", 100 * i)
           },
           ...acc
         ],
@@ -425,12 +480,23 @@ let generateAchievements = () => {
     };
   let achievements = loop(achievements, 25);
   let rec loop = (acc, i) =>
-    if (i < 0) {
-      acc
+    if (i <= 0) {
+      [
+        {
+          state: Locked,
+          condition: (state, _env) => state.enemiesKilled >= 1,
+          message: "You killed your first zombie!"
+        },
+        ...acc
+      ]
     } else {
       loop(
         [
-          {state: Locked, condition: (state, _env) => state.enemiesKilled >= 1 * Utils.pow(i, 2)},
+          {
+            state: Locked,
+            condition: (state, _env) => state.enemiesKilled >= Utils.pow(2, i),
+            message: Printf.sprintf("You killed more than %d zombies!", 2 * Utils.pow(i, 2))
+          },
           ...acc
         ],
         i - 1
@@ -467,21 +533,31 @@ let drawKey = (x, y, gun, state, env) => {
   Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
 };
 
-let spawnEnemies = (state) =>
-  if (Utils.random(0, 200) === 0) {
-    let pos =
-      switch (Utils.random(0, 4)) {
-      | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
-      | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
-      | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
-      | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
-      | _ => assert false
-      };
-    let enemy = {pos, health: 100., maxHealth: 100., speed: 50., error: {x: 0., y: 0.}};
-    {...state, enemies: [enemy, ...state.enemies]}
-  } else {
-    state
-  };
+let generateWave = (state) => {
+  let enemyCount = Utils.random(10, 15);
+  let rec recur = (acc, i) =>
+    if (i < 0) {
+      acc
+    } else {
+      let pos =
+        switch (Utils.random(0, 4)) {
+        | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
+        | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
+        | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
+        | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
+        | _ => assert false
+        };
+      let maxHealth = 35.;
+      let enemy = {pos, health: maxHealth, maxHealth, speed: enemySpeed, error: {x: 0., y: 0.}};
+      recur([enemy, ...acc], i - 1)
+    };
+  {
+    ...state,
+    enemies: recur(state.enemies, enemyCount),
+    waveNum: state.waveNum + 1,
+    nextWaveCountdown: 60.
+  }
+};
 
 let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
   let xOffset = w /. 2.;
@@ -502,30 +578,34 @@ let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
 let setup = (env) => {
   Env.size(~width=1280, ~height=720, env);
   {
-    pos: {x: 50., y: 50.},
+    pos: {x: 400., y: 400.},
     equippedGun: (-1),
     guns: [],
     playerBullets: [],
     achievements: generateAchievements(),
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
-    enemies: [],
+    enemies: [
+      {pos: {x: 100., y: 100.}, health: 100., maxHealth: 100., speed: 50., error: {x: 0., y: 0.}}
+    ],
     enemiesKilled: 0,
     numberOfBulletsFired: 0,
     damageDone: 0.,
     stepTaken: 0.,
-    elapsedTime: 0.
+    elapsedTime: 0.,
+    waveNum: 0,
+    nextWaveCountdown: 10.
   }
 };
 
-let drawForest = (state, env) => {
+let drawForest = (state, env) =>
   for (i in 0 to mapSize) {
     Draw.subImagef(
       state.mainSpriteSheet,
       ~pos=(float_of_int(i) *. 63., (-10.)),
       ~height=(-64.),
       ~width=65.,
-      ~texPos=(459, 0),
+      ~texPos=(523, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
@@ -535,13 +615,14 @@ let drawForest = (state, env) => {
       ~pos=(float_of_int(i) *. 63., 20.),
       ~height=(-64.),
       ~width=65.,
-      ~texPos=(459, 0),
+      ~texPos=(523, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
     )
   };
-  for (i in 0 to mapSize) {
+
+/*for (i in 0 to mapSize) {
     Draw.subImagef(
       state.mainSpriteSheet,
       ~pos=(float_of_int(i) *. 63., 20.),
@@ -552,9 +633,7 @@ let drawForest = (state, env) => {
       ~texHeight=64,
       env
     )
-  }
-};
-
+  }*/
 let backgroundTileGrid = {
   let grid = Array.make_matrix(mapSize, mapSize, 0);
   for (_ in 0 to Utils.random(5, 20)) {
@@ -565,70 +644,48 @@ let backgroundTileGrid = {
   grid
 };
 
+let checkOffset = (prevOffset, offset, state) =>
+  if (state.pos.x
+      +. offset.x < 0.
+      || state.pos.x
+      +. offset.x > mapSizePx
+      || state.pos.y
+      +. offset.y < 0.
+      || state.pos.y
+      +. offset.y > mapSizePx) {
+    prevOffset
+  } else {
+    offset
+  };
+
 let draw = (state, env) => {
   let dt = Env.deltaTime(env);
   Draw.background(Utils.color(~r=32, ~g=59, ~b=24, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
-  let prevPos = state.pos;
-  let state = {
-    let state =
-      Env.key(A, env) ?
-        {...state, pos: {x: state.pos.x -. playerSpeed *. Env.deltaTime(env), y: state.pos.y}} :
-        state;
-    let state =
-      if (state.pos.x < 0.
-          || state.pos.x > mapSizePx
-          || state.pos.y < 0.
-          || state.pos.y > mapSizePx) {
-        {...state, pos: prevPos}
-      } else {
-        state
-      };
-    let prevPos = state.pos;
-    let state =
-      Env.key(D, env) ?
-        {...state, pos: {x: state.pos.x +. playerSpeed *. Env.deltaTime(env), y: state.pos.y}} :
-        state;
-    let state =
-      if (state.pos.x < 0.
-          || state.pos.x > mapSizePx
-          || state.pos.y < 0.
-          || state.pos.y > mapSizePx) {
-        {...state, pos: prevPos}
-      } else {
-        state
-      };
-    let prevPos = state.pos;
-    let state =
-      Env.key(W, env) ?
-        {...state, pos: {x: state.pos.x, y: state.pos.y -. playerSpeed *. Env.deltaTime(env)}} :
-        state;
-    let state =
-      if (state.pos.x < 0.
-          || state.pos.x > mapSizePx
-          || state.pos.y < 0.
-          || state.pos.y > mapSizePx) {
-        {...state, pos: prevPos}
-      } else {
-        state
-      };
-    let prevPos = state.pos;
-    let state =
-      Env.key(S, env) ?
-        {...state, pos: {x: state.pos.x, y: state.pos.y +. playerSpeed *. Env.deltaTime(env)}} :
-        state;
-    let state =
-      if (state.pos.x < 0.
-          || state.pos.x > mapSizePx
-          || state.pos.y < 0.
-          || state.pos.y > mapSizePx) {
-        {...state, pos: prevPos}
-      } else {
-        state
-      };
-    state
-  };
+  let offset = {x: 0., y: 0.};
+  let playerSpeedDt = playerSpeed *. dt;
+  let offset =
+    checkOffset(offset, Env.key(A, env) ? {...offset, x: -. playerSpeedDt} : offset, state);
+  let offset =
+    checkOffset(offset, Env.key(D, env) ? {...offset, x: playerSpeedDt} : offset, state);
+  let offset =
+    checkOffset(offset, Env.key(W, env) ? {...offset, y: -. playerSpeedDt} : offset, state);
+  let offset =
+    checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
+  let mag = Utils.magf((offset.x, offset.y));
+  let state =
+    if (mag > 0.) {
+      let dx = offset.x /. mag *. playerSpeedDt;
+      let dy = offset.y /. mag *. playerSpeedDt;
+      {
+        ...state,
+        pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
+        stepTaken: state.stepTaken +. playerSpeedDt
+      }
+    } else {
+      state
+    };
   let rec foldOverGuns = (state, guns, i) =>
     switch guns {
     | [] => state
@@ -656,12 +713,7 @@ let draw = (state, env) => {
     } else {
       state
     };
-  let state = {
-    ...state,
-    elapsedTime: state.elapsedTime +. Env.deltaTime(env),
-    stepTaken: state.stepTaken +. Utils.distf((prevPos.x, prevPos.y), (state.pos.x, state.pos.y))
-  };
-  let state = spawnEnemies(state);
+  let state = {...state, elapsedTime: state.elapsedTime +. Env.deltaTime(env)};
   let state = {
     ...state,
     playerBullets:
@@ -674,6 +726,7 @@ let draw = (state, env) => {
     List.fold_left(
       (state, achievement) =>
         if (achievement.state === Locked && achievement.condition(state, env)) {
+          print_endline(achievement.message);
           {
             ...state,
             guns: [generateGun(), ...state.guns],
@@ -777,6 +830,13 @@ let draw = (state, env) => {
     } else {
       state
     };
+  let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
+  let state =
+    if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
+      generateWave(state)
+    } else {
+      state
+    };
   /* Do some math for stats */
   let state =
     List.fold_left(
@@ -790,11 +850,6 @@ let draw = (state, env) => {
       state.enemies
     );
   Draw.pushMatrix(env);
-  /*Draw.translate(
-      -. state.pos.x +. float_of_int(Env.width(env)) /. .,
-      -. state.pos.y +. float_of_int(Env.height(env)) /. .,
-      env
-    );*/
   Draw.scale(scale, scale, env);
   Draw.translate(
     -. state.pos.x +. float_of_int(Env.width(env)) /. (2. *. scale),
@@ -812,7 +867,7 @@ let draw = (state, env) => {
               ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
               ~height=64.,
               ~width=64.,
-              ~texPos=(394, 0),
+              ~texPos=(458, 0),
               ~texWidth=64,
               ~texHeight=64,
               env
@@ -823,7 +878,7 @@ let draw = (state, env) => {
               ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
               ~height=64.,
               ~width=64.,
-              ~texPos=(331, 0),
+              ~texPos=(394, 0),
               ~texWidth=64,
               ~texHeight=64,
               env
@@ -860,7 +915,7 @@ let draw = (state, env) => {
           ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
           ~width=40.,
           ~height=64.,
-          ~texPos=(777, 0),
+          ~texPos=(842, 0),
           ~texWidth=40,
           ~texHeight=64,
           env
@@ -909,13 +964,24 @@ let draw = (state, env) => {
       Draw.fill(Utils.color(180, 180, 180, 255), env);
       Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=70., ~height=70., env);
       switch gun.kind {
+      | Machinegun =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(x +. 30., y),
+          ~width=64.,
+          ~height=64.,
+          ~texPos=(330, 0),
+          ~texWidth=64,
+          ~texHeight=64,
+          env
+        )
       | Pistol =>
         Draw.subImagef(
           state.mainSpriteSheet,
           ~pos=(x +. 30., y),
           ~width=64.,
           ~height=64.,
-          ~texPos=(522, 0),
+          ~texPos=(586, 0),
           ~texWidth=64,
           ~texHeight=64,
           env
@@ -926,7 +992,7 @@ let draw = (state, env) => {
           ~pos=(x +. 30., y),
           ~width=64.,
           ~height=64.,
-          ~texPos=(586, 0),
+          ~texPos=(650, 0),
           ~texWidth=64,
           ~texHeight=64,
           env
@@ -948,7 +1014,7 @@ let draw = (state, env) => {
           ~pos=(x +. 30., y),
           ~width=64.,
           ~height=64.,
-          ~texPos=(708, 0),
+          ~texPos=(772, 0),
           ~texWidth=64,
           ~texHeight=64,
           env
@@ -959,7 +1025,7 @@ let draw = (state, env) => {
           ~pos=(x +. 30., y),
           ~width=64.,
           ~height=64.,
-          ~texPos=(648, 0),
+          ~texPos=(702, 0),
           ~texWidth=64,
           ~texHeight=64,
           env
