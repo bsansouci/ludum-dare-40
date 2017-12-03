@@ -48,6 +48,22 @@ type gunKindT =
   | Machinegun
   | LaserGun;
 
+let gunTexPos = (kind) =>
+  switch kind {
+  | Machinegun => (330, 0)
+  | Pistol => (587, 0)
+  | Shotgun => (650, 0)
+  | AlienGun1 => (64, 0)
+  | AlienGun2 => (772, 0)
+  | LaserGun => (711, 0)
+  | Rifle => (0, 0)
+  };
+
+type crateT = {
+  pos: vec2T,
+  kind: gunKindT
+};
+
 type gunT = {
   fireRate: float,
   lastShotTime: float,
@@ -69,6 +85,7 @@ and stateT = {
   equippedGun: int,
   playerBullets: list(bulletT),
   achievements: list(achievementT),
+  crates: list(crateT),
   mainFont: fontT,
   mainSpriteSheet: imageT,
   enemies: list(enemyT),
@@ -535,25 +552,33 @@ let drawKey = (x, y, gun, state, env) => {
 
 let generateWave = (state) => {
   let enemyCount = Utils.random(10, 15);
-  let rec recur = (acc, i) =>
+  let rec list_init = (acc, f, i) =>
     if (i < 0) {
       acc
     } else {
-      let pos =
-        switch (Utils.random(0, 4)) {
-        | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
-        | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
-        | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
-        | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
-        | _ => assert false
-        };
-      let maxHealth = 35.;
-      let enemy = {pos, health: maxHealth, maxHealth, speed: enemySpeed, error: {x: 0., y: 0.}};
-      recur([enemy, ...acc], i - 1)
+      list_init([f(), ...acc], f, i - 1)
     };
+  let makeEnemy = () => {
+    let pos =
+      switch (Utils.random(0, 4)) {
+      | 0 => {x: Utils.randomf(0., mapSizePx), y: -. fringePos}
+      | 1 => {x: mapSizePx +. fringePos, y: Utils.randomf(0., mapSizePx)}
+      | 2 => {x: Utils.randomf(0., mapSizePx), y: mapSizePx +. fringePos}
+      | 3 => {x: -. fringePos, y: Utils.randomf(0., mapSizePx)}
+      | _ => assert false
+      };
+    let maxHealth = 35.;
+    {pos, health: maxHealth, maxHealth, speed: enemySpeed, error: {x: 0., y: 0.}}
+  };
+  let crateCount = Utils.random(2, 4);
+  let makeCrate = () => {
+    pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
+    kind: Obj.magic(Utils.random(0, 7))
+  };
   {
     ...state,
-    enemies: recur(state.enemies, enemyCount),
+    enemies: list_init(state.enemies, makeEnemy, enemyCount),
+    crates: list_init(state.crates, makeCrate, crateCount),
     waveNum: state.waveNum + 1,
     nextWaveCountdown: 60.
   }
@@ -583,10 +608,11 @@ let setup = (env) => {
     guns: [],
     playerBullets: [],
     achievements: generateAchievements(),
+    crates: [],
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
     enemies: [
-      {pos: {x: 100., y: 100.}, health: 100., maxHealth: 100., speed: 50., error: {x: 0., y: 0.}}
+      {pos: {x: 100., y: 250.}, health: 100., maxHealth: 100., speed: 60., error: {x: 5., y: 5.}}
     ],
     enemiesKilled: 0,
     numberOfBulletsFired: 0,
@@ -765,13 +791,13 @@ let draw = (state, env) => {
             error: {
               x:
                 Utils.constrain(
-                  ~amt=enemy.error.x +. Utils.randomf((-5.), 5.),
+                  ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
                   ~high=enemy.speed,
                   ~low=(-1.) *. enemy.speed
                 ),
               y:
                 Utils.constrain(
-                  ~amt=enemy.error.y +. Utils.randomf((-5.), 5.),
+                  ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
                   ~high=enemy.speed,
                   ~low=(-1.) *. enemy.speed
                 )
@@ -781,7 +807,6 @@ let draw = (state, env) => {
         state.enemies
       )
   };
-  /* TODO: bullet health? */
   let state =
     List.fold_left(
       (state, bullet: bulletT) => {
@@ -934,6 +959,45 @@ let draw = (state, env) => {
     sortedEnemies
   );
   List.iter(
+    (crate: crateT) => {
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
+        ~width=40.,
+        ~height=40.,
+        ~texPos=(1596, 0),
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      );
+      let yOffset = sin(state.elapsedTime *. 2.) *. 2. -. 30.;
+      Draw.fill(Utils.color(220, 200, 160, 255), env);
+      /* Draw.rectf( */
+      /*   ~pos=(crate.pos.x -. 11., crate.pos.y -. 11. +. yOffset), */
+      /*   ~width=22., */
+      /*   ~height=22., */
+      /*   env */
+      /* ); */
+      Draw.trianglef(
+        (crate.pos.x -. 3., crate.pos.y +. 10. +. yOffset),
+        (crate.pos.x +. 3., crate.pos.y +. 10. +. yOffset),
+        (crate.pos.x, crate.pos.y +. 15. +. yOffset),
+        env
+      );
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(crate.pos.x -. 10., crate.pos.y -. 10. +. yOffset),
+        ~width=20.,
+        ~height=20.,
+        ~texPos=gunTexPos(crate.kind),
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      )
+    },
+    state.crates
+  );
+  List.iter(
     ({pos, direction: _}) => {
       Draw.fill(Constants.black, env);
       Draw.rectf(~pos=(pos.x, pos.y), ~width=5., ~height=5., env)
@@ -954,6 +1018,29 @@ let draw = (state, env) => {
   drawForest(state, env);
   Draw.popMatrix(env);
   let length = List.length(state.guns);
+  switch length {
+  | 0 =>
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=Printf.sprintf("Run away from the zombie!"),
+      ~pos=(50, 120),
+      env
+    )
+  | 1 =>
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=Printf.sprintf("Use your new gun on the zombie!"),
+      ~pos=(50, 120),
+      env
+    )
+  | _ =>
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
+      ~pos=(50, 120),
+      env
+    )
+  };
   ignore @@
   List.fold_left(
     ((x, y, i), gun) => {
@@ -963,85 +1050,16 @@ let draw = (state, env) => {
       };
       Draw.fill(Utils.color(180, 180, 180, 255), env);
       Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=70., ~height=70., env);
-      switch gun.kind {
-      | Machinegun =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(330, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | Pistol =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(586, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | Shotgun =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(650, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | AlienGun1 =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(64, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | AlienGun2 =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(772, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | LaserGun =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(702, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      | Rifle =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(x +. 30., y),
-          ~width=64.,
-          ~height=64.,
-          ~texPos=(0, 0),
-          ~texWidth=64,
-          ~texHeight=64,
-          env
-        )
-      };
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(x +. 30., y),
+        ~width=64.,
+        ~height=64.,
+        ~texPos=gunTexPos(gun.kind),
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      );
       drawKey(x +. 30., y +. 22., gun, state, env);
       drawHealthBar(
         x +. 25. +. 35.,
