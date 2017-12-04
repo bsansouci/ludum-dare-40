@@ -1085,6 +1085,24 @@ let drawForest = (state, env) => {
     );
     Draw.popMatrix(env)
   };
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize - 1) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize + 1) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
   Draw.pushMatrix(env);
   Draw.translate(maxX +. 9., (-41.), env);
   Draw.rotate(Constants.pi *. 3. /. 2., env);
@@ -1112,7 +1130,9 @@ let drawForest = (state, env) => {
       env
     )
   };
-  Draw.rectf(~pos=(mapSizePx -. 64. -. 7., 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=(0., 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), 20. +. mapSizePx -. 64.), ~height=64., ~width=65., env);
   Draw.subImagef(
     state.mainSpriteSheet,
     ~pos=(mapSizePx -. 1., (-42.) +. mapSizePx),
@@ -1163,7 +1183,12 @@ let drawForest = (state, env) => {
     ~texWidth=64,
     ~texHeight=64,
     env
-  )
+  );
+  Draw.rectf(~pos=((-64.), (-32.)), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), (-32.) -. 64.), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=(0., (-32.) -. 64.), ~height=64., ~width=65., env)
+  /*Draw.rectf(~pos=(-64., 20. +. mapSizePx), ~height=64., ~width=65., env);*/
+  /*Draw.rectf(~pos=(-64., 20. +. mapSizePx -. 64.), ~height=64., ~width=65., env);*/
 };
 
 let backgroundTileGrid = {
