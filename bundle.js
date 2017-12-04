@@ -11876,11 +11876,11 @@ function getHeight(param) {
 }
 
 function getPixelWidth(param) {
-  return param[0].width * window.devicePixelRatio | 0;
+  return param[0].width | 0;
 }
 
 function getPixelHeight(param) {
-  return param[0].height * window.devicePixelRatio | 0;
+  return param[0].height | 0;
 }
 
 function getPixelScale() {
