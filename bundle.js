@@ -16615,7 +16615,7 @@ function generateGun(guns) {
             ];
             break;
         case 1 : 
-            var partial_arg$4 = lerpf(400, 700)(damage);
+            var partial_arg$4 = lerpf(200, 1200)(damage);
             var partial_arg$5 = randomf(50, 200);
             match$2 = /* tuple */[
               /* AlienGun2 */3,
@@ -16628,7 +16628,7 @@ function generateGun(guns) {
             ];
             break;
         case 2 : 
-            var partial_arg$6 = lerpf(200, 900)(damage);
+            var partial_arg$6 = lerpf(200, 1200)(damage);
             match$2 = /* tuple */[
               /* Rifle */1,
               (function (param, param$1, param$2) {
@@ -16675,7 +16675,7 @@ function generateGun(guns) {
             ];
             break;
         case 6 : 
-            var partial_arg$11 = lerpf(50, 200)(damage);
+            var partial_arg$11 = lerpf(50, 250)(damage);
             var partial_arg$12 = 400 - 200;
             match$2 = /* tuple */[
               /* LaserGun */6,
@@ -16869,7 +16869,7 @@ function generateAchievements() {
           }(i)),
           /* message */_1(sprintf(/* Format */[
                     /* String_literal */__(11, [
-                        "You killed more than ",
+                        "You killed ",
                         /* Int */__(4, [
                             /* Int_d */0,
                             /* No_padding */0,
@@ -16880,8 +16880,8 @@ function generateAchievements() {
                               ])
                           ])
                       ]),
-                    "You killed more than %d zombies!"
-                  ]), pow(i, 2))
+                    "You killed %d zombies!"
+                  ]), pow(2, i))
         ],
         /* :: */[
           /* record */[
@@ -16893,7 +16893,7 @@ function generateAchievements() {
             }(i)),
             /* message */_1(sprintf(/* Format */[
                       /* String_literal */__(11, [
-                          "You killed more than ",
+                          "You killed ",
                           /* Int */__(4, [
                               /* Int_d */0,
                               /* No_padding */0,
@@ -16904,8 +16904,8 @@ function generateAchievements() {
                                 ])
                             ])
                         ]),
-                      "You killed more than %d Biggies!"
-                    ]), pow(i, 2))
+                      "You killed %d Biggies!"
+                    ]), pow(2, i))
           ],
           /* :: */[
             /* record */[
@@ -16917,7 +16917,7 @@ function generateAchievements() {
               }(i)),
               /* message */_1(sprintf(/* Format */[
                         /* String_literal */__(11, [
-                            "You killed more than ",
+                            "You killed ",
                             /* Int */__(4, [
                                 /* Int_d */0,
                                 /* No_padding */0,
@@ -16928,8 +16928,8 @@ function generateAchievements() {
                                   ])
                               ])
                           ]),
-                        "You killed more than %d Runners!"
-                      ]), pow(i, 2))
+                        "You killed %d Runners!"
+                      ]), pow(2, i))
             ],
             acc
           ]
@@ -17095,7 +17095,7 @@ function generateWave(state) {
     while(true) {
       var i = _i;
       var acc = _acc;
-      if (i < 0) {
+      if (i <= 0) {
         return acc;
       } else {
         _i = i - 1 | 0;
@@ -17115,7 +17115,7 @@ function generateWave(state) {
             assert_failure,
             [
               "index.re",
-              850,
+              841,
               11
             ]
           ];
@@ -17198,7 +17198,8 @@ function generateWave(state) {
   } else {
     enemies$1 = enemies;
   }
-  var crateCount = length(state[/* crates */9]) ? random$3(0, 2) : random$3(2, 4);
+  var match = +(state[/* waveNum */14] > 1);
+  var crateCount = match !== 0 ? random$3(0, 2) : 0;
   var makeCrate = function () {
     return /* record */[
             /* pos : float array */[
@@ -17365,7 +17366,7 @@ function setup(env) {
           /* facingLeft : true */1,
           /* moving : false */0,
           /* equippedGun */-1,
-          /* health */75,
+          /* health */50,
           /* invulnCountdown */0,
           /* playerBullets : [] */0,
           /* achievements */generateAchievements(/* () */0),
@@ -17549,7 +17550,7 @@ function draw(state, env) {
       0
     ];
     var numZombies = length(state$1[/* enemies */13]);
-    if ($$float$1(1) + numZombies * 0.0002 > 0.995) {
+    if ($$float$1(1) + numZombies * 0.00005 > 0.995) {
       var match$1 = $$int$1(3);
       var num = match$1 !== 0 ? (
           match$1 !== 1 ? "three" : "two"
@@ -17567,7 +17568,7 @@ function draw(state, env) {
                       e[/* pos */2][/* x */0] - 20,
                       e[/* pos */2][/* y */1] - 20
                     ], 40, 40)) {
-                state$1[/* invulnCountdown */6] = 0.05;
+                state$1[/* invulnCountdown */6] = 1.0;
                 state$1[/* health */5] = max(state$1[/* health */5] - e[/* damage */5] * dt, 0);
                 return playSound("hurt", state$1[/* sounds */12], /* None */0, env);
               } else {
@@ -17915,7 +17916,7 @@ function draw(state, env) {
     var state$13 = newrecord$16[/* nextWaveCountdown */15] <= 0 || length(newrecord$16[/* enemies */13]) === 0 ? generateWave(newrecord$16) : newrecord$16;
     var newrecord$17 = state$13.slice();
     state$2 = fold_left((function (state, enemy) {
-            if (enemy[/* health */1] <= 0) {
+            if (enemy[/* health */1] < 1) {
               var match = enemy[/* kind */6];
               if (match !== 3) {
                 if (match >= 4) {
@@ -18070,17 +18071,21 @@ function draw(state, env) {
                     180,
                     0
                   ];
-                if (state$14[/* facingLeft */2]) {
-                  return subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
-                              p[/* x */0] - 20,
-                              p[/* y */1] - 32
-                            ], 40, 64, texPos, 40, 64, env);
-                } else {
-                  return subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
-                              p[/* x */0] + 26,
-                              p[/* y */1] - 32
-                            ], -40, 64, texPos, 40, 64, env);
+                if (state$14[/* invulnCountdown */6] > 0) {
+                  tint(color(200, 100, 100, Math.sin(state$14[/* invulnCountdown */6] * 10) * 100 + 155 | 0), env);
                 }
+                if (state$14[/* facingLeft */2]) {
+                  subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                        p[/* x */0] - 20,
+                        p[/* y */1] - 32
+                      ], 40, 64, texPos, 40, 64, env);
+                } else {
+                  subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                        p[/* x */0] + 26,
+                        p[/* y */1] - 32
+                      ], -40, 64, texPos, 40, 64, env);
+                }
+                return noTint(env);
             case 1 : 
                 var enemy = thing[0];
                 if (enemy[/* pos */2][/* x */0] > -30 && enemy[/* pos */2][/* x */0] < mapSizePx + 30 && enemy[/* pos */2][/* y */1] > -30 && enemy[/* pos */2][/* y */1] < mapSizePx + 30) {
@@ -18152,7 +18157,7 @@ function draw(state, env) {
   drawForest(state$14, env);
   popMatrix(env);
   var length$$1 = length(state$14[/* guns */1]);
-  drawHealthBar(160, 50, 30, 250, state$14[/* health */5], 75, color(220, 0, 0, 255), env);
+  drawHealthBar(160, 50, 30, 250, state$14[/* health */5], 50, color(220, 0, 0, 255), env);
   if (length$$1 !== 0) {
     if (length$$1 !== 1) {
       text(state$14[/* mainFont */10], _1(sprintf(/* Format */[
@@ -18511,7 +18516,7 @@ function draw(state, env) {
         ], gunSize, gunSize, gunTexPos(gun[/* kind */7]), 64, 64, env);
     drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$14, env);
     drawHealthBar(centeredX + 8 + gunSize / 2, centeredY + gunSize, 10, gunSize + 4, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), env);
-    tint(color(255, 255, 255, 255), env);
+    noTint(env);
     var match$11 = +(t > 0.4);
     if (match$11 !== 0) {
       state$15 = state$14;
@@ -18586,7 +18591,7 @@ function draw(state, env) {
               /* facingLeft : true */1,
               /* moving : false */0,
               /* equippedGun */-1,
-              /* health */75,
+              /* health */50,
               /* invulnCountdown */0,
               /* playerBullets : [] */0,
               /* achievements */generateAchievements(/* () */0),
@@ -18650,7 +18655,7 @@ var defaultRange = 400;
 
 var scale = 2;
 
-var invulnerabilityTime = 0.05;
+var invulnerabilityTime = 1.0;
 
 var backgroundTileGrid = grid;
 
