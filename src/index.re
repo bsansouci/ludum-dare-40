@@ -623,7 +623,7 @@ let generateGun: unit => gunT = {
             bulletSpeed +. 300.,
             Utils.randomf(50., 200.),
             8,
-            Utils.lerpf(400., 1000., damage)
+            Utils.lerpf(100., 1000., damage)
           ),
           Utils.lerpf(2.0, 1.2, fireRate),
           Utils.lerp(2, 6, maxAmmunition)
@@ -809,8 +809,8 @@ let generateWave = (state) => {
   let makeMiniBosses = () => {
     let (monsterKind, maxHealth, enemySpeed, damage) =
       switch (Utils.random(1, 3)) {
-      | 1 => (BigZ, 130., 15., 300.)
-      | _ => (TallZ, 35., 55., 60.)
+      | 1 => (BigZ, 300., 15., 300.)
+      | _ => (TallZ, 35., 110., 60.)
       };
     {
       pos: genEnemyPos(),
@@ -879,7 +879,7 @@ let setup = (env) => {
         kind: NormalZ,
         health: 100.,
         maxHealth: 100.,
-        speed: 60.,
+        speed: 100.,
         error: {x: 5., y: 5.}
       }
     ],
