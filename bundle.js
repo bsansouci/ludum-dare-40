@@ -15220,7 +15220,7 @@ function enemyTexPos(kind, isDead) {
         if (isDead !== 0) {
           return /* :: */[
                   /* tuple */[
-                    1904,
+                    2094,
                     0
                   ],
                   /* [] */0
@@ -15244,7 +15244,7 @@ function enemyTexPos(kind, isDead) {
         if (isDead !== 0) {
           return /* :: */[
                   /* tuple */[
-                    1904,
+                    2189,
                     0
                   ],
                   /* [] */0
@@ -15449,7 +15449,7 @@ function makeDefaultFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            197,
+            204,
             11
           ]
         ];
@@ -15468,7 +15468,9 @@ function makeDefaultFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
     ],
     state[/* playerBullets */7]
   ];
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 1 | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 1 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -15526,7 +15528,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            225,
+            232,
             11
           ]
         ];
@@ -15582,7 +15584,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            233,
+            240,
             11
           ]
         ];
@@ -15638,7 +15640,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            241,
+            248,
             11
           ]
         ];
@@ -15681,7 +15683,9 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
       ]
     ]
   ];
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 3 | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 3 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -15739,7 +15743,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            283,
+            290,
             11
           ]
         ];
@@ -15795,7 +15799,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            291,
+            298,
             11
           ]
         ];
@@ -15851,7 +15855,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            299,
+            306,
             11
           ]
         ];
@@ -15921,7 +15925,9 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
       ]
     ]
   ];
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 3 | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 3 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -15978,7 +15984,7 @@ function makeLaserFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            357,
+            364,
             11
           ]
         ];
@@ -16012,7 +16018,9 @@ function makeLaserFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
   var newBullets = recur(/* [] */0, 10);
   var newrecord = state.slice();
   newrecord[/* playerBullets */7] = $at(newBullets, state[/* playerBullets */7]);
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 1 | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 1 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -16069,7 +16077,7 @@ function makeBurstFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            398,
+            405,
             11
           ]
         ];
@@ -16112,7 +16120,9 @@ function makeBurstFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
       ]
     ]
   ];
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 3 | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 3 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -16173,7 +16183,7 @@ function makeUziFire(bulletSpeed, otherSpeed, damage) {
               assert_failure,
               [
                 "index.re",
-                447,
+                454,
                 13
               ]
             ];
@@ -16194,7 +16204,9 @@ function makeUziFire(bulletSpeed, otherSpeed, damage) {
         newBullet,
         state[/* playerBullets */7]
       ];
-      newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + 1 | 0;
+      var newrecord$1 = state[/* stats */22].slice();
+      newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + 1 | 0;
+      newrecord[/* stats */22] = newrecord$1;
       return newrecord;
     });
 }
@@ -16262,7 +16274,7 @@ function makeShotgunFire(bulletSpeed, otherSpeed, maxBullets, damage, state, del
                 assert_failure,
                 [
                   "index.re",
-                  488,
+                  495,
                   15
                 ]
               ];
@@ -16289,7 +16301,10 @@ function makeShotgunFire(bulletSpeed, otherSpeed, maxBullets, damage, state, del
   var newBullets = recur(/* [] */0, random$3(max(1, maxBullets - 3 | 0), maxBullets + 1 | 0));
   var newrecord = state.slice();
   newrecord[/* playerBullets */7] = $at(newBullets, state[/* playerBullets */7]);
-  newrecord[/* numberOfBulletsFired */19] = state[/* numberOfBulletsFired */19] + length(newBullets) | 0;
+  var newrecord$1 = state[/* stats */22].slice();
+  newrecord$1[/* numberOfBulletsFired */3] = state[/* stats */22][/* numberOfBulletsFired */3] + length(newBullets) | 0;
+  newrecord$1[/* numberOfShotgunShots */6] = state[/* stats */22][/* numberOfShotgunShots */6] + 1 | 0;
+  newrecord[/* stats */22] = newrecord$1;
   return newrecord;
 }
 
@@ -16306,21 +16321,21 @@ function getNextGunKey() {
     var switcher = match - 1 | 0;
     var ret;
     if (switcher > 8 || switcher < 0) {
-      var key$$1 = random$3(0, 43);
+      var key$$1 = random$3(0, 46);
       while(mem(key$$1, keySet[0])) {
-        key$$1 = random$3(0, 43);
+        key$$1 = random$3(0, 46);
       }
       keySet[0] = /* :: */[
         key$$1,
         keySet[0]
       ];
       var match$1 = key$$1;
-      if (match$1 > 43 || match$1 < 0) {
+      if (match$1 > 46 || match$1 < 0) {
         throw [
               assert_failure,
               [
                 "index.re",
-                583,
+                597,
                 19
               ]
             ];
@@ -16346,7 +16361,7 @@ function getNextGunKey() {
               break;
           case 3 : 
               ret = /* record */[
-                /* primaryKey : I */33,
+                /* primaryKey : OpenBracket */22,
                 /* modifier : false */0
               ];
               break;
@@ -16590,6 +16605,24 @@ function getNextGunKey() {
                 /* modifier : true */1
               ];
               break;
+          case 44 : 
+              ret = /* record */[
+                /* primaryKey : CloseBracket */24,
+                /* modifier : false */0
+              ];
+              break;
+          case 45 : 
+              ret = /* record */[
+                /* primaryKey : Semicolon */20,
+                /* modifier : false */0
+              ];
+              break;
+          case 46 : 
+              ret = /* record */[
+                /* primaryKey : Quote */5,
+                /* modifier : false */0
+              ];
+              break;
           
         }
       }
@@ -16656,20 +16689,27 @@ function getNextGunKey() {
   }
 }
 
-function generateGun(guns) {
+function generateGun(state) {
   var match = getNextGunKey(/* () */0);
   if (match) {
     var maxAmmunition = randomf(0, 1);
-    var damage = randomf(0, 1);
-    var fireRate = randomf(0, 1);
+    var match$1 = state[/* waveNum */14] < 3 ? /* tuple */[
+        randomf(0, 0.7),
+        randomf(0, 0.7)
+      ] : /* tuple */[
+        randomf(0, 1),
+        randomf(0, 1)
+      ];
+    var fireRate = match$1[1];
+    var damage = match$1[0];
     var gunRank = damage + fireRate;
-    var match$1 = random$3(0, 8);
-    var match$2;
-    if (match$1 > 6 || match$1 < 0) {
+    var match$2 = random$3(0, 8);
+    var match$3;
+    if (match$2 > 6 || match$2 < 0) {
       var partial_arg = lerpf(400, 1000)(damage);
       var partial_arg$1 = randomf(50, 200);
       var partial_arg$2 = 400 - 200;
-      match$2 = /* tuple */[
+      match$3 = /* tuple */[
         /* AlienGun1 */2,
         (function (param, param$1, param$2) {
             return makeSineFire(partial_arg$2, partial_arg$1, partial_arg, param, param$1, param$2);
@@ -16679,10 +16719,10 @@ function generateGun(guns) {
         "aliengun_threeshots"
       ];
     } else {
-      switch (match$1) {
+      switch (match$2) {
         case 0 : 
             var partial_arg$3 = lerpf(200, 2000)(damage);
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* Pistol */0,
               (function (param, param$1, param$2) {
                   return makeDefaultFire(400, partial_arg$3, param, param$1, param$2);
@@ -16695,7 +16735,7 @@ function generateGun(guns) {
         case 1 : 
             var partial_arg$4 = lerpf(200, 1200)(damage);
             var partial_arg$5 = randomf(50, 200);
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* AlienGun2 */3,
               (function (param, param$1, param$2) {
                   return makeTripleShotGunFire(400, partial_arg$5, partial_arg$4, param, param$1, param$2);
@@ -16707,7 +16747,7 @@ function generateGun(guns) {
             break;
         case 2 : 
             var partial_arg$6 = lerpf(200, 1200)(damage);
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* Rifle */1,
               (function (param, param$1, param$2) {
                   return makeBurstFire(400, partial_arg$6, param, param$1, param$2);
@@ -16721,7 +16761,7 @@ function generateGun(guns) {
             var partial_arg$7 = lerpf(100, 1000)(damage);
             var partial_arg$8 = randomf(50, 200);
             var partial_arg$9 = 400 + 300;
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* Shotgun */4,
               (function (param, param$1, param$2) {
                   return makeShotgunFire(partial_arg$9, partial_arg$8, 8, partial_arg$7, param, param$1, param$2);
@@ -16733,7 +16773,7 @@ function generateGun(guns) {
             break;
         case 4 : 
             var partial_arg$10 = lerpf(100, 400)(damage);
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* Machinegun */5,
               (function (param, param$1, param$2) {
                   return makeDefaultFire(400, partial_arg$10, param, param$1, param$2);
@@ -16744,7 +16784,7 @@ function generateGun(guns) {
             ];
             break;
         case 5 : 
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* Uzi */7,
               makeUziFire(400, randomf(100, 500), lerpf(50, 200)(damage)),
               lerpf(0.1, 0.03)(fireRate),
@@ -16755,7 +16795,7 @@ function generateGun(guns) {
         case 6 : 
             var partial_arg$11 = lerpf(50, 250)(damage);
             var partial_arg$12 = 400 - 200;
-            match$2 = /* tuple */[
+            match$3 = /* tuple */[
               /* LaserGun */6,
               (function (param, param$1, param$2) {
                   return makeLaserFire(partial_arg$12, partial_arg$11, param, param$1, param$2);
@@ -16768,8 +16808,8 @@ function generateGun(guns) {
         
       }
     }
-    var maxAmmunition$1 = match$2[3];
-    var match$3 = gunRank > 0 && gunRank < 0.1 ? /* tuple */[
+    var maxAmmunition$1 = match$3[3];
+    var match$4 = gunRank > 0 && gunRank < 0.1 ? /* tuple */[
         /* Poor */0,
         color(188, 191, 187, 255)
       ] : (
@@ -16793,21 +16833,21 @@ function generateGun(guns) {
       );
     return /* :: */[
             /* record */[
-              /* fireRate */match$2[2],
+              /* fireRate */match$3[2],
               /* lastShotTime */0,
               /* ammunition */maxAmmunition$1,
               /* maxAmmunition */maxAmmunition$1,
-              /* color */match$3[1],
+              /* color */match$4[1],
               /* keyToggle */match[0],
-              /* fire */match$2[1],
-              /* kind */match$2[0],
-              /* rank */match$3[0],
-              /* soundName */match$2[4]
+              /* fire */match$3[1],
+              /* kind */match$3[0],
+              /* rank */match$4[0],
+              /* soundName */match$3[4]
             ],
-            guns
+            state[/* guns */1]
           ];
   } else {
-    return guns;
+    return state[/* guns */1];
   }
 }
 
@@ -16821,7 +16861,7 @@ function generateAchievements() {
                 /* record */[
                   /* state : Locked */0,
                   /* condition */(function (state, _) {
-                      return +(state[/* stepTaken */21] >= 800);
+                      return +(state[/* stats */22][/* stepTaken */5] >= 800);
                     }),
                   /* message */"You walked your first 100 steps!"
                 ],
@@ -16834,7 +16874,7 @@ function generateAchievements() {
             /* state : Locked */0,
             /* condition */(function(i){
             return function (state, _) {
-              return +(state[/* stepTaken */21] >= 10000 * i);
+              return +(state[/* stats */22][/* stepTaken */5] >= 10000 * i);
             }
             }(i)),
             /* message */_1(sprintf(/* Format */[
@@ -16874,7 +16914,7 @@ function generateAchievements() {
             /* state : Locked */0,
             /* condition */(function(i){
             return function (state, _) {
-              return +(state[/* numberOfBulletsFired */19] >= imul(100, i));
+              return +(state[/* stats */22][/* numberOfBulletsFired */3] >= imul(100, i));
             }
             }(i)),
             /* message */_1(sprintf(/* Format */[
@@ -16901,7 +16941,87 @@ function generateAchievements() {
     }
   };
   var achievements$1 = loop$1(achievements, 25);
-  var _acc = achievements$1;
+  var loop$2 = function (_acc, _i) {
+    while(true) {
+      var i = _i;
+      var acc = _acc;
+      if (i <= 0) {
+        return acc;
+      } else {
+        _i = i - 1 | 0;
+        _acc = /* :: */[
+          /* record */[
+            /* state : Locked */0,
+            /* condition */(function(i){
+            return function (state, _) {
+              return +(state[/* stats */22][/* numberOfWeaponSwaps */7] >= imul(10, pow(2, i)));
+            }
+            }(i)),
+            /* message */_1(sprintf(/* Format */[
+                      /* String_literal */__(11, [
+                          "You swapped guns more than ",
+                          /* Int */__(4, [
+                              /* Int_d */0,
+                              /* No_padding */0,
+                              /* No_precision */0,
+                              /* String_literal */__(11, [
+                                  " times!",
+                                  /* End_of_format */0
+                                ])
+                            ])
+                        ]),
+                      "You swapped guns more than %d times!"
+                    ]), imul(10, pow(2, i)))
+          ],
+          acc
+        ];
+        continue ;
+        
+      }
+    }
+  };
+  var achievements$2 = loop$2(achievements$1, 15);
+  var loop$3 = function (_acc, _i) {
+    while(true) {
+      var i = _i;
+      var acc = _acc;
+      if (i <= 0) {
+        return acc;
+      } else {
+        _i = i - 1 | 0;
+        _acc = /* :: */[
+          /* record */[
+            /* state : Locked */0,
+            /* condition */(function(i){
+            return function (state, _) {
+              return +(state[/* stats */22][/* numberOfShotgunShots */6] >= imul(10, i));
+            }
+            }(i)),
+            /* message */_1(sprintf(/* Format */[
+                      /* String_literal */__(11, [
+                          "You fired the shotgun ",
+                          /* Int */__(4, [
+                              /* Int_d */0,
+                              /* No_padding */0,
+                              /* No_precision */0,
+                              /* String_literal */__(11, [
+                                  " times!",
+                                  /* End_of_format */0
+                                ])
+                            ])
+                        ]),
+                      "You fired the shotgun %d times!"
+                    ]), imul(10, i))
+          ],
+          acc
+        ];
+        continue ;
+        
+      }
+    }
+  };
+  var achievements$3 = loop$3(achievements$2, 15);
+  var _acc = achievements$3;
   var _i = 25;
   while(true) {
     var i = _i;
@@ -16911,7 +17031,7 @@ function generateAchievements() {
               /* record */[
                 /* state : Locked */0,
                 /* condition */(function (state, _) {
-                    return +(state[/* normalEnemiesKilled */16] >= 1);
+                    return +(state[/* stats */22][/* normalEnemiesKilled */0] >= 1);
                   }),
                 /* message */"You killed your first zombie!"
               ],
@@ -16919,7 +17039,7 @@ function generateAchievements() {
                 /* record */[
                   /* state : Locked */0,
                   /* condition */(function (state, _) {
-                      return +(state[/* tallEnemiesKilled */18] >= 1);
+                      return +(state[/* stats */22][/* tallEnemiesKilled */2] >= 1);
                     }),
                   /* message */"You killed your first Runner!"
                 ],
@@ -16927,7 +17047,7 @@ function generateAchievements() {
                   /* record */[
                     /* state : Locked */0,
                     /* condition */(function (state, _) {
-                        return +(state[/* bigEnemiesKilled */17] >= 1);
+                        return +(state[/* stats */22][/* bigEnemiesKilled */1] >= 1);
                       }),
                     /* message */"You killed your first Biggy!"
                   ],
@@ -16942,7 +17062,7 @@ function generateAchievements() {
           /* state : Locked */0,
           /* condition */(function(i){
           return function (state, _) {
-            return +(state[/* normalEnemiesKilled */16] >= pow(2, i));
+            return +(state[/* stats */22][/* normalEnemiesKilled */0] >= pow(2, i));
           }
           }(i)),
           /* message */_1(sprintf(/* Format */[
@@ -16966,7 +17086,7 @@ function generateAchievements() {
             /* state : Locked */0,
             /* condition */(function(i){
             return function (state, _) {
-              return +(state[/* bigEnemiesKilled */17] >= pow(2, i));
+              return +(state[/* stats */22][/* bigEnemiesKilled */1] >= pow(2, i));
             }
             }(i)),
             /* message */_1(sprintf(/* Format */[
@@ -16990,7 +17110,7 @@ function generateAchievements() {
               /* state : Locked */0,
               /* condition */(function(i){
               return function (state, _) {
-                return +(state[/* tallEnemiesKilled */18] >= pow(2, i));
+                return +(state[/* stats */22][/* tallEnemiesKilled */2] >= pow(2, i));
               }
               }(i)),
               /* message */_1(sprintf(/* Format */[
@@ -17023,6 +17143,9 @@ function drawKey(x, y, gun, state, env) {
   var match = gun[/* keyToggle */5];
   var body;
   switch (match[/* primaryKey */0]) {
+    case 5 : 
+        body = "'";
+        break;
     case 6 : 
         body = ",";
         break;
@@ -17030,31 +17153,40 @@ function drawKey(x, y, gun, state, env) {
         body = ".";
         break;
     case 11 : 
-        body = "1";
+        body = match[/* modifier */1] !== 0 ? "!" : "1";
         break;
     case 12 : 
-        body = "2";
+        body = match[/* modifier */1] !== 0 ? "@" : "2";
         break;
     case 13 : 
-        body = "3";
+        body = match[/* modifier */1] !== 0 ? "#" : "3";
         break;
     case 14 : 
-        body = "4";
+        body = match[/* modifier */1] !== 0 ? "$" : "4";
         break;
     case 15 : 
-        body = "5";
+        body = match[/* modifier */1] !== 0 ? "%" : "5";
         break;
     case 16 : 
-        body = "6";
+        body = match[/* modifier */1] !== 0 ? "^" : "6";
         break;
     case 17 : 
-        body = "7";
+        body = match[/* modifier */1] !== 0 ? "&" : "7";
         break;
     case 18 : 
-        body = "8";
+        body = match[/* modifier */1] !== 0 ? "*" : "8";
         break;
     case 19 : 
-        body = "9";
+        body = match[/* modifier */1] !== 0 ? "(" : "9";
+        break;
+    case 20 : 
+        body = ";";
+        break;
+    case 22 : 
+        body = "[";
+        break;
+    case 24 : 
+        body = "]";
         break;
     case 26 : 
         body = "B";
@@ -17109,15 +17241,11 @@ function drawKey(x, y, gun, state, env) {
     case 2 : 
     case 3 : 
     case 4 : 
-    case 5 : 
     case 7 : 
     case 9 : 
     case 10 : 
-    case 20 : 
     case 21 : 
-    case 22 : 
     case 23 : 
-    case 24 : 
     case 25 : 
     case 28 : 
     case 29 : 
@@ -17148,7 +17276,7 @@ function drawKey(x, y, gun, state, env) {
     
   }
   if (gun[/* keyToggle */5][/* modifier */1]) {
-    subImage(state[/* shiftIcon */26], /* tuple */[
+    subImage(state[/* shiftIcon */21], /* tuple */[
           (x | 0) - 2 | 0,
           (y | 0) + 17 | 0
         ], 17, 17, /* tuple */[
@@ -17193,7 +17321,7 @@ function generateWave(state) {
             assert_failure,
             [
               "index.re",
-              849,
+              914,
               11
             ]
           ];
@@ -17296,16 +17424,19 @@ function generateWave(state) {
   newrecord[/* enemies */13] = enemies$1;
   newrecord[/* waveNum */14] = state[/* waveNum */14] + 1 | 0;
   newrecord[/* nextWaveCountdown */15] = 60;
+  newrecord[/* animatingWaveNumberTime */19] = 3;
   return newrecord;
 }
 
-function drawHealthBar(x, y, h, w, health, maxHealth, color$$1, env) {
+function drawHealthBar(x, y, h, w, health, maxHealth, color$$1, $staropt$star, env) {
+  var border = $staropt$star ? $staropt$star[0] : 2;
   var xOffset = w / 2;
+  var halfBorder = border / 2;
   fill$4(black, env);
   rectf(/* tuple */[
-        x - xOffset - 1,
-        y - 1
-      ], w + 2, h + 2, env);
+        x - xOffset - halfBorder,
+        y - halfBorder
+      ], w + border, h + border, env);
   var healthW = remapf(health, 0, maxHealth, 0, w);
   fill$4(color$$1, env);
   return rectf(/* tuple */[
@@ -17379,7 +17510,13 @@ var soundNames = /* :: */[
                             "zombie_three",
                             1.0
                           ],
-                          /* [] */0
+                          /* :: */[
+                            /* tuple */[
+                              "new_wave",
+                              1.0
+                            ],
+                            /* [] */0
+                          ]
                         ]
                       ]
                     ]
@@ -17417,7 +17554,7 @@ function playSound(name, sounds, $staropt$star, env) {
 }
 
 function setup(env) {
-  size$1(1120, 720, env);
+  size$1(1120, 650, env);
   var loadSound = function (soundMap, param) {
     var soundName = param[0];
     return _3(StringMap[/* add */3], soundName, /* tuple */[
@@ -17477,17 +17614,22 @@ function setup(env) {
           ],
           /* waveNum */0,
           /* nextWaveCountdown */10,
-          /* normalEnemiesKilled */0,
-          /* bigEnemiesKilled */0,
-          /* tallEnemiesKilled */0,
-          /* numberOfBulletsFired */0,
-          /* damageDone */0,
-          /* stepTaken */0,
           /* elapsedTime */0,
           /* animatingAchievementTime */0,
           /* animatingAchievement : None */0,
+          /* animatingWaveNumberTime */0,
           /* running : true */1,
-          /* shiftIcon */loadImage$2("assets/shift_icon.png", /* None */0, env)
+          /* shiftIcon */loadImage$2("assets/shift_icon.png", /* None */0, env),
+          /* stats : record */[
+            /* normalEnemiesKilled */0,
+            /* bigEnemiesKilled */0,
+            /* tallEnemiesKilled */0,
+            /* numberOfBulletsFired */0,
+            /* damageDone */0,
+            /* stepTaken */0,
+            /* numberOfShotgunShots */0,
+            /* numberOfWeaponSwaps */0
+          ]
         ];
 }
 
@@ -17524,6 +17666,18 @@ function drawForest(state, env) {
         ], 64, 64, env);
     popMatrix(env);
   }
+  rectf(/* tuple */[
+        maxX + 67,
+        9 * 64 + 22
+      ], 65, -64, env);
+  rectf(/* tuple */[
+        maxX + 67,
+        10 * 64 + 22
+      ], 65, -64, env);
+  rectf(/* tuple */[
+        maxX + 67,
+        11 * 64 + 22
+      ], 65, -64, env);
   pushMatrix(env);
   translate$3(maxX + 9, -41, env);
   rotate$4(pi * 3 / 2, env);
@@ -17549,8 +17703,16 @@ function drawForest(state, env) {
         ], 64, 64, env);
   }
   rectf(/* tuple */[
-        mapSizePx - 64 - 7,
+        0,
         20 + mapSizePx
+      ], 65, 64, env);
+  rectf(/* tuple */[
+        -64,
+        20 + mapSizePx
+      ], 65, 64, env);
+  rectf(/* tuple */[
+        -64,
+        20 + mapSizePx - 64
       ], 65, 64, env);
   subImagef(state[/* mainSpriteSheet */11], /* tuple */[
         mapSizePx - 1,
@@ -17587,13 +17749,25 @@ function drawForest(state, env) {
         0
       ], 64, 64, env);
   popMatrix(env);
-  return subImagef(state[/* mainSpriteSheet */11], /* tuple */[
+  subImagef(state[/* mainSpriteSheet */11], /* tuple */[
+        0,
+        -42 + mapSizePx
+      ], 64, 64, /* tuple */[
+        276,
+        0
+      ], 64, 64, env);
+  rectf(/* tuple */[
+        -64,
+        -32
+      ], 65, 64, env);
+  rectf(/* tuple */[
+        -64,
+        -32 - 64
+      ], 65, 64, env);
+  return rectf(/* tuple */[
               0,
-              -42 + mapSizePx
-            ], 64, 64, /* tuple */[
-              276,
-              0
-            ], 64, 64, env);
+              -32 - 64
+            ], 65, 64, env);
 }
 
 var grid = make_matrix(10, 10, 0);
@@ -17612,6 +17786,40 @@ function checkOffset(prevOffset, offset, state) {
   }
 }
 
+function handleGunSwitching(_state, _guns, _i, env) {
+  while(true) {
+    var i = _i;
+    var guns = _guns;
+    var state = _state;
+    if (guns) {
+      var gun = guns[0];
+      var match = gun[/* keyToggle */5][/* modifier */1];
+      var match$1 = keyPressed(gun[/* keyToggle */5][/* primaryKey */0], env) && (
+        match !== 0 ? key(/* LeftShift */56, env) : 1 - key(/* LeftShift */56, env)
+      );
+      var tmp;
+      if (match$1 !== 0) {
+        var newrecord = state.slice();
+        newrecord[/* equippedGun */4] = i;
+        var newrecord$1 = state[/* stats */22].slice();
+        var match$2 = +(i !== state[/* equippedGun */4]);
+        newrecord$1[/* numberOfWeaponSwaps */7] = match$2 !== 0 ? state[/* stats */22][/* numberOfWeaponSwaps */7] + 1 | 0 : state[/* stats */22][/* numberOfWeaponSwaps */7];
+        newrecord[/* stats */22] = newrecord$1;
+        tmp = newrecord;
+      } else {
+        tmp = state;
+      }
+      _i = i + 1 | 0;
+      _guns = guns[1];
+      _state = tmp;
+      continue ;
+      
+    } else {
+      return state;
+    }
+  }
+}
+
 function draw(state, env) {
   var dt = deltaTime(env);
   background(color(43, 82, 69, 255), env);
@@ -17621,13 +17829,13 @@ function draw(state, env) {
   var state$1;
   if (match !== 0) {
     var newrecord = state.slice();
-    newrecord[/* running */25] = 1 - state[/* running */25];
+    newrecord[/* running */20] = 1 - state[/* running */20];
     state$1 = newrecord;
   } else {
     state$1 = state;
   }
   var state$2;
-  if (state$1[/* running */25] && state$1[/* health */5] > 0) {
+  if (state$1[/* running */20] && state$1[/* health */5] > 0) {
     var offset = /* float array */[
       0,
       0
@@ -17693,12 +17901,14 @@ function draw(state, env) {
         state$1[/* pos */0][/* x */0] + dx,
         state$1[/* pos */0][/* y */1] + dy
       ];
-      newrecord$1[/* stepTaken */21] = state$1[/* stepTaken */21] + playerSpeedDt;
+      var newrecord$2 = state$1[/* stats */22].slice();
+      newrecord$2[/* stepTaken */5] = state$1[/* stats */22][/* stepTaken */5] + playerSpeedDt;
+      newrecord$1[/* stats */22] = newrecord$2;
       state$3 = newrecord$1;
     } else {
       state$3 = state$1;
     }
-    var newrecord$2 = state$3.slice();
+    var newrecord$3 = state$3.slice();
     var state$4 = fold_left((function (state, crate) {
             if (intersectRectRect(/* tuple */[
                     state[/* pos */0][/* x */0] - 20,
@@ -17734,43 +17944,14 @@ function draw(state, env) {
               ];
               return newrecord$1;
             }
-          }), (newrecord$2[/* crates */9] = /* [] */0, newrecord$2), state$3[/* crates */9]);
-    var foldOverGuns = function (_state, _guns, _i) {
-      while(true) {
-        var i = _i;
-        var guns = _guns;
-        var state = _state;
-        if (guns) {
-          var gun = guns[0];
-          var match = gun[/* keyToggle */5][/* modifier */1];
-          var match$1 = keyPressed(gun[/* keyToggle */5][/* primaryKey */0], env) && (
-            match !== 0 ? key(/* LeftShift */56, env) : 1 - key(/* LeftShift */56, env)
-          );
-          var tmp;
-          if (match$1 !== 0) {
-            var newrecord = state.slice();
-            newrecord[/* equippedGun */4] = i;
-            tmp = newrecord;
-          } else {
-            tmp = state;
-          }
-          _i = i + 1 | 0;
-          _guns = guns[1];
-          _state = tmp;
-          continue ;
-          
-        } else {
-          return state;
-        }
-      }
-    };
-    var state$5 = foldOverGuns(state$4, state$4[/* guns */1], 0);
+          }), (newrecord$3[/* crates */9] = /* [] */0, newrecord$3), state$3[/* crates */9]);
+    var state$5 = handleGunSwitching(state$4, state$4[/* guns */1], 0, env);
     var fireGun = function (state) {
       var newrecord = state.slice();
       newrecord[/* guns */1] = mapi$1((function (i, gun) {
               if (i === state[/* equippedGun */4]) {
                 var newrecord = gun.slice();
-                newrecord[/* lastShotTime */1] = state[/* elapsedTime */22];
+                newrecord[/* lastShotTime */1] = state[/* elapsedTime */16];
                 newrecord[/* ammunition */2] = max(gun[/* ammunition */2] - 1 | 0, 0);
                 return newrecord;
               } else {
@@ -17782,7 +17963,7 @@ function draw(state, env) {
     var state$6;
     if (state$5[/* equippedGun */4] >= 0) {
       var curGun = nth(state$5[/* guns */1], state$5[/* equippedGun */4]);
-      if (state$5[/* elapsedTime */22] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] > 0) {
+      if (state$5[/* elapsedTime */16] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] > 0) {
         var match$6 = fold_left((function (param, dir) {
                 var s = param[0];
                 var match = key(dir, env);
@@ -17808,7 +17989,7 @@ function draw(state, env) {
         } else {
           state$6 = state$7;
         }
-      } else if (state$5[/* elapsedTime */22] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] === 0) {
+      } else if (state$5[/* elapsedTime */16] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] === 0) {
         if (exists((function (dir) {
                   return key(dir, env);
                 }), directions)) {
@@ -17825,57 +18006,66 @@ function draw(state, env) {
     }
     var state$8;
     if (key(/* D */28, env)) {
-      var newrecord$3 = state$6.slice();
-      newrecord$3[/* facingLeft */2] = /* false */0;
-      newrecord$3[/* moving */3] = /* true */1;
-      state$8 = newrecord$3;
-    } else if (key(/* A */25, env)) {
       var newrecord$4 = state$6.slice();
-      newrecord$4[/* facingLeft */2] = /* true */1;
+      newrecord$4[/* facingLeft */2] = /* false */0;
       newrecord$4[/* moving */3] = /* true */1;
       state$8 = newrecord$4;
-    } else if (key(/* W */47, env)) {
+    } else if (key(/* A */25, env)) {
       var newrecord$5 = state$6.slice();
+      newrecord$5[/* facingLeft */2] = /* true */1;
       newrecord$5[/* moving */3] = /* true */1;
       state$8 = newrecord$5;
-    } else if (key(/* S */43, env)) {
+    } else if (key(/* W */47, env)) {
       var newrecord$6 = state$6.slice();
       newrecord$6[/* moving */3] = /* true */1;
       state$8 = newrecord$6;
-    } else {
+    } else if (key(/* S */43, env)) {
       var newrecord$7 = state$6.slice();
-      newrecord$7[/* moving */3] = /* false */0;
+      newrecord$7[/* moving */3] = /* true */1;
       state$8 = newrecord$7;
+    } else {
+      var newrecord$8 = state$6.slice();
+      newrecord$8[/* moving */3] = /* false */0;
+      state$8 = newrecord$8;
     }
     var state$9;
     if (key(/* Right */51, env)) {
-      var newrecord$8 = state$8.slice();
-      newrecord$8[/* facingLeft */2] = /* false */0;
-      state$9 = newrecord$8;
-    } else if (key(/* Left */52, env)) {
       var newrecord$9 = state$8.slice();
-      newrecord$9[/* facingLeft */2] = /* true */1;
+      newrecord$9[/* facingLeft */2] = /* false */0;
       state$9 = newrecord$9;
+    } else if (key(/* Left */52, env)) {
+      var newrecord$10 = state$8.slice();
+      newrecord$10[/* facingLeft */2] = /* true */1;
+      state$9 = newrecord$10;
     } else {
       state$9 = state$8;
     }
-    var newrecord$10 = state$9.slice();
-    newrecord$10[/* elapsedTime */22] = state$9[/* elapsedTime */22] + deltaTime(env);
-    var newrecord$11 = newrecord$10.slice();
-    newrecord$11[/* playerBullets */7] = map((function (bullet) {
-            return _1(bullet[/* moveBullet */2], bullet);
-          }), newrecord$10[/* playerBullets */7]);
+    var newrecord$11 = state$9.slice();
+    newrecord$11[/* elapsedTime */16] = state$9[/* elapsedTime */16] + deltaTime(env);
     var newrecord$12 = newrecord$11.slice();
-    newrecord$12[/* playerBullets */7] = filter((function (bullet) {
+    newrecord$12[/* playerBullets */7] = map((function (bullet) {
+            return _1(bullet[/* moveBullet */2], bullet);
+          }), newrecord$11[/* playerBullets */7]);
+    var newrecord$13 = newrecord$12.slice();
+    newrecord$13[/* playerBullets */7] = filter((function (bullet) {
               return +(bullet[/* remainingRange */4] > 0);
-            }))(newrecord$11[/* playerBullets */7]);
+            }))(newrecord$12[/* playerBullets */7]);
     var state$10 = fold_left((function (state, achievement) {
             if (achievement[/* state */0] === /* Locked */0 && _2(achievement[/* condition */1], state, env)) {
               playSound("achievement", state[/* sounds */12], /* None */0, env);
               var newrecord = state.slice();
-              newrecord[/* guns */1] = generateGun(state[/* guns */1]);
-              newrecord[/* equippedGun */4] = state[/* equippedGun */4] + 1 | 0;
-              newrecord[/* achievements */8] = map((function (a) {
+              newrecord[/* guns */1] = generateGun(state);
+              var newrecord$1 = newrecord.slice();
+              newrecord$1[/* guns */1] = generateGun(newrecord);
+              var newrecord$2 = newrecord$1.slice();
+              newrecord$2[/* guns */1] = generateGun(newrecord$1);
+              var newrecord$3 = newrecord$2.slice();
+              newrecord$3[/* guns */1] = generateGun(newrecord$2);
+              var newrecord$4 = newrecord$3.slice();
+              newrecord$4[/* guns */1] = generateGun(newrecord$3);
+              var newrecord$5 = newrecord$4.slice();
+              newrecord$5[/* equippedGun */4] = newrecord$4[/* equippedGun */4] + 1 | 0;
+              newrecord$5[/* achievements */8] = map((function (a) {
                       if (a === achievement) {
                         return /* record */[
                                 /* state : Unlocked */1,
@@ -17885,17 +18075,17 @@ function draw(state, env) {
                       } else {
                         return a;
                       }
-                    }), state[/* achievements */8]);
-              newrecord[/* animatingAchievementTime */23] = 3.2;
-              newrecord[/* animatingAchievement */24] = /* Some */[achievement];
-              newrecord[/* running */25] = /* false */0;
-              return newrecord;
+                    }), newrecord$4[/* achievements */8]);
+              newrecord$5[/* animatingAchievementTime */17] = 3.2;
+              newrecord$5[/* animatingAchievement */18] = /* Some */[achievement];
+              newrecord$5[/* running */20] = /* false */0;
+              return newrecord$5;
             } else {
               return state;
             }
-          }), newrecord$12, newrecord$12[/* achievements */8]);
-    var newrecord$13 = state$10.slice();
-    newrecord$13[/* enemies */13] = map((function (enemy) {
+          }), newrecord$13, newrecord$13[/* achievements */8]);
+    var newrecord$14 = state$10.slice();
+    newrecord$14[/* enemies */13] = map((function (enemy) {
             var size = distf(/* tuple */[
                   state$10[/* pos */0][/* x */0],
                   state$10[/* pos */0][/* y */1]
@@ -17926,7 +18116,7 @@ function draw(state, env) {
               return enemy;
             }
           }), state$10[/* enemies */13]);
-    var newrecord$14 = newrecord$13.slice();
+    var newrecord$15 = newrecord$14.slice();
     var state$11 = fold_left((function (state, bullet) {
             var hurtEnemies = function (_acc, _enemies) {
               while(true) {
@@ -17976,29 +18166,31 @@ function draw(state, env) {
             var newrecord = state.slice();
             newrecord[/* playerBullets */7] = bullets;
             newrecord[/* enemies */13] = match[1];
-            newrecord[/* damageDone */20] = didHit !== 0 ? state[/* damageDone */20] + bullet[/* damage */3] * deltaTime(env) : state[/* damageDone */20];
+            var newrecord$1 = state[/* stats */22].slice();
+            newrecord$1[/* damageDone */4] = didHit !== 0 ? state[/* stats */22][/* damageDone */4] + bullet[/* damage */3] * deltaTime(env) : state[/* stats */22][/* damageDone */4];
+            newrecord[/* stats */22] = newrecord$1;
             return newrecord;
-          }), (newrecord$14[/* playerBullets */7] = /* [] */0, newrecord$14), newrecord$13[/* playerBullets */7]);
+          }), (newrecord$15[/* playerBullets */7] = /* [] */0, newrecord$15), newrecord$14[/* playerBullets */7]);
     var state$12;
     if (length(state$11[/* guns */1]) > 0 && for_all((function (gun) {
               return +(gun[/* ammunition */2] === 0);
             }), state$11[/* guns */1])) {
       playSound("reload", state$11[/* sounds */12], /* None */0, env);
-      var newrecord$15 = state$11.slice();
-      newrecord$15[/* guns */1] = map((function (gun) {
+      var newrecord$16 = state$11.slice();
+      newrecord$16[/* guns */1] = map((function (gun) {
               var newrecord = gun.slice();
               newrecord[/* ammunition */2] = gun[/* maxAmmunition */3];
               return newrecord;
             }), state$11[/* guns */1]);
-      state$12 = newrecord$15;
+      state$12 = newrecord$16;
     } else {
       state$12 = state$11;
     }
-    var newrecord$16 = state$12.slice();
-    newrecord$16[/* nextWaveCountdown */15] = state$12[/* nextWaveCountdown */15] - deltaTime(env);
-    var state$13 = newrecord$16[/* nextWaveCountdown */15] <= 0 || length(newrecord$16[/* enemies */13]) === 0 ? generateWave(newrecord$16) : newrecord$16;
-    var newrecord$17 = state$13.slice();
-    newrecord$17[/* enemies */13] = map((function (e) {
+    var newrecord$17 = state$12.slice();
+    newrecord$17[/* nextWaveCountdown */15] = state$12[/* nextWaveCountdown */15] - deltaTime(env);
+    var state$13 = newrecord$17[/* nextWaveCountdown */15] <= 0 || length(newrecord$17[/* enemies */13]) === 0 ? (playSound("new_wave", newrecord$17[/* sounds */12], /* None */0, env), generateWave(newrecord$17)) : newrecord$17;
+    var newrecord$18 = state$13.slice();
+    newrecord$18[/* enemies */13] = map((function (e) {
             var match = +(e[/* health */1] < 1);
             if (match !== 0) {
               var newrecord = e.slice();
@@ -18008,55 +18200,69 @@ function draw(state, env) {
               return e;
             }
           }), state$13[/* enemies */13]);
-    var newrecord$18 = newrecord$17.slice();
+    var newrecord$19 = newrecord$18.slice();
     state$2 = fold_left((function (state, enemy) {
             if (enemy[/* deathCountdown */6] <= 0) {
               var match = enemy[/* kind */7];
               if (match !== 3) {
                 if (match >= 4) {
                   var newrecord = state.slice();
-                  newrecord[/* tallEnemiesKilled */18] = state[/* tallEnemiesKilled */18] + 1 | 0;
+                  var newrecord$1 = state[/* stats */22].slice();
+                  newrecord$1[/* tallEnemiesKilled */2] = state[/* stats */22][/* tallEnemiesKilled */2] + 1 | 0;
+                  newrecord[/* stats */22] = newrecord$1;
                   return newrecord;
                 } else {
-                  var newrecord$1 = state.slice();
-                  newrecord$1[/* normalEnemiesKilled */16] = state[/* normalEnemiesKilled */16] + 1 | 0;
-                  return newrecord$1;
+                  var newrecord$2 = state.slice();
+                  var newrecord$3 = state[/* stats */22].slice();
+                  newrecord$3[/* normalEnemiesKilled */0] = state[/* stats */22][/* normalEnemiesKilled */0] + 1 | 0;
+                  newrecord$2[/* stats */22] = newrecord$3;
+                  return newrecord$2;
                 }
               } else {
-                var newrecord$2 = state.slice();
-                newrecord$2[/* bigEnemiesKilled */17] = state[/* bigEnemiesKilled */17] + 1 | 0;
-                return newrecord$2;
+                var newrecord$4 = state.slice();
+                var newrecord$5 = state[/* stats */22].slice();
+                newrecord$5[/* bigEnemiesKilled */1] = state[/* stats */22][/* bigEnemiesKilled */1] + 1 | 0;
+                newrecord$4[/* stats */22] = newrecord$5;
+                return newrecord$4;
               }
             } else {
-              var newrecord$3 = state.slice();
-              newrecord$3[/* enemies */13] = /* :: */[
+              var newrecord$6 = state.slice();
+              newrecord$6[/* enemies */13] = /* :: */[
                 enemy,
                 state[/* enemies */13]
               ];
-              return newrecord$3;
+              return newrecord$6;
             }
-          }), (newrecord$18[/* enemies */13] = /* [] */0, newrecord$18), newrecord$17[/* enemies */13]);
+          }), (newrecord$19[/* enemies */13] = /* [] */0, newrecord$19), newrecord$18[/* enemies */13]);
   } else {
     state$2 = state$1;
   }
   var state$14;
-  if (state$2[/* animatingAchievement */24]) {
-    if (state$2[/* animatingAchievementTime */23] - deltaTime(env) <= 0) {
-      var newrecord$19 = state$2.slice();
-      newrecord$19[/* animatingAchievementTime */23] = 0;
-      newrecord$19[/* animatingAchievement */24] = /* None */0;
-      state$14 = newrecord$19;
-    } else {
+  if (state$2[/* animatingAchievement */18]) {
+    if (state$2[/* animatingAchievementTime */17] - deltaTime(env) <= 0) {
       var newrecord$20 = state$2.slice();
-      newrecord$20[/* animatingAchievementTime */23] = state$2[/* animatingAchievementTime */23] - deltaTime(env);
+      newrecord$20[/* animatingAchievementTime */17] = 0;
+      newrecord$20[/* animatingAchievement */18] = /* None */0;
       state$14 = newrecord$20;
+    } else {
+      var newrecord$21 = state$2.slice();
+      newrecord$21[/* animatingAchievementTime */17] = state$2[/* animatingAchievementTime */17] - deltaTime(env);
+      state$14 = newrecord$21;
     }
   } else {
     state$14 = state$2;
   }
+  var state$15;
+  if (state$14[/* animatingWaveNumberTime */19] > 0) {
+    var newrecord$22 = state$14.slice();
+    newrecord$22[/* animatingWaveNumberTime */19] = max(0, state$14[/* animatingWaveNumberTime */19] - deltaTime(env));
+    state$15 = newrecord$22;
+  } else {
+    state$15 = state$14;
+  }
   pushMatrix(env);
   scale$9(2, 2, env);
-  translate$3(-state$14[/* pos */0][/* x */0] + width(env) / (2 * 2), -state$14[/* pos */0][/* y */1] + height(env) / (2 * 2), env);
+  translate$3(-state$15[/* pos */0][/* x */0] + width(env) / (2 * 2), -state$15[/* pos */0][/* y */1] + height(env) / (2 * 2), env);
   for(var y = 0; y <= 9; ++y){
     for(var x = 0; x <= 9; ++x){
       var id = caml_array_get(caml_array_get(grid, y), x);
@@ -18089,7 +18295,7 @@ function draw(state, env) {
           
         }
       }
-      subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+      subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
             x * 63,
             y * 64
           ], 64, 64, texPos, 64, 64, env);
@@ -18097,15 +18303,15 @@ function draw(state, env) {
   }
   var allThings = map((function (v) {
           return /* Enemy */__(1, [v]);
-        }), state$14[/* enemies */13]);
-  var allThings_000 = /* Player */__(0, [state$14[/* pos */0]]);
+        }), state$15[/* enemies */13]);
+  var allThings_000 = /* Player */__(0, [state$15[/* pos */0]]);
   var allThings$1 = /* :: */[
     allThings_000,
     allThings
   ];
   var allThings$2 = $at(allThings$1, map((function (c) {
               return /* Crate */__(2, [c]);
-            }), state$14[/* crates */9]));
+            }), state$15[/* crates */9]));
   var sortedAllThings = sort((function (thing1, thing2) {
           var pos1;
           switch (thing1.tag | 0) {
@@ -18148,13 +18354,13 @@ function draw(state, env) {
                       pos[/* x */0],
                       pos[/* y */1]
                     ], 5, 5, env);
-        }), state$14[/* playerBullets */7]);
+        }), state$15[/* playerBullets */7]);
   iter((function (thing) {
           switch (thing.tag | 0) {
             case 0 : 
                 var p = thing[0];
-                var texPos = state$14[/* moving */3] ? (
-                    (state$14[/* stepTaken */21] / 20 | 0) % 2 === 1 ? /* tuple */[
+                var texPos = state$15[/* moving */3] ? (
+                    (state$15[/* stats */22][/* stepTaken */5] / 20 | 0) % 2 === 1 ? /* tuple */[
                         128,
                         0
                       ] : /* tuple */[
@@ -18165,16 +18371,16 @@ function draw(state, env) {
                     180,
                     0
                   ];
-                if (state$14[/* invulnCountdown */6] > 0) {
-                  tint(color(200, 100, 100, Math.sin(state$14[/* invulnCountdown */6] * 10) * 100 + 155 | 0), env);
+                if (state$15[/* invulnCountdown */6] > 0) {
+                  tint(color(200, 100, 100, Math.sin(state$15[/* invulnCountdown */6] * 10) * 100 + 155 | 0), env);
                 }
-                if (state$14[/* facingLeft */2]) {
-                  subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                if (state$15[/* facingLeft */2]) {
+                  subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                         p[/* x */0] - 20,
                         p[/* y */1] - 32
                       ], 40, 64, texPos, 40, 64, env);
                 } else {
-                  subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                  subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                         p[/* x */0] + 26,
                         p[/* y */1] - 32
                       ], -40, 64, texPos, 40, 64, env);
@@ -18185,7 +18391,7 @@ function draw(state, env) {
                 if (enemy[/* pos */2][/* x */0] > -30 && enemy[/* pos */2][/* x */0] < mapSizePx + 30 && enemy[/* pos */2][/* y */1] > -30 && enemy[/* pos */2][/* y */1] < mapSizePx + 30) {
                   var animList = enemyTexPos(enemy[/* kind */7], +(enemy[/* health */1] < 1));
                   var animLen = length(animList);
-                  var texPos$1 = nth(animList, mod_(state$14[/* elapsedTime */22] / 0.2 | 0, animLen));
+                  var texPos$1 = nth(animList, mod_(state$15[/* elapsedTime */16] / 0.2 | 0, animLen));
                   var match = enemy[/* kind */7];
                   var match$1 = match >= 4 ? /* tuple */[
                       2,
@@ -18197,19 +18403,19 @@ function draw(state, env) {
                   if (enemy[/* health */1] < 1) {
                     tint(color(255, 255, 255, enemy[/* deathCountdown */6] / 1.0 * 255 | 0), env);
                   }
-                  if (enemy[/* pos */2][/* x */0] > state$14[/* pos */0][/* x */0] || enemy[/* health */1] < 1) {
-                    subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                  if (enemy[/* pos */2][/* x */0] > state$15[/* pos */0][/* x */0] || enemy[/* health */1] < 1) {
+                    subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                           enemy[/* pos */2][/* x */0] - 25,
                           enemy[/* pos */2][/* y */1] - 32
                         ], 46, 64, texPos$1, 46, 64, env);
                   } else {
-                    subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                    subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                           enemy[/* pos */2][/* x */0] - 23 + 45,
                           enemy[/* pos */2][/* y */1] - 32
                         ], -46, 64, texPos$1, 46, 64, env);
                   }
                   if (enemy[/* health */1] >= 1) {
-                    drawHealthBar(enemy[/* pos */2][/* x */0] + 5 + match$1[0], enemy[/* pos */2][/* y */1] - 35 + match$1[1], 5, 40, enemy[/* health */1], enemy[/* maxHealth */0], red, env);
+                    drawHealthBar(enemy[/* pos */2][/* x */0] + 5 + match$1[0], enemy[/* pos */2][/* y */1] - 35 + match$1[1], 5, 40, enemy[/* health */1], enemy[/* maxHealth */0], red, /* None */0, env);
                   }
                   return noTint(env);
                 } else {
@@ -18217,14 +18423,14 @@ function draw(state, env) {
                 }
             case 2 : 
                 var crate = thing[0];
-                subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                       crate[/* pos */0][/* x */0] - 20,
                       crate[/* pos */0][/* y */1] - 20
                     ], 40, 40, /* tuple */[
                       1590,
                       0
                     ], 64, 64, env);
-                var yOffset = Math.sin(state$14[/* elapsedTime */22] * 2) * 2 - 17;
+                var yOffset = Math.sin(state$15[/* elapsedTime */16] * 2) * 2 - 17;
                 fill$4(white, env);
                 trianglef(/* tuple */[
                       crate[/* pos */0][/* x */0] - 5,
@@ -18247,20 +18453,29 @@ function draw(state, env) {
                       crate[/* pos */0][/* x */0],
                       crate[/* pos */0][/* y */1] + 16 + yOffset
                     ], env);
-                return subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+                return subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                             crate[/* pos */0][/* x */0] - 16,
                             crate[/* pos */0][/* y */1] - 16 + yOffset
                           ], 32, 32, gunTexPos(crate[/* kind */1]), 64, 64, env);
             
           }
         }), sortedAllThings);
-  drawForest(state$14, env);
+  drawForest(state$15, env);
   popMatrix(env);
-  var length$$1 = length(state$14[/* guns */1]);
-  drawHealthBar(160, 50, 30, 250, state$14[/* health */5], 50, color(220, 0, 0, 255), env);
+  var length$$1 = length(state$15[/* guns */1]);
+  drawHealthBar(160, 35, 30, 250, state$15[/* health */5], 50, color(220, 0, 0, 255), /* Some */[5], env);
   if (length$$1 !== 0) {
     if (length$$1 !== 1) {
-      text(state$14[/* mainFont */10], _1(sprintf(/* Format */[
+      var startX = (width(env) - 50 | 0) / 2 | 0;
+      var t = state$15[/* animatingWaveNumberTime */19];
+      var match$7 = t > 1.0 ? /* tuple */[
+          startX,
+          200
+        ] : /* tuple */[
+          remapf(t, 0, 1.0, 50, startX),
+          remapf(t, 0, 1.0, 70, 200)
+        ];
+      text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
                     /* String_literal */__(11, [
                         "Wave ",
                         /* Int */__(4, [
@@ -18271,27 +18486,30 @@ function draw(state, env) {
                           ])
                       ]),
                     "Wave %d"
-                  ]), state$14[/* waveNum */14]), /* tuple */[
-            50,
-            90
+                  ]), state$15[/* waveNum */14]), /* tuple */[
+            match$7[0] | 0,
+            match$7[1] | 0
           ], env);
-      text(state$14[/* mainFont */10], _1(sprintf(/* Format */[
-                    /* String_literal */__(11, [
-                        "Next wave in ",
-                        /* Int */__(4, [
-                            /* Int_d */0,
-                            /* No_padding */0,
-                            /* No_precision */0,
-                            /* End_of_format */0
-                          ])
-                      ]),
-                    "Next wave in %d"
-                  ]), state$14[/* nextWaveCountdown */15] | 0), /* tuple */[
-            50,
-            120
-          ], env);
+      if (t <= 0) {
+        text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
+                      /* String_literal */__(11, [
+                          "Next wave in ",
+                          /* Int */__(4, [
+                              /* Int_d */0,
+                              /* No_padding */0,
+                              /* No_precision */0,
+                              /* End_of_format */0
+                            ])
+                        ]),
+                      "Next wave in %d"
+                    ]), state$15[/* nextWaveCountdown */15] | 0), /* tuple */[
+              50,
+              100
+            ], env);
+      }
+      
     } else {
-      text(state$14[/* mainFont */10], sprintf(/* Format */[
+      text(state$15[/* mainFont */10], sprintf(/* Format */[
                 /* String_literal */__(11, [
                     "Use your new gun on the zombie!",
                     /* End_of_format */0
@@ -18303,7 +18521,7 @@ function draw(state, env) {
           ], env);
     }
   } else {
-    text(state$14[/* mainFont */10], sprintf(/* Format */[
+    text(state$15[/* mainFont */10], sprintf(/* Format */[
               /* String_literal */__(11, [
                   "Run away from the zombie!",
                   /* End_of_format */0
@@ -18372,7 +18590,7 @@ function draw(state, env) {
         if (match$3 !== -1.0) {
           if (match$3 !== 1.0) {
             exit$$1 = 1;
-          } else if (y + squareSizeY > acc[/* boundsBottomRight */3][/* y */1]) {
+          } else if (y + squareSizeY + 10 > acc[/* boundsBottomRight */3][/* y */1]) {
             var init$1 = acc[/* boundsBottomRight */3];
             match$2 = /* tuple */[
               /* float array */[
@@ -18407,7 +18625,7 @@ function draw(state, env) {
       }
     } else if (match[/* y */1] !== 0.0) {
       exit$$1 = 1;
-    } else if (x - squareSizeX < acc[/* boundsTopLeft */2][/* x */0]) {
+    } else if (x - squareSizeX + 10 < acc[/* boundsTopLeft */2][/* x */0]) {
       var init$3$$1 = acc[/* boundsTopLeft */2];
       match$2 = /* tuple */[
         /* float array */[
@@ -18442,14 +18660,14 @@ function draw(state, env) {
             /* direction */newDirection
           ];
   };
-  var gunsLength = length(state$14[/* guns */1]);
+  var gunsLength = length(state$15[/* guns */1]);
   var lastGunIterator = fold_left((function (acc, gun) {
           var i = acc[/* i */0];
-          if (state$14[/* animatingAchievement */24] === /* None */0 || i < (gunsLength - 1 | 0)) {
+          if (state$15[/* animatingAchievement */18] === /* None */0 || i < (gunsLength - 1 | 0)) {
             var match = acc[/* pos */1];
             var centeredX = match[/* x */0] + squareSizeX / 2 - 40;
             var centeredY = match[/* y */1] + squareSizeY / 2 - 40;
-            if (((length$$1 - i | 0) - 1 | 0) === state$14[/* equippedGun */4]) {
+            if (((length$$1 - i | 0) - 1 | 0) === state$15[/* equippedGun */4]) {
               fill$4(color(255, 255, 0, 255), env);
               rectf(/* tuple */[
                     centeredX,
@@ -18461,12 +18679,12 @@ function draw(state, env) {
                   centeredX + 5,
                   centeredY + 5
                 ], 70, 70, env);
-            subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+            subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
                   centeredX + 10,
                   centeredY
                 ], 64, 64, gunTexPos(gun[/* kind */7]), 64, 64, env);
-            drawKey(centeredX + 10, centeredY + 22, gun, state$14, env);
-            drawHealthBar(centeredX + 5 + 35, centeredY + 64, 10, 68, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), env);
+            drawKey(centeredX + 10, centeredY + 22, gun, state$15, env);
+            drawHealthBar(centeredX + 5 + 35, centeredY + 64, 11, 70, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), /* Some */[0], env);
             var newAcc = getNextGunIterator(acc);
             return /* record */[
                     /* i */i + 1 | 0,
@@ -18490,53 +18708,54 @@ function draw(state, env) {
           1,
           0
         ]
-      ], rev(state$14[/* guns */1]));
-  var match$7 = state$14[/* animatingAchievement */24];
-  var state$15;
-  if (match$7) {
+      ], rev(state$15[/* guns */1]));
+  var match$8 = state$15[/* animatingAchievement */18];
+  var state$16;
+  if (match$8) {
+    var state$17 = handleGunSwitching(state$15, state$15[/* guns */1], 0, env);
     var x$1 = width(env) / 2;
     var y$1 = height(env) / 2;
-    var t = state$14[/* animatingAchievementTime */23];
-    var match$8;
-    if (state$14[/* animatingAchievementTime */23] > 2.8) {
-      var width$1 = remapf(t, 2.8, 3.2, 550, 550 - 100);
-      var height$1 = remapf(t, 2.8, 3.2, 300, 300 - 100);
-      var opacity = remapf(t, 2.8, 3.2, 255, 155) | 0;
-      match$8 = /* tuple */[
+    var t$1 = state$17[/* animatingAchievementTime */17];
+    var match$9;
+    if (state$17[/* animatingAchievementTime */17] > 2.8) {
+      var width$1 = remapf(t$1, 2.8, 3.2, 550, 550 - 100);
+      var height$1 = remapf(t$1, 2.8, 3.2, 300, 300 - 100);
+      var opacity = remapf(t$1, 2.8, 3.2, 255, 155) | 0;
+      match$9 = /* tuple */[
         width$1,
         height$1,
         opacity,
         opacity
       ];
-    } else if (t > 1) {
-      match$8 = /* tuple */[
+    } else if (t$1 > 1) {
+      match$9 = /* tuple */[
         550,
         300,
         255,
         255
       ];
     } else {
-      var opacity$1 = remapf(t, 0, 1, 0, 255) | 0;
-      match$8 = /* tuple */[
+      var opacity$1 = remapf(t$1, 0, 1, 0, 255) | 0;
+      match$9 = /* tuple */[
         550,
         300,
         opacity$1,
         255
       ];
     }
-    var opacity$2 = match$8[2];
-    var height$2 = match$8[1];
-    var width$2 = match$8[0];
+    var opacity$2 = match$9[2];
+    var height$2 = match$9[1];
+    var width$2 = match$9[0];
     fill$4(color(70, 70, 20, opacity$2), env);
     stroke(color(30, 30, 20, opacity$2), env);
     rectf(/* tuple */[
           x$1 - width$2 / 2,
           y$1 - height$2 / 2
         ], width$2, height$2, env);
-    var gun = hd(state$14[/* guns */1]);
-    var match$9 = gun[/* rank */8];
+    var gun = hd(state$17[/* guns */1]);
+    var match$10 = gun[/* rank */8];
     var kindName;
-    switch (match$9) {
+    switch (match$10) {
       case 0 : 
           kindName = "POOR";
           break;
@@ -18555,7 +18774,7 @@ function draw(state, env) {
       
     }
     tint(color(255, 255, 255, opacity$2), env);
-    text(state$14[/* mainFont */10], sprintf(/* Format */[
+    text(state$17[/* mainFont */10], sprintf(/* Format */[
               /* String_literal */__(11, [
                   "Unlocked achievement",
                   /* End_of_format */0
@@ -18566,7 +18785,7 @@ function draw(state, env) {
           y$1 - 130 | 0
         ], env);
     tint(color(gun[/* color */4][/* r */0] * 255 | 0, gun[/* color */4][/* g */1] * 255 | 0, gun[/* color */4][/* b */2] * 255 | 0, opacity$2), env);
-    text(state$14[/* mainFont */10], _1(sprintf(/* Format */[
+    text(state$17[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
                       "Quality: ",
                       /* String */__(2, [
@@ -18580,63 +18799,80 @@ function draw(state, env) {
           y$1 - 100 | 0
         ], env);
     tint(color(255, 255, 255, opacity$2), env);
-    var startX = x$1 - (128 + 12) / 2;
+    var startX$1 = x$1 - (128 + 12) / 2;
     var startY = y$1 - 50;
-    text(state$14[/* mainFont */10], match$7[0][/* message */2], /* tuple */[
+    text(state$17[/* mainFont */10], match$8[0][/* message */2], /* tuple */[
           x$1 - width$2 / 2 + 20 | 0,
           y$1 + 100 | 0
         ], env);
     var endX = lastGunIterator[/* pos */1][/* x */0] + squareSizeX / 2 - 40;
     var endY = lastGunIterator[/* pos */1][/* y */1] + squareSizeY / 2 - 40;
-    var centeredX = t > 2.8 || t > 1 ? startX : remapf(t, 0, 1, endX, startX);
-    var match$10 = t > 2.8 ? /* tuple */[
+    var centeredX = t$1 > 2.8 || t$1 > 1 ? startX$1 : remapf(t$1, 0, 1, endX, startX$1);
+    var match$11 = t$1 > 2.8 ? /* tuple */[
         startY,
         128
       ] : (
-        t > 1 ? /* tuple */[
+        t$1 > 1 ? /* tuple */[
             startY,
             128
           ] : /* tuple */[
-            remapf(t, 0, 1, endY, startY),
-            remapf(t, 0, 1, 64, 128)
+            remapf(t$1, 0, 1, endY, startY),
+            remapf(t$1, 0, 1, 64, 128)
           ]
       );
-    var gunSize = match$10[1];
-    var centeredY = match$10[0];
+    var gunSize = match$11[1];
+    var centeredY = match$11[0];
     noStroke(env);
+    if (!state$17[/* equippedGun */4]) {
+      fill$4(color(255, 255, 0, 255), env);
+      rectf(/* tuple */[
+            centeredX,
+            centeredY
+          ], gunSize + 16, gunSize + 16, env);
+    }
     fill$4(gun[/* color */4], env);
     rectf(/* tuple */[
           centeredX + 5,
           centeredY + 5
         ], gunSize + 6, gunSize + 6, env);
-    tint(color(255, 255, 255, match$8[3]), env);
-    subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
+    tint(color(255, 255, 255, match$9[3]), env);
+    subImagef(state$17[/* mainSpriteSheet */11], /* tuple */[
           centeredX + 10,
           centeredY
         ], gunSize, gunSize, gunTexPos(gun[/* kind */7]), 64, 64, env);
-    drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$14, env);
-    drawHealthBar(centeredX + 8 + gunSize / 2, centeredY + gunSize, 10, gunSize + 4, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), env);
+    drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$17, env);
+    drawHealthBar(centeredX + 8 + gunSize / 2, centeredY + gunSize, 11, gunSize + 6, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), /* Some */[0], env);
     noTint(env);
-    var match$11 = +(t > 0.4);
-    if (match$11 !== 0) {
-      state$15 = state$14;
+    var match$12 = +(t$1 > 0.4);
+    if (match$12 !== 0) {
+      state$16 = state$17;
     } else {
-      var newrecord$21 = state$14.slice();
-      newrecord$21[/* running */25] = /* true */1;
-      state$15 = newrecord$21;
+      var newrecord$23 = state$17.slice();
+      newrecord$23[/* running */20] = /* true */1;
+      state$16 = newrecord$23;
     }
   } else {
-    state$15 = state$14;
+    state$16 = state$15;
   }
-  if (!state$15[/* running */25] && state$15[/* animatingAchievement */24] === /* None */0) {
-    var windowX = (width(env) - 200 | 0) / 2 | 0;
-    var windowY = (height(env) - 300 | 0) / 2 | 0;
-    text(state$15[/* mainFont */10], "PAUSED", /* tuple */[
-          windowX + 80 | 0,
-          windowY + 40 | 0
+  if (!state$16[/* running */20] && state$16[/* animatingAchievement */18] === /* None */0) {
+    var windowX = (width(env) - 160 | 0) / 2 | 0;
+    var windowY = ((height(env) - 100 | 0) / 2 | 0) - 100 | 0;
+    fill$4(black, env);
+    rect(/* tuple */[
+          windowX - 2 | 0,
+          windowY - 2 | 0
+        ], 164, 104, env);
+    fill$4(color(244, 167, 66, 255), env);
+    rect(/* tuple */[
+          windowX,
+          windowY
+        ], 160, 100, env);
+    text(state$16[/* mainFont */10], "PAUSED", /* tuple */[
+          windowX + 38 | 0,
+          windowY + 36 | 0
         ], env);
   }
-  if (state$15[/* health */5] <= 0) {
+  if (state$16[/* health */5] <= 0) {
     fill$4(color(244, 167, 66, 255), env);
     stroke(color(86, 56, 16, 255), env);
     var windowX$1 = (width(env) - 300 | 0) / 2 | 0;
@@ -18646,16 +18882,16 @@ function draw(state, env) {
           windowY$1
         ], 300, 300, env);
     tint(color(232, 58, 27, 255), env);
-    text(state$15[/* mainFont */10], "Game Over", /* tuple */[
+    text(state$16[/* mainFont */10], "Game Over", /* tuple */[
           windowX$1 + 80 | 0,
           windowY$1 + 40 | 0
         ], env);
     noTint(env);
-    text(state$15[/* mainFont */10], "You made it to", /* tuple */[
+    text(state$16[/* mainFont */10], "You made it to", /* tuple */[
           windowX$1 + 45 | 0,
           windowY$1 + 100 | 0
         ], env);
-    text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
+    text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
                       "wave ",
                       /* Int */__(4, [
@@ -18669,7 +18905,7 @@ function draw(state, env) {
                         ])
                     ]),
                   "wave %d!"
-                ]), state$15[/* waveNum */14]), /* tuple */[
+                ]), state$16[/* waveNum */14]), /* tuple */[
           windowX$1 + 95 | 0,
           windowY$1 + 130 | 0
         ], env);
@@ -18681,14 +18917,14 @@ function draw(state, env) {
           buttonX,
           buttonY
         ], 120, 50, env);
-    text(state$15[/* mainFont */10], "restart", /* tuple */[
+    text(state$16[/* mainFont */10], "restart", /* tuple */[
           buttonX + 10 | 0,
           buttonY + 10 | 0
         ], env);
     noStroke(env);
-    var match$12 = mouse(env);
-    var my = match$12[1];
-    var mx = match$12[0];
+    var match$13 = mouse(env);
+    var my = match$13[1];
+    var mx = match$13[0];
     if (mousePressed(env) && mx > buttonX && mx < (buttonX + 120 | 0) && my > buttonY && my < (buttonY + 50 | 0)) {
       return /* record */[
               /* pos : float array */[
@@ -18704,9 +18940,9 @@ function draw(state, env) {
               /* playerBullets : [] */0,
               /* achievements */generateAchievements(/* () */0),
               /* crates : [] */0,
-              /* mainFont */state$15[/* mainFont */10],
-              /* mainSpriteSheet */state$15[/* mainSpriteSheet */11],
-              /* sounds */state$15[/* sounds */12],
+              /* mainFont */state$16[/* mainFont */10],
+              /* mainSpriteSheet */state$16[/* mainSpriteSheet */11],
+              /* sounds */state$16[/* sounds */12],
               /* enemies : :: */[
                 /* record */[
                   /* maxHealth */100,
@@ -18728,23 +18964,28 @@ function draw(state, env) {
               ],
               /* waveNum */0,
               /* nextWaveCountdown */10,
-              /* normalEnemiesKilled */0,
-              /* bigEnemiesKilled */0,
-              /* tallEnemiesKilled */0,
-              /* numberOfBulletsFired */0,
-              /* damageDone */0,
-              /* stepTaken */0,
               /* elapsedTime */0,
               /* animatingAchievementTime */0,
               /* animatingAchievement : None */0,
+              /* animatingWaveNumberTime */state$16[/* animatingWaveNumberTime */19],
               /* running : true */1,
-              /* shiftIcon */state$15[/* shiftIcon */26]
+              /* shiftIcon */state$16[/* shiftIcon */21],
+              /* stats : record */[
+                /* normalEnemiesKilled */0,
+                /* bigEnemiesKilled */0,
+                /* tallEnemiesKilled */0,
+                /* numberOfBulletsFired */0,
+                /* damageDone */0,
+                /* stepTaken */0,
+                /* numberOfShotgunShots */0,
+                /* numberOfWeaponSwaps */0
+              ]
             ];
     } else {
-      return state$15;
+      return state$16;
     }
   } else {
-    return state$15;
+    return state$16;
   }
 }
 
@@ -18809,6 +19050,7 @@ exports.setup = setup;
 exports.drawForest = drawForest;
 exports.backgroundTileGrid = backgroundTileGrid;
 exports.checkOffset = checkOffset;
+exports.handleGunSwitching = handleGunSwitching;
 exports.draw = draw;
 
 return exports;
