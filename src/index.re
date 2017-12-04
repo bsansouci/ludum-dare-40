@@ -14,6 +14,8 @@ let defaultRange = 400.;
 
 let scale = 2.;
 
+let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
+
 module StringMap = Map.Make(String);
 
 type vec2T = {
@@ -86,7 +88,7 @@ let gunTexPos = (kind) =>
   | AlienGun2 => (802, 0)
   | LaserGun => (738, 0)
   | Rifle => (0, 0)
-  | Uzi => (1722, (-3))
+  | Uzi => (1659, (-3))
   };
 
 type crateT = {
@@ -118,6 +120,8 @@ and achievementT = {
 and stateT = {
   pos: vec2T,
   guns: list(gunT),
+  facingLeft: bool,
+  moving: bool,
   equippedGun: int,
   playerBullets: list(bulletT),
   achievements: list(achievementT),
@@ -581,7 +585,7 @@ let generateGun: unit => gunT = {
           ),
           Utils.lerpf(0.7, 0.5, fireRate),
           Utils.lerp(1, 10, maxAmmunition),
-          "aliengun_threeshots"
+          "shotgun"
         )
       | 2 => (
           Rifle,
@@ -600,7 +604,7 @@ let generateGun: unit => gunT = {
           ),
           Utils.lerpf(2.0, 1.2, fireRate),
           Utils.lerp(2, 6, maxAmmunition),
-          "machinegun_singleshot"
+          "shotgun"
         )
       | 4 => (
           Machinegun,
@@ -864,7 +868,8 @@ let soundNames = [
   "machinegun_singleshot",
   "machinegun_threeshots",
   "laser",
-  "aliengun_threeshots"
+  "aliengun_threeshots",
+  "shotgun"
 ];
 
 let playSound = (name, state, env) =>
@@ -883,6 +888,8 @@ let setup = (env) => {
     );
   {
     pos: {x: 400., y: 400.},
+    facingLeft: true,
+    moving: false,
     equippedGun: (-1),
     guns: [],
     playerBullets: [],
@@ -913,14 +920,14 @@ let setup = (env) => {
 };
 
 let drawForest = (state, env) => {
-  Draw.fill(Utils.color(~r=43, ~g=109, ~b=50, ~a=255), env);
+  Draw.fill(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
   for (i in 0 to mapSize) {
     Draw.rectf(~pos=(float_of_int(i) *. 63., (-25.)), ~height=(-64.), ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
-      ~pos=(float_of_int(i) *. 63., 25.),
+      ~pos=(float_of_int(i) *. 64., 25.),
       ~height=(-64.),
-      ~width=65.,
+      ~width=64.,
       ~texPos=(540, 0),
       ~texWidth=64,
       ~texHeight=64,
@@ -967,8 +974,8 @@ let checkOffset = (prevOffset, offset, state) =>
 
 let draw = (state, env) => {
   let dt = Env.deltaTime(env);
-  Draw.background(Utils.color(~r=100, ~g=100, ~b=100, ~a=255), env);
-  /* Draw.background(Utils.color(~r=43, ~g=109, ~b=50, ~a=255), env); */
+  /* Draw.background(Utils.color(~r=100, ~g=100, ~b=100, ~a=255), env); */
+  Draw.background(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
   let offset = {x: 0., y: 0.};
@@ -1037,7 +1044,6 @@ let draw = (state, env) => {
       )
     };
   let state = foldOverGuns(state, state.guns, 0);
-  let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
   let fireGun = (state) => {
     ...state,
     guns:
@@ -1079,6 +1085,27 @@ let draw = (state, env) => {
       } else {
         state
       }
+    } else {
+      state
+    };
+  /** Handle player facing/moving */
+  let state =
+    if (Env.key(D, env)) {
+      {...state, facingLeft: false, moving: true}
+    } else if (Env.key(A, env)) {
+      {...state, facingLeft: true, moving: true}
+    } else if (Env.key(W, env)) {
+      {...state, moving: true}
+    } else if (Env.key(S, env)) {
+      {...state, moving: true}
+    } else {
+      {...state, moving: false}
+    };
+  let state =
+    if (Env.key(Right, env)) {
+      {...state, facingLeft: false}
+    } else if (Env.key(Left, env)) {
+      {...state, facingLeft: true}
     } else {
       state
     };
@@ -1331,7 +1358,7 @@ let draw = (state, env) => {
         | Normal1Z
         | Normal2Z
         | Normal3Z
-        | BigZ => (-5., 0.)
+        | BigZ => ((-5.), 0.)
         | TallZ => (2., (-5.))
         };
       if (enemy.pos.x > state.pos.x) {
@@ -1411,16 +1438,39 @@ let draw = (state, env) => {
       | Crate(c) => drawCrate(c)
       | Enemy(e) => drawEnemy(e)
       | Player(p) =>
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(p.x -. 20., p.y -. 32.),
-          ~width=40.,
-          ~height=64.,
-          ~texPos=(128, 0),
-          ~texWidth=40,
-          ~texHeight=64,
-          env
-        )
+        let texPos =
+          if (state.moving) {
+            if (truncate(state.stepTaken /. 20.) mod 2 == 1) {
+              (128, 0)
+            } else {
+              (224, 0)
+            }
+          } else {
+            (180, 0)
+          };
+        if (state.facingLeft) {
+          Draw.subImagef(
+            state.mainSpriteSheet,
+            ~pos=(p.x -. 20., p.y -. 32.),
+            ~width=40.,
+            ~height=64.,
+            ~texPos,
+            ~texWidth=40,
+            ~texHeight=64,
+            env
+          )
+        } else {
+          Draw.subImagef(
+            state.mainSpriteSheet,
+            ~pos=(p.x +. 26., p.y -. 32.),
+            ~width=(-40.),
+            ~height=64.,
+            ~texPos,
+            ~texWidth=40,
+            ~texHeight=64,
+            env
+          )
+        }
       },
     sortedAllThings
   );
