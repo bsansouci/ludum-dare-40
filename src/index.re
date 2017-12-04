@@ -868,7 +868,12 @@ let generateWave = (state) => {
     } else {
       enemies
     };
-  let crateCount = Utils.random(2, 4);
+  let crateCount =
+    if (List.length(state.crates) == 0) {
+      Utils.random(2, 4)
+    } else {
+      Utils.random(0, 2)
+    };
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
@@ -1511,9 +1516,9 @@ let draw = (state, env) => {
     );
     Draw.subImagef(
       state.mainSpriteSheet,
-      ~pos=(crate.pos.x -. 10., crate.pos.y -. 10. +. yOffset),
-      ~width=20.,
-      ~height=20.,
+      ~pos=(crate.pos.x -. 16., crate.pos.y -. 16. +. yOffset),
+      ~width=32.,
+      ~height=32.,
       ~texPos=gunTexPos(crate.kind),
       ~texWidth=64,
       ~texHeight=64,
