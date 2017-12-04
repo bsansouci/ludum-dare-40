@@ -1660,6 +1660,7 @@ let draw = (state, env) => {
         (width, height, opacity, 255)
       };
     Draw.fill(Utils.color(70, 70, 20, opacity), env);
+    Draw.stroke(Utils.color(30, 30, 20, opacity), env);
     Draw.rectf(~pos=(x -. width /. 2., y -. height /. 2.), ~width, ~height, env);
     let gun = List.hd(state.guns);
     let kindName =
@@ -1673,14 +1674,20 @@ let draw = (state, env) => {
     Draw.tint(Utils.color(255, 255, 255, opacity), env);
     Draw.text(
       ~font=state.mainFont,
-      ~body=kindName,
-      ~pos=(int_of_float(x -. 50.), int_of_float(y -. 120.)),
+      ~body=Printf.sprintf("Unlocked achievement"),
+      ~pos=(int_of_float(x -. 130.), int_of_float(y -. 130.)),
+      env
+    );
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=Printf.sprintf("Quality: %s", kindName),
+      ~pos=(int_of_float(x -. 80.), int_of_float(y -. 100.)),
       env
     );
     let startGunSize = 128.;
     let endGunSize = 64.;
     let startX = x -. (startGunSize +. 12.) /. 2.;
-    let startY = y -. (startGunSize +. 12.) /. 2.;
+    let startY = y -. 50.;
     Draw.text(
       ~font=state.mainFont,
       ~body=achievement.message,
@@ -1712,6 +1719,7 @@ let draw = (state, env) => {
           Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
         )
       };
+    Draw.noStroke(env);
     Draw.fill(gun.color, env);
     Draw.rectf(
       ~pos=(centeredX +. 5., centeredY +. 5.),
