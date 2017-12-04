@@ -18,6 +18,9 @@ let scale = 2.;
 
 let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
 
+let invulnerabilityTime = 0.01;
+
+/* let invulnerabilityTime = 1.0; */
 module StringMap = Map.Make(String);
 
 type vec2T = {
@@ -133,6 +136,8 @@ and stateT = {
   facingLeft: bool,
   moving: bool,
   equippedGun: int,
+  mutable health: float,
+  mutable invulnCountdown: float,
   playerBullets: list(bulletT),
   achievements: list(achievementT),
   crates: list(crateT),
@@ -931,6 +936,7 @@ let soundNames = [
   ("aliengun_threeshots", 1.0),
   ("shotgun", 1.0),
   ("theme", 0.9),
+  ("hurt", 1.0),
   ("achievement", 1.0),
   ("zombie_one", 1.0),
   ("zombie_two", 1.0),
@@ -959,6 +965,8 @@ let setup = (env) => {
     moving: false,
     equippedGun: (-1),
     guns: [],
+    health: 75.,
+    invulnCountdown: 0.,
     playerBullets: [],
     achievements: generateAchievements(),
     crates: [],
@@ -1074,7 +1082,7 @@ let draw = (state, env) => {
   Draw.rectMode(Corner, env);
   let state = Env.keyPressed(Escape, env) ? {...state, running: ! state.running} : state;
   let state =
-    if (state.running) {
+    if (state.running && state.health > 0.) {
       let offset = {x: 0., y: 0.};
       let numZombies = List.length(state.enemies);
       if (Random.float(1.) +. float_of_int(numZombies) *. 0.0002 > 0.995) {
@@ -1085,6 +1093,27 @@ let draw = (state, env) => {
           | _ => "three"
           };
         playSound("zombie_" ++ num, state.sounds, env)
+      };
+      if (state.invulnCountdown > 0.) {
+        state.invulnCountdown = max(0., state.invulnCountdown -. dt)
+      } else {
+        List.iter(
+          (e: enemyT) =>
+            if (state.invulnCountdown <= 0.
+                && Utils.intersectRectRect(
+                     ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
+                     ~rect1W=40.,
+                     ~rect1H=40.,
+                     ~rect2Pos=(e.pos.x -. 20., e.pos.y -. 20.),
+                     ~rect2W=40.,
+                     ~rect2H=40.
+                   )) {
+              state.invulnCountdown = invulnerabilityTime;
+              state.health = max(state.health -. e.damage *. dt, 0.);
+              playSound("hurt", state.sounds, env)
+            },
+          state.enemies
+        )
       };
       let playerSpeedDt = playerSpeed *. dt;
       let offset =
@@ -1230,7 +1259,6 @@ let draw = (state, env) => {
         List.fold_left(
           (state, achievement) =>
             if (achievement.state === Locked && achievement.condition(state, env)) {
-              print_endline(achievement.message);
               playSound("achievement", state.sounds, env);
               {
                 ...state,
@@ -1313,7 +1341,7 @@ let draw = (state, env) => {
       let state =
         List.fold_left(
           (state, bullet: bulletT) => {
-            let rec hurtEnemies = (acc, enemies) =>
+            let rec hurtEnemies = (acc, enemies: list(enemyT)) =>
               switch enemies {
               | [] => (false, acc)
               | [e, ...rest] =>
@@ -1370,7 +1398,7 @@ let draw = (state, env) => {
       /* Do some math for stats */
       let state =
         List.fold_left(
-          (state, enemy) =>
+          (state, enemy: enemyT) =>
             if (enemy.health <= 0.) {
               switch enemy.kind {
               | Normal1Z
@@ -1601,6 +1629,7 @@ let draw = (state, env) => {
   drawForest(state, env);
   Draw.popMatrix(env);
   let length = List.length(state.guns);
+  drawHealthBar(160., 50., 30., 250., state.health, 75., Utils.color(220, 0, 0, 255), env);
   switch length {
   | 0 =>
     Draw.text(
@@ -1860,7 +1889,88 @@ let draw = (state, env) => {
       Draw.tint(Utils.color(255, 255, 255, 255), env);
       t > 0.4 ? state : {...state, running: true}
     };
-  state
+  if (state.health <= 0.) {
+    let gameoverW = 300;
+    let gameoverH = 300;
+    Draw.fill(Utils.color(244, 167, 66, 255), env);
+    Draw.stroke(Utils.color(86, 56, 16, 255), env);
+    let windowX = (Env.width(env) - gameoverW) / 2;
+    let windowY = (Env.height(env) - gameoverH) / 2;
+    Draw.rect(~pos=(windowX, windowY), ~width=gameoverW, ~height=gameoverH, env);
+    Draw.tint(Utils.color(232, 58, 27, 255), env);
+    Draw.text(~font=state.mainFont, ~body="Game Over", ~pos=(windowX + 80, windowY + 40), env);
+    Draw.noTint(env);
+    Draw.text(
+      ~font=state.mainFont,
+      ~body="You made it to",
+      ~pos=(windowX + 45, windowY + 100),
+      env
+    );
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=Printf.sprintf("wave %d!", state.waveNum),
+      ~pos=(windowX + 95, windowY + 130),
+      env
+    );
+    let buttonX = windowX + 85;
+    let buttonY = windowY + 200;
+    let buttonW = 120;
+    let buttonH = 50;
+    Draw.fill(Utils.color(101, 198, 55, 255), env);
+    Draw.stroke(Utils.color(86, 56, 16, 255), env);
+    Draw.rect(~pos=(buttonX, buttonY), ~width=buttonW, ~height=buttonH, env);
+    Draw.text(~font=state.mainFont, ~body="restart", ~pos=(buttonX + 10, buttonY + 10), env);
+    Draw.noStroke(env);
+    let (mx, my) = Env.mouse(env);
+    if (Env.mousePressed(env)
+        && mx > buttonX
+        && mx < buttonX
+        + buttonW
+        && my > buttonY
+        && my < buttonY
+        + buttonH) {
+      {
+        ...state,
+        pos: {x: 400., y: 400.},
+        facingLeft: true,
+        moving: false,
+        equippedGun: (-1),
+        guns: [],
+        health: 75.,
+        invulnCountdown: 0.,
+        playerBullets: [],
+        achievements: generateAchievements(),
+        crates: [],
+        enemies: [
+          {
+            pos: {x: 100., y: 250.},
+            damage: 100.,
+            kind: Normal1Z,
+            health: 100.,
+            maxHealth: 100.,
+            speed: 70.,
+            error: {x: 5., y: 5.}
+          }
+        ],
+        normalEnemiesKilled: 0,
+        bigEnemiesKilled: 0,
+        tallEnemiesKilled: 0,
+        numberOfBulletsFired: 0,
+        damageDone: 0.,
+        stepTaken: 0.,
+        elapsedTime: 0.,
+        animatingAchievementTime: 0.,
+        animatingAchievement: None,
+        waveNum: 0,
+        nextWaveCountdown: 10.,
+        running: true
+      }
+    } else {
+      state
+    }
+  } else {
+    state
+  }
 };
 
 run(~setup, ~draw, ());
