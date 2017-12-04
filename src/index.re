@@ -600,9 +600,13 @@ let generateGun: list(gunT) => list(gunT) = {
     switch (getNextGunKey()) {
     | None => guns
     | Some(keyToggle) =>
+      
       let maxAmmunition = Utils.randomf(0., 1.);
-      let damage = Utils.randomf(0., 1.);
-      let fireRate = Utils.randomf(0., 1.);
+      let (damage, fireRate) = if (state.waveNum < 3) {
+        (Utils.randomf(0., 7.), Utils.randomf(0., 7.))
+      } else {
+        (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
+      };
       let gunRank = damage +. fireRate;
       let (kind, fire, fireRate, maxAmmunition, soundName) =
         switch (Utils.random(0, 8)) {
@@ -831,15 +835,24 @@ let generateAchievements = () => {
 let drawKey = (x, y, gun, state, env) => {
   let body =
     switch gun.keyToggle {
-    | {primaryKey: Num_1} => "1"
-    | {primaryKey: Num_2} => "2"
-    | {primaryKey: Num_3} => "3"
-    | {primaryKey: Num_4} => "4"
-    | {primaryKey: Num_5} => "5"
-    | {primaryKey: Num_6} => "6"
-    | {primaryKey: Num_7} => "7"
-    | {primaryKey: Num_8} => "8"
-    | {primaryKey: Num_9} => "9"
+    | {primaryKey: Num_1, modifier: false} => "1"
+    | {primaryKey: Num_2, modifier: false} => "2"
+    | {primaryKey: Num_3, modifier: false} => "3"
+    | {primaryKey: Num_4, modifier: false} => "4"
+    | {primaryKey: Num_5, modifier: false} => "5"
+    | {primaryKey: Num_6, modifier: false} => "6"
+    | {primaryKey: Num_7, modifier: false} => "7"
+    | {primaryKey: Num_8, modifier: false} => "8"
+    | {primaryKey: Num_9, modifier: false} => "9"
+    | {primaryKey: Num_1, modifier: true} => "!"
+    | {primaryKey: Num_2, modifier: true} => "@"
+    | {primaryKey: Num_3, modifier: true} => "#"
+    | {primaryKey: Num_4, modifier: true} => "$"
+    | {primaryKey: Num_5, modifier: true} => "%"
+    | {primaryKey: Num_6, modifier: true} => "^"
+    | {primaryKey: Num_7, modifier: true} => "&"
+    | {primaryKey: Num_8, modifier: true} => "*"
+    | {primaryKey: Num_9, modifier: true} => "("
     | {primaryKey: T} => "T"
     | {primaryKey: Y} => "Y"
     | {primaryKey: U} => "U"
