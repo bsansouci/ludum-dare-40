@@ -948,7 +948,7 @@ let playSound = (name, sounds, ~loop=false, env) =>
   };
 
 let setup = (env) => {
-  Env.size(~width=1280, ~height=720, env);
+  Env.size(~width=1120, ~height=720, env);
   let loadSound = (soundMap: StringMap.t((soundT, float)), (soundName: string, volume)) =>
     StringMap.add(
       soundName,
@@ -1977,6 +1977,11 @@ let draw = (state, env) => {
       Draw.noTint(env);
       t > 0.4 ? state : {...state, running: true}
     };
+  if (! state.running && state.animatingAchievement == None) {
+    let windowX = (Env.width(env) - 200) / 2;
+    let windowY = (Env.height(env) - 300) / 2;
+    Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 80, windowY + 40), env)
+  };
   if (state.health <= 0.) {
     let gameoverW = 300;
     let gameoverH = 300;
