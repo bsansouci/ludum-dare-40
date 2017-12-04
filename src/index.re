@@ -142,7 +142,9 @@ and stateT = {
   enemies: list(enemyT),
   waveNum: int,
   nextWaveCountdown: float,
-  enemiesKilled: int,
+  normalEnemiesKilled: int,
+  bigEnemiesKilled: int,
+  tallEnemiesKilled: int,
   numberOfBulletsFired: int,
   damageDone: float,
   stepTaken: float,
@@ -726,8 +728,18 @@ let generateAchievements = () => {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.enemiesKilled >= 1,
+          condition: (state, _env) => state.normalEnemiesKilled >= 1,
           message: "You killed your first zombie!"
+        },
+        {
+          state: Locked,
+          condition: (state, _env) => state.tallEnemiesKilled >= 1,
+          message: "You killed your first Runner!"
+        },
+        {
+          state: Locked,
+          condition: (state, _env) => state.bigEnemiesKilled >= 1,
+          message: "You killed your first Biggy!"
         },
         ...acc
       ]
@@ -736,8 +748,18 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.enemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.normalEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed more than %d zombies!", Utils.pow(i, 2))
+          },
+          {
+            state: Locked,
+            condition: (state, _env) => state.bigEnemiesKilled >= Utils.pow(2, i),
+            message: Printf.sprintf("You killed more than %d Biggies!", Utils.pow(i, 2))
+          },
+          {
+            state: Locked,
+            condition: (state, _env) => state.tallEnemiesKilled >= Utils.pow(2, i),
+            message: Printf.sprintf("You killed more than %d Runners!", Utils.pow(i, 2))
           },
           ...acc
         ],
@@ -930,7 +952,9 @@ let setup = (env) => {
         error: {x: 5., y: 5.}
       }
     ],
-    enemiesKilled: 0,
+    normalEnemiesKilled: 0,
+    bigEnemiesKilled: 0,
+    tallEnemiesKilled: 0,
     numberOfBulletsFired: 0,
     damageDone: 0.,
     stepTaken: 0.,
@@ -1312,7 +1336,13 @@ let draw = (state, env) => {
         List.fold_left(
           (state, enemy) =>
             if (enemy.health <= 0.) {
-              {...state, enemiesKilled: state.enemiesKilled + 1}
+              switch enemy.kind {
+              | Normal1Z
+              | Normal2Z
+              | Normal3Z => {...state, normalEnemiesKilled: state.normalEnemiesKilled + 1}
+              | BigZ => {...state, bigEnemiesKilled: state.bigEnemiesKilled + 1}
+              | TallZ => {...state, tallEnemiesKilled: state.tallEnemiesKilled + 1}
+              }
             } else {
               {...state, enemies: [enemy, ...state.enemies]}
             },
