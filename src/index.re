@@ -516,6 +516,16 @@ let generateGun: unit => gunT = {
     let maxAmmunition = Utils.randomf(0., 1.);
     let damage = Utils.randomf(0., 1.);
     let fireRate = Utils.randomf(0., 1.);
+    let gunRank = damage +. fireRate +. damage *. maxAmmunition *. 2.;
+    /*print_endline(
+      Printf.sprintf(
+        "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
+        gunRank,
+        damage,
+        fireRate,
+        maxAmmunition
+      )
+    );*/
     let (kind, fire, fireRate, maxAmmunition) =
       switch (Utils.random(0, 8)) {
       | 0 => (
@@ -587,6 +597,16 @@ let generateGun: unit => gunT = {
           Utils.lerp(1, 10, maxAmmunition)
         )
       };
+    let color =
+      if (gunRank > 0. && gunRank < 2.) {
+        Utils.color(62, 245, 21, 255)
+      } else if (gunRank > 2. && gunRank < 2.6) {
+        Utils.color(47, 119, 214, 255)
+      } else if (gunRank > 2.6 && gunRank < 2.9) {
+        Utils.color(173, 28, 221, 255)
+      } else {
+        Utils.color(255, 221, 0, 255)
+      };
     {
       ammunition: maxAmmunition,
       maxAmmunition,
@@ -595,7 +615,7 @@ let generateGun: unit => gunT = {
       keyToggle,
       fire,
       kind,
-      color: Constants.white
+      color
     }
   }
 };
@@ -1290,7 +1310,7 @@ let draw = (state, env) => {
         Draw.fill(Utils.color(255, 255, 0, 255), env);
         Draw.rectf(~pos=(x +. 20., y), ~width=80., ~height=80., env)
       };
-      Draw.fill(Utils.color(180, 180, 180, 255), env);
+      Draw.fill(gun.color, env);
       Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=70., ~height=70., env);
       Draw.subImagef(
         state.mainSpriteSheet,
@@ -1307,10 +1327,10 @@ let draw = (state, env) => {
         x +. 25. +. 35.,
         y +. 64.,
         10.,
-        70.,
+        68.,
         float_of_int(gun.ammunition),
         float_of_int(gun.maxAmmunition),
-        Utils.color(180, 180, 0, 255),
+        Utils.color(220, 220, 0, 255),
         env
       );
       (x +. 90., y, i + 1)
