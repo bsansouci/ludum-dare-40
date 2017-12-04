@@ -6,7 +6,7 @@ let fringePos = 30.;
 
 let playerSpeed = 150.;
 
-let mapSize = 20;
+let mapSize = 10;
 
 let mapSizePx = float_of_int(mapSize * 64);
 
@@ -737,7 +737,7 @@ let generateAchievements = () => {
           {
             state: Locked,
             condition: (state, _env) => state.enemiesKilled >= Utils.pow(2, i),
-            message: Printf.sprintf("You killed more than %d zombies!", 2 * Utils.pow(i, 2))
+            message: Printf.sprintf("You killed more than %d zombies!", Utils.pow(i, 2))
           },
           ...acc
         ],
@@ -1639,134 +1639,136 @@ let draw = (state, env) => {
       },
       List.rev(state.guns)
     );
-  let state = switch state.animatingAchievement {
-  | None => state
-  | Some(achievement) =>
-    let width = 550.;
-    let height = 300.;
-    let opacity = 255;
-    let x = float_of_int(Env.width(env)) /. 2.;
-    let y = float_of_int(Env.height(env)) /. 2.;
-    let threshold1 = 2.8;
-    let threshold2 = 1.;
-    let t = state.animatingAchievementTime;
-    let (width, height, opacity, opacity2) =
-      if (state.animatingAchievementTime > threshold1) {
-        let width = Utils.remapf(t, threshold1, animatingAchievementMaxTime, width, width -. 100.);
-        let height =
-          Utils.remapf(t, threshold1, animatingAchievementMaxTime, height, height -. 100.);
-        let opacity =
-          int_of_float(Utils.remapf(t, threshold1, animatingAchievementMaxTime, 255., 155.));
-        (width, height, opacity, opacity)
-      } else if (t > threshold2) {
-        (width, height, opacity, opacity)
-      } else {
-        let opacity = int_of_float(Utils.remapf(t, 0., threshold2, 0., 255.));
-        (width, height, opacity, 255)
-      };
-    Draw.fill(Utils.color(70, 70, 20, opacity), env);
-    Draw.stroke(Utils.color(30, 30, 20, opacity), env);
-    Draw.rectf(~pos=(x -. width /. 2., y -. height /. 2.), ~width, ~height, env);
-    let gun = List.hd(state.guns);
-    let kindName =
-      switch gun.rank {
-      | Poor => "POOR"
-      | Common => "COMMON"
-      | Rare => "RARE"
-      | Epic => "EPIC"
-      | Legendary => "LEGENDARY"
-      };
-    Draw.tint(Utils.color(255, 255, 255, opacity), env);
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=Printf.sprintf("Unlocked achievement"),
-      ~pos=(int_of_float(x -. 130.), int_of_float(y -. 130.)),
-      env
-    );
-    Draw.tint(
-      Utils.color(
-        int_of_float(gun.color.r *. 255.),
-        int_of_float(gun.color.g *. 255.),
-        int_of_float(gun.color.b *. 255.),
-        opacity
-      ),
-      env
-    );
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=Printf.sprintf("Quality: %s", kindName),
-      ~pos=(int_of_float(x -. 80.), int_of_float(y -. 100.)),
-      env
-    );
-    Draw.tint(Utils.color(255, 255, 255, opacity), env);
-    let startGunSize = 128.;
-    let endGunSize = 64.;
-    let startX = x -. (startGunSize +. 12.) /. 2.;
-    let startY = y -. 50.;
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=achievement.message,
-      ~pos=(int_of_float(x -. width /. 2. +. 20.), int_of_float(y +. 100.)),
-      env
-    );
-    let it = lastGunIterator;
-    let endX = it.pos.x +. squareSizeX /. 2. -. 40.;
-    let endY = it.pos.y +. squareSizeY /. 2. -. 40.;
-    let (centeredX, gunSize) =
-      if (t > threshold1) {
-        (startX, startGunSize)
-      } else if (t > threshold2) {
-        (startX, startGunSize)
-      } else {
-        (
-          Utils.remapf(t, 0., threshold2, endX, startX),
-          Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
-        )
-      };
-    let (centeredY, gunSize) =
-      if (t > threshold1) {
-        (startY, startGunSize)
-      } else if (t > threshold2) {
-        (startY, startGunSize)
-      } else {
-        (
-          Utils.remapf(t, 0., threshold2, endY, startY),
-          Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
-        )
-      };
-    Draw.noStroke(env);
-    Draw.fill(gun.color, env);
-    Draw.rectf(
-      ~pos=(centeredX +. 5., centeredY +. 5.),
-      ~width=gunSize +. 6.,
-      ~height=gunSize +. 6.,
-      env
-    );
-    Draw.tint(Utils.color(255, 255, 255, opacity2), env);
-    Draw.subImagef(
-      state.mainSpriteSheet,
-      ~pos=(centeredX +. 10., centeredY),
-      ~width=gunSize,
-      ~height=gunSize,
-      ~texPos=gunTexPos(gun.kind),
-      ~texWidth=64,
-      ~texHeight=64,
-      env
-    );
-    drawKey(centeredX +. 10., centeredY +. gunSize -. 42., gun, state, env);
-    drawHealthBar(
-      centeredX +. 8. +. gunSize /. 2.,
-      centeredY +. gunSize,
-      10.,
-      gunSize +. 4.,
-      float_of_int(gun.ammunition),
-      float_of_int(gun.maxAmmunition),
-      Utils.color(220, 220, 0, 255),
-      env
-    );
-    Draw.tint(Utils.color(255, 255, 255, 255), env);
-    (t > 0.4) ? state : {...state, running: true}
-  };
+  let state =
+    switch state.animatingAchievement {
+    | None => state
+    | Some(achievement) =>
+      let width = 550.;
+      let height = 300.;
+      let opacity = 255;
+      let x = float_of_int(Env.width(env)) /. 2.;
+      let y = float_of_int(Env.height(env)) /. 2.;
+      let threshold1 = 2.8;
+      let threshold2 = 1.;
+      let t = state.animatingAchievementTime;
+      let (width, height, opacity, opacity2) =
+        if (state.animatingAchievementTime > threshold1) {
+          let width =
+            Utils.remapf(t, threshold1, animatingAchievementMaxTime, width, width -. 100.);
+          let height =
+            Utils.remapf(t, threshold1, animatingAchievementMaxTime, height, height -. 100.);
+          let opacity =
+            int_of_float(Utils.remapf(t, threshold1, animatingAchievementMaxTime, 255., 155.));
+          (width, height, opacity, opacity)
+        } else if (t > threshold2) {
+          (width, height, opacity, opacity)
+        } else {
+          let opacity = int_of_float(Utils.remapf(t, 0., threshold2, 0., 255.));
+          (width, height, opacity, 255)
+        };
+      Draw.fill(Utils.color(70, 70, 20, opacity), env);
+      Draw.stroke(Utils.color(30, 30, 20, opacity), env);
+      Draw.rectf(~pos=(x -. width /. 2., y -. height /. 2.), ~width, ~height, env);
+      let gun = List.hd(state.guns);
+      let kindName =
+        switch gun.rank {
+        | Poor => "POOR"
+        | Common => "COMMON"
+        | Rare => "RARE"
+        | Epic => "EPIC"
+        | Legendary => "LEGENDARY"
+        };
+      Draw.tint(Utils.color(255, 255, 255, opacity), env);
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Unlocked achievement"),
+        ~pos=(int_of_float(x -. 130.), int_of_float(y -. 130.)),
+        env
+      );
+      Draw.tint(
+        Utils.color(
+          int_of_float(gun.color.r *. 255.),
+          int_of_float(gun.color.g *. 255.),
+          int_of_float(gun.color.b *. 255.),
+          opacity
+        ),
+        env
+      );
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Quality: %s", kindName),
+        ~pos=(int_of_float(x -. 80.), int_of_float(y -. 100.)),
+        env
+      );
+      Draw.tint(Utils.color(255, 255, 255, opacity), env);
+      let startGunSize = 128.;
+      let endGunSize = 64.;
+      let startX = x -. (startGunSize +. 12.) /. 2.;
+      let startY = y -. 50.;
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=achievement.message,
+        ~pos=(int_of_float(x -. width /. 2. +. 20.), int_of_float(y +. 100.)),
+        env
+      );
+      let it = lastGunIterator;
+      let endX = it.pos.x +. squareSizeX /. 2. -. 40.;
+      let endY = it.pos.y +. squareSizeY /. 2. -. 40.;
+      let (centeredX, gunSize) =
+        if (t > threshold1) {
+          (startX, startGunSize)
+        } else if (t > threshold2) {
+          (startX, startGunSize)
+        } else {
+          (
+            Utils.remapf(t, 0., threshold2, endX, startX),
+            Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
+          )
+        };
+      let (centeredY, gunSize) =
+        if (t > threshold1) {
+          (startY, startGunSize)
+        } else if (t > threshold2) {
+          (startY, startGunSize)
+        } else {
+          (
+            Utils.remapf(t, 0., threshold2, endY, startY),
+            Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
+          )
+        };
+      Draw.noStroke(env);
+      Draw.fill(gun.color, env);
+      Draw.rectf(
+        ~pos=(centeredX +. 5., centeredY +. 5.),
+        ~width=gunSize +. 6.,
+        ~height=gunSize +. 6.,
+        env
+      );
+      Draw.tint(Utils.color(255, 255, 255, opacity2), env);
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(centeredX +. 10., centeredY),
+        ~width=gunSize,
+        ~height=gunSize,
+        ~texPos=gunTexPos(gun.kind),
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      );
+      drawKey(centeredX +. 10., centeredY +. gunSize -. 42., gun, state, env);
+      drawHealthBar(
+        centeredX +. 8. +. gunSize /. 2.,
+        centeredY +. gunSize,
+        10.,
+        gunSize +. 4.,
+        float_of_int(gun.ammunition),
+        float_of_int(gun.maxAmmunition),
+        Utils.color(220, 220, 0, 255),
+        env
+      );
+      Draw.tint(Utils.color(255, 255, 255, 255), env);
+      t > 0.4 ? state : {...state, running: true}
+    };
   state
 };
 
