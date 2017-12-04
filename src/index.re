@@ -58,8 +58,9 @@ type enemyKindT =
 let enemyTexPos = (kind) =>
   switch kind {
   | Normal1Z => [(917, 0), (965, 0)]
-  | Normal2Z => [(917, 0), (965, 0)]
+  | Normal2Z => [(1206, 0), (1254,  0)]
   | Normal3Z => [(917, 0), (965, 0)]
+  /* TODO: fix anim:| Normal3Z => [(1348, 0), (1396, 0)] */
   | BigZ => [(1062, 0), (1110, 0)]
   | TallZ => [(1493, 0), (1541, 0)]
   };
