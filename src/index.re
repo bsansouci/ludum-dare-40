@@ -520,7 +520,7 @@ let makeShotgunFire =
   }
 };
 
-let generateGun: list(gunT) => list(gunT) = {
+let generateGun = {
   let keyCount = ref(0);
   let keySet = ref([]);
   let getNextGunKey: unit => option(keyToggleT) =
@@ -541,16 +541,16 @@ let generateGun: list(gunT) => list(gunT) = {
           | 8 => {primaryKey: Num_8, modifier: false}
           | 9 => {primaryKey: Num_9, modifier: false}
           | _ =>
-            let key = ref(Utils.random(0, 43));
+            let key = ref(Utils.random(0, 46));
             while (List.mem(key^, keySet^)) {
-              key := Utils.random(0, 43)
+              key := Utils.random(0, 46)
             };
             keySet := [key^, ...keySet^];
             switch key^ {
             | 0 => {primaryKey: T, modifier: false}
             | 1 => {primaryKey: Y, modifier: false}
             | 2 => {primaryKey: U, modifier: false}
-            | 3 => {primaryKey: I, modifier: false}
+            | 3 => {primaryKey: OpenBracket, modifier: false}
             | 4 => {primaryKey: O, modifier: false}
             | 5 => {primaryKey: P, modifier: false}
             | 6 => {primaryKey: K, modifier: false}
@@ -591,19 +591,22 @@ let generateGun: list(gunT) => list(gunT) = {
             | 41 => {primaryKey: Num_7, modifier: true}
             | 42 => {primaryKey: Num_8, modifier: true}
             | 43 => {primaryKey: Num_9, modifier: true}
+            | 44 => {primaryKey: CloseBracket, modifier: false}
+            | 45 => {primaryKey: Semicolon, modifier: false}
+            | 46 => {primaryKey: Quote, modifier: false}
             | _ => assert false
             }
           };
         Some(ret)
       };
-  (guns) =>
+  (state) =>
     switch (getNextGunKey()) {
-    | None => guns
+    | None => state.guns
     | Some(keyToggle) =>
       let maxAmmunition = Utils.randomf(0., 1.);
       let (damage, fireRate) =
         if (state.waveNum < 3) {
-          (Utils.randomf(0., 7.), Utils.randomf(0., 7.))
+          (Utils.randomf(0., 0.7), Utils.randomf(0., 0.7))
         } else {
           (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
         };
@@ -705,7 +708,7 @@ let generateGun: list(gunT) => list(gunT) = {
           color,
           rank
         },
-        ...guns
+        ...state.guns
       ]
     }
 };
@@ -855,6 +858,10 @@ let drawKey = (x, y, gun, state, env) => {
     | {primaryKey: Num_9, modifier: true} => "("
     | {primaryKey: T} => "T"
     | {primaryKey: Y} => "Y"
+    | {primaryKey: OpenBracket} => "["
+    | {primaryKey: CloseBracket} => "]"
+    | {primaryKey: Semicolon} => ";"
+    | {primaryKey: Quote} => "'"
     | {primaryKey: U} => "U"
     | {primaryKey: O} => "O"
     | {primaryKey: P} => "P"
@@ -1009,7 +1016,7 @@ let playSound = (name, sounds, ~loop=false, env) =>
   };
 
 let setup = (env) => {
-  Env.size(~width=1120, ~height=720, env);
+  Env.size(~width=1120, ~height=650, env);
   let loadSound = (soundMap: StringMap.t((soundT, float)), (soundName: string, volume)) =>
     StringMap.add(
       soundName,
@@ -1228,6 +1235,30 @@ let checkOffset = (prevOffset, offset, state) =>
     offset
   };
 
+let rec handleGunSwitching = (state, guns, i, env) =>
+  switch guns {
+  | [] => state
+  | [gun, ...guns] =>
+    handleGunSwitching(
+      Env.keyPressed(gun.keyToggle.primaryKey, env)
+      && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
+        {
+          ...state,
+          equippedGun: i,
+          stats: {
+            ...state.stats,
+            numberOfWeaponSwaps:
+              i != state.equippedGun ?
+                state.stats.numberOfWeaponSwaps + 1 : state.stats.numberOfWeaponSwaps
+          }
+        } :
+        state,
+      guns,
+      i + 1,
+      env
+    )
+  };
+
 let draw = (state, env) => {
   let dt = Env.deltaTime(env);
   Draw.background(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
@@ -1322,24 +1353,7 @@ let draw = (state, env) => {
           {...state, crates: []},
           state.crates
         );
-      let rec foldOverGuns = (state, guns, i) =>
-        switch guns {
-        | [] => state
-        | [gun, ...guns] =>
-          foldOverGuns(
-            Env.keyPressed(gun.keyToggle.primaryKey, env)
-            && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
-              {
-                ...state,
-                equippedGun: i,
-                stats: {...state.stats, numberOfWeaponSwaps: state.stats.numberOfWeaponSwaps + 1}
-              } :
-              state,
-            guns,
-            i + 1
-          )
-        };
-      let state = foldOverGuns(state, state.guns, 0);
+      let state = handleGunSwitching(state, state.guns, 0, env);
       let fireGun = (state) => {
         ...state,
         guns:
@@ -1419,9 +1433,14 @@ let draw = (state, env) => {
           (state, achievement) =>
             if (achievement.state === Locked && achievement.condition(state, env)) {
               playSound("achievement", state.sounds, env);
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
               {
                 ...state,
-                guns: generateGun(state.guns),
+                /*guns,*/
                 equippedGun: state.equippedGun + 1,
                 animatingAchievementTime: animatingAchievementMaxTime,
                 animatingAchievement: Some(achievement),
@@ -1842,7 +1861,7 @@ let draw = (state, env) => {
   let length = List.length(state.guns);
   drawHealthBar(
     160.,
-    50.,
+    35.,
     30.,
     250.,
     state.health,
@@ -1871,7 +1890,7 @@ let draw = (state, env) => {
     let startX = float_of_int((Env.width(env) - 50) / 2);
     let startY = 200.;
     let endX = 50.;
-    let endY = 90.;
+    let endY = 70.;
     let t = state.animatingWaveNumberTime;
     let (x, y) =
       if (t > threshold) {
@@ -1892,7 +1911,7 @@ let draw = (state, env) => {
       Draw.text(
         ~font=state.mainFont,
         ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
-        ~pos=(50, 120),
+        ~pos=(50, 100),
         env
       )
     }
@@ -1924,12 +1943,12 @@ let draw = (state, env) => {
           {...acc.boundsBottomRight, x: acc.boundsBottomRight.x -. squareSizeX},
           acc.boundsTopLeft
         )
-      | {x: 0., y: 1.0} when y +. squareSizeY > acc.boundsBottomRight.y => (
+      | {x: 0., y: 1.0} when y +. squareSizeY +. 10. > acc.boundsBottomRight.y => (
           {x: (-1.), y: 0.0},
           {...acc.boundsBottomRight, y: acc.boundsBottomRight.y -. squareSizeY},
           acc.boundsTopLeft
         )
-      | {x: (-1.), y: 0.0} when x -. squareSizeX < acc.boundsTopLeft.x => (
+      | {x: (-1.), y: 0.0} when x -. squareSizeX +. 10. < acc.boundsTopLeft.x => (
           {x: 0.0, y: (-1.0)},
           acc.boundsBottomRight,
           {...acc.boundsTopLeft, x: acc.boundsTopLeft.x +. squareSizeX}
@@ -2004,6 +2023,8 @@ let draw = (state, env) => {
     switch state.animatingAchievement {
     | None => state
     | Some(achievement) =>
+      /* Still handle gun switching! */
+      let state = handleGunSwitching(state, state.guns, 0, env);
       let width = 550.;
       let height = 300.;
       let opacity = 255;
@@ -2095,6 +2116,10 @@ let draw = (state, env) => {
           )
         };
       Draw.noStroke(env);
+      if (0 == state.equippedGun) {
+        Draw.fill(Utils.color(255, 255, 0, 255), env);
+        Draw.rectf(~pos=(centeredX, centeredY), ~width=gunSize +. 16., ~height=gunSize +. 16., env)
+      };
       Draw.fill(gun.color, env);
       Draw.rectf(
         ~pos=(centeredX +. 5., centeredY +. 5.),
