@@ -811,20 +811,20 @@ let drawKey = (x, y, gun, state, env) => {
     | {primaryKey: Period} => "."
     | _ => failwith("Fuck")
     };
-  if (!gun.keyToggle.modifier) {
+  if (gun.keyToggle.modifier) {
     Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
   } else {
     Draw.subImage(
       state.shiftIcon,
-      (int_of_float(x) - 4, int_of_float(y) + 19),
-      15,
-      15,
+      (int_of_float(x) - 2, int_of_float(y) + 17),
+      17,
+      17,
       (0, 0),
       277,
       277,
       env
     );
-    Draw.text(state.mainFont, " " ++ body, (int_of_float(x) +4, int_of_float(y) + 10), env)
+    Draw.text(state.mainFont, " " ++ body, (int_of_float(x) + 6, int_of_float(y) + 10), env)
   }
 };
 
