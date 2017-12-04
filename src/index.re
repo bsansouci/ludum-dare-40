@@ -65,8 +65,8 @@ let enemyTexPos = (kind, isDead) =>
   | (BigZ, false) => [(1062, 0), (1110, 0)]
   | (TallZ, false) => [(1493, 0), (1541, 0)]
   | (Normal1Z, true) => [(1904, 0)]
-  | (Normal2Z, true) => [(1904, 0)] /* TODO: replace with special death anims? */
-  | (Normal3Z, true) => [(1904, 0)]
+  | (Normal2Z, true) => [(2094, 0)] /* TODO: replace with special death anims? */
+  | (Normal3Z, true) => [(2189, 0)]
   | (BigZ, true) => [(2000, 0)]
   | (TallZ, true) => [(2288, 0)]
   };
@@ -121,6 +121,17 @@ type rankT =
   | Epic
   | Legendary;
 
+type statsT = {
+  normalEnemiesKilled: int,
+  bigEnemiesKilled: int,
+  tallEnemiesKilled: int,
+  numberOfBulletsFired: int,
+  damageDone: float,
+  stepTaken: float,
+  numberOfShotgunShots: int,
+  numberOfWeaponSwaps: int
+};
+
 type gunT = {
   fireRate: float,
   lastShotTime: float,
@@ -155,17 +166,13 @@ and stateT = {
   enemies: list(enemyT),
   waveNum: int,
   nextWaveCountdown: float,
-  normalEnemiesKilled: int,
-  bigEnemiesKilled: int,
-  tallEnemiesKilled: int,
-  numberOfBulletsFired: int,
-  damageDone: float,
-  stepTaken: float,
   elapsedTime: float,
   animatingAchievementTime: float,
   animatingAchievement: option(achievementT),
+  animatingWaveNumberTime: float,
   running: bool,
-  shiftIcon: imageT
+  shiftIcon: imageT,
+  stats: statsT
 };
 
 type orderT =
@@ -198,7 +205,7 @@ let makeDefaultFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -242,7 +249,7 @@ let makeTripleShotGunFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -317,7 +324,7 @@ let makeSineFire =
   };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -381,7 +388,7 @@ let makeLaserFire =
   let newBullets = recur([], 10);
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
     playerBullets: newBullets @ state.playerBullets
   }
 };
@@ -399,7 +406,7 @@ let makeBurstFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -455,7 +462,7 @@ let makeUziFire = (bulletSpeed, otherSpeed, damage) => {
     };
     {
       ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 1,
+      stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
       playerBullets: [newBullet, ...state.playerBullets]
     }
   }
@@ -504,12 +511,16 @@ let makeShotgunFire =
   let newBullets = recur([], Utils.random(max(1, maxBullets - 3), maxBullets + 1));
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
+    stats: {
+      ...state.stats,
+      numberOfBulletsFired: state.stats.numberOfBulletsFired + List.length(newBullets),
+      numberOfShotgunShots: state.stats.numberOfShotgunShots + 1
+    },
     playerBullets: newBullets @ state.playerBullets
   }
 };
 
-let generateGun: list(gunT) => list(gunT) = {
+let generateGun = {
   let keyCount = ref(0);
   let keySet = ref([]);
   let getNextGunKey: unit => option(keyToggleT) =
@@ -530,16 +541,16 @@ let generateGun: list(gunT) => list(gunT) = {
           | 8 => {primaryKey: Num_8, modifier: false}
           | 9 => {primaryKey: Num_9, modifier: false}
           | _ =>
-            let key = ref(Utils.random(0, 43));
+            let key = ref(Utils.random(0, 46));
             while (List.mem(key^, keySet^)) {
-              key := Utils.random(0, 43)
+              key := Utils.random(0, 46)
             };
             keySet := [key^, ...keySet^];
             switch key^ {
             | 0 => {primaryKey: T, modifier: false}
             | 1 => {primaryKey: Y, modifier: false}
             | 2 => {primaryKey: U, modifier: false}
-            | 3 => {primaryKey: I, modifier: false}
+            | 3 => {primaryKey: OpenBracket, modifier: false}
             | 4 => {primaryKey: O, modifier: false}
             | 5 => {primaryKey: P, modifier: false}
             | 6 => {primaryKey: K, modifier: false}
@@ -580,18 +591,25 @@ let generateGun: list(gunT) => list(gunT) = {
             | 41 => {primaryKey: Num_7, modifier: true}
             | 42 => {primaryKey: Num_8, modifier: true}
             | 43 => {primaryKey: Num_9, modifier: true}
+            | 44 => {primaryKey: CloseBracket, modifier: false}
+            | 45 => {primaryKey: Semicolon, modifier: false}
+            | 46 => {primaryKey: Quote, modifier: false}
             | _ => assert false
             }
           };
         Some(ret)
       };
-  (guns) =>
+  (state) =>
     switch (getNextGunKey()) {
-    | None => guns
+    | None => state.guns
     | Some(keyToggle) =>
       let maxAmmunition = Utils.randomf(0., 1.);
-      let damage = Utils.randomf(0., 1.);
-      let fireRate = Utils.randomf(0., 1.);
+      let (damage, fireRate) =
+        if (state.waveNum < 3) {
+          (Utils.randomf(0., 0.7), Utils.randomf(0., 0.7))
+        } else {
+          (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
+        };
       let gunRank = damage +. fireRate;
       let (kind, fire, fireRate, maxAmmunition, soundName) =
         switch (Utils.random(0, 8)) {
@@ -690,7 +708,7 @@ let generateGun: list(gunT) => list(gunT) = {
           color,
           rank
         },
-        ...guns
+        ...state.guns
       ]
     }
 };
@@ -701,7 +719,7 @@ let generateAchievements = () => {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.stepTaken >= 800.,
+          condition: (state, _env) => state.stats.stepTaken >= 800.,
           message: "You walked your first 100 steps!"
         },
         ...acc
@@ -711,7 +729,7 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.stepTaken >= 10000. *. float_of_int(i),
+            condition: (state, _env) => state.stats.stepTaken >= 10000. *. float_of_int(i),
             message: Printf.sprintf("You walked more than %d steps!", 1000 * i)
           },
           ...acc
@@ -728,7 +746,7 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.numberOfBulletsFired >= 100 * i,
+            condition: (state, _env) => state.stats.numberOfBulletsFired >= 100 * i,
             message: Printf.sprintf("You fired more than %d bullets!", 100 * i)
           },
           ...acc
@@ -739,20 +757,54 @@ let generateAchievements = () => {
   let achievements = loop(achievements, 25);
   let rec loop = (acc, i) =>
     if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.stats.numberOfWeaponSwaps >= 10 * Utils.pow(2, i),
+            message: Printf.sprintf("You swapped guns more than %d times!", 10 * Utils.pow(2, i))
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop(achievements, 15);
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.stats.numberOfShotgunShots >= 10 * i,
+            message: Printf.sprintf("You fired the shotgun %d times!", 10 * i)
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop(achievements, 15);
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.normalEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.normalEnemiesKilled >= 1,
           message: "You killed your first zombie!"
         },
         {
           state: Locked,
-          condition: (state, _env) => state.tallEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.tallEnemiesKilled >= 1,
           message: "You killed your first Runner!"
         },
         {
           state: Locked,
-          condition: (state, _env) => state.bigEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.bigEnemiesKilled >= 1,
           message: "You killed your first Biggy!"
         },
         ...acc
@@ -762,17 +814,17 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.normalEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.normalEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d zombies!", Utils.pow(2, i))
           },
           {
             state: Locked,
-            condition: (state, _env) => state.bigEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.bigEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d Biggies!", Utils.pow(2, i))
           },
           {
             state: Locked,
-            condition: (state, _env) => state.tallEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.tallEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d Runners!", Utils.pow(2, i))
           },
           ...acc
@@ -786,17 +838,30 @@ let generateAchievements = () => {
 let drawKey = (x, y, gun, state, env) => {
   let body =
     switch gun.keyToggle {
-    | {primaryKey: Num_1} => "1"
-    | {primaryKey: Num_2} => "2"
-    | {primaryKey: Num_3} => "3"
-    | {primaryKey: Num_4} => "4"
-    | {primaryKey: Num_5} => "5"
-    | {primaryKey: Num_6} => "6"
-    | {primaryKey: Num_7} => "7"
-    | {primaryKey: Num_8} => "8"
-    | {primaryKey: Num_9} => "9"
+    | {primaryKey: Num_1, modifier: false} => "1"
+    | {primaryKey: Num_2, modifier: false} => "2"
+    | {primaryKey: Num_3, modifier: false} => "3"
+    | {primaryKey: Num_4, modifier: false} => "4"
+    | {primaryKey: Num_5, modifier: false} => "5"
+    | {primaryKey: Num_6, modifier: false} => "6"
+    | {primaryKey: Num_7, modifier: false} => "7"
+    | {primaryKey: Num_8, modifier: false} => "8"
+    | {primaryKey: Num_9, modifier: false} => "9"
+    | {primaryKey: Num_1, modifier: true} => "!"
+    | {primaryKey: Num_2, modifier: true} => "@"
+    | {primaryKey: Num_3, modifier: true} => "#"
+    | {primaryKey: Num_4, modifier: true} => "$"
+    | {primaryKey: Num_5, modifier: true} => "%"
+    | {primaryKey: Num_6, modifier: true} => "^"
+    | {primaryKey: Num_7, modifier: true} => "&"
+    | {primaryKey: Num_8, modifier: true} => "*"
+    | {primaryKey: Num_9, modifier: true} => "("
     | {primaryKey: T} => "T"
     | {primaryKey: Y} => "Y"
+    | {primaryKey: OpenBracket} => "["
+    | {primaryKey: CloseBracket} => "]"
+    | {primaryKey: Semicolon} => ";"
+    | {primaryKey: Quote} => "'"
     | {primaryKey: U} => "U"
     | {primaryKey: O} => "O"
     | {primaryKey: P} => "P"
@@ -905,19 +970,21 @@ let generateWave = (state) => {
     enemies,
     crates: list_init(state.crates, makeCrate, crateCount),
     waveNum: state.waveNum + 1,
-    nextWaveCountdown: 60.
+    nextWaveCountdown: 60.,
+    animatingWaveNumberTime: 3.
   }
 };
 
-let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
+let drawHealthBar = (x, y, h, w, health, maxHealth, color, ~border=2., env) => {
   let xOffset = w /. 2.;
-  let border = 1.;
-  let border2 = 2.;
+  let halfBorder = border /. 2.;
+  /*let (border, border2) = border ? (1., 2.) : (0., 0.);*/
+  /*let border2 = 0.;*/
   Draw.fill(Constants.black, env);
   Draw.rectf(
-    ~pos=(x -. xOffset -. border, y -. border),
-    ~width=w +. border2,
-    ~height=h +. border2,
+    ~pos=(x -. xOffset -. halfBorder, y -. halfBorder),
+    ~width=w +. border,
+    ~height=h +. border,
     env
   );
   let healthW = Utils.remapf(~value=health, ~low1=0., ~high1=maxHealth, ~low2=0., ~high2=w);
@@ -938,7 +1005,8 @@ let soundNames = [
   ("achievement", 1.0),
   ("zombie_one", 1.0),
   ("zombie_two", 1.0),
-  ("zombie_three", 1.0)
+  ("zombie_three", 1.0),
+  ("new_wave", 1.0)
 ];
 
 let playSound = (name, sounds, ~loop=false, env) =>
@@ -948,7 +1016,7 @@ let playSound = (name, sounds, ~loop=false, env) =>
   };
 
 let setup = (env) => {
-  Env.size(~width=1120, ~height=720, env);
+  Env.size(~width=1120, ~height=650, env);
   let loadSound = (soundMap: StringMap.t((soundT, float)), (soundName: string, volume)) =>
     StringMap.add(
       soundName,
@@ -984,15 +1052,20 @@ let setup = (env) => {
         deathCountdown
       }
     ],
-    normalEnemiesKilled: 0,
-    bigEnemiesKilled: 0,
-    tallEnemiesKilled: 0,
-    numberOfBulletsFired: 0,
-    damageDone: 0.,
-    stepTaken: 0.,
+    stats: {
+      normalEnemiesKilled: 0,
+      bigEnemiesKilled: 0,
+      tallEnemiesKilled: 0,
+      numberOfBulletsFired: 0,
+      damageDone: 0.,
+      stepTaken: 0.,
+      numberOfShotgunShots: 0,
+      numberOfWeaponSwaps: 0
+    },
     elapsedTime: 0.,
     animatingAchievementTime: 0.,
     animatingAchievement: None,
+    animatingWaveNumberTime: 0.,
     waveNum: 0,
     nextWaveCountdown: 10.,
     running: true
@@ -1032,6 +1105,24 @@ let drawForest = (state, env) => {
     );
     Draw.popMatrix(env)
   };
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize - 1) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
+  Draw.rectf(
+    ~pos=(maxX +. 67., float_of_int(mapSize + 1) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
   Draw.pushMatrix(env);
   Draw.translate(maxX +. 9., (-41.), env);
   Draw.rotate(Constants.pi *. 3. /. 2., env);
@@ -1059,7 +1150,9 @@ let drawForest = (state, env) => {
       env
     )
   };
-  Draw.rectf(~pos=(mapSizePx -. 64. -. 7., 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=(0., 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), 20. +. mapSizePx -. 64.), ~height=64., ~width=65., env);
   Draw.subImagef(
     state.mainSpriteSheet,
     ~pos=(mapSizePx -. 1., (-42.) +. mapSizePx),
@@ -1110,7 +1203,12 @@ let drawForest = (state, env) => {
     ~texWidth=64,
     ~texHeight=64,
     env
-  )
+  );
+  Draw.rectf(~pos=((-64.), (-32.)), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=((-64.), (-32.) -. 64.), ~height=64., ~width=65., env);
+  Draw.rectf(~pos=(0., (-32.) -. 64.), ~height=64., ~width=65., env)
+  /*Draw.rectf(~pos=(-64., 20. +. mapSizePx), ~height=64., ~width=65., env);*/
+  /*Draw.rectf(~pos=(-64., 20. +. mapSizePx -. 64.), ~height=64., ~width=65., env);*/
 };
 
 let backgroundTileGrid = {
@@ -1135,6 +1233,30 @@ let checkOffset = (prevOffset, offset, state) =>
     prevOffset
   } else {
     offset
+  };
+
+let rec handleGunSwitching = (state, guns, i, env) =>
+  switch guns {
+  | [] => state
+  | [gun, ...guns] =>
+    handleGunSwitching(
+      Env.keyPressed(gun.keyToggle.primaryKey, env)
+      && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
+        {
+          ...state,
+          equippedGun: i,
+          stats: {
+            ...state.stats,
+            numberOfWeaponSwaps:
+              i != state.equippedGun ?
+                state.stats.numberOfWeaponSwaps + 1 : state.stats.numberOfWeaponSwaps
+          }
+        } :
+        state,
+      guns,
+      i + 1,
+      env
+    )
   };
 
 let draw = (state, env) => {
@@ -1195,7 +1317,7 @@ let draw = (state, env) => {
           {
             ...state,
             pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
-            stepTaken: state.stepTaken +. playerSpeedDt
+            stats: {...state.stats, stepTaken: state.stats.stepTaken +. playerSpeedDt}
           }
         } else {
           state
@@ -1231,19 +1353,7 @@ let draw = (state, env) => {
           {...state, crates: []},
           state.crates
         );
-      let rec foldOverGuns = (state, guns, i) =>
-        switch guns {
-        | [] => state
-        | [gun, ...guns] =>
-          foldOverGuns(
-            Env.keyPressed(gun.keyToggle.primaryKey, env)
-            && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
-              {...state, equippedGun: i} : state,
-            guns,
-            i + 1
-          )
-        };
-      let state = foldOverGuns(state, state.guns, 0);
+      let state = handleGunSwitching(state, state.guns, 0, env);
       let fireGun = (state) => {
         ...state,
         guns:
@@ -1323,9 +1433,14 @@ let draw = (state, env) => {
           (state, achievement) =>
             if (achievement.state === Locked && achievement.condition(state, env)) {
               playSound("achievement", state.sounds, env);
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
               {
                 ...state,
-                guns: generateGun(state.guns),
+                /*guns,*/
                 equippedGun: state.equippedGun + 1,
                 animatingAchievementTime: animatingAchievementMaxTime,
                 animatingAchievement: Some(achievement),
@@ -1437,8 +1552,13 @@ let draw = (state, env) => {
               };
             {
               ...state,
-              damageDone:
-                didHit ? state.damageDone +. bullet.damage *. Env.deltaTime(env) : state.damageDone,
+              stats: {
+                ...state.stats,
+                damageDone:
+                  didHit ?
+                    state.stats.damageDone +. bullet.damage *. Env.deltaTime(env) :
+                    state.stats.damageDone
+              },
               playerBullets: bullets,
               enemies
             }
@@ -1456,6 +1576,7 @@ let draw = (state, env) => {
       let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
       let state =
         if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
+          playSound("new_wave", state.sounds, env);
           generateWave(state)
         } else {
           state
@@ -1477,9 +1598,18 @@ let draw = (state, env) => {
               switch enemy.kind {
               | Normal1Z
               | Normal2Z
-              | Normal3Z => {...state, normalEnemiesKilled: state.normalEnemiesKilled + 1}
-              | BigZ => {...state, bigEnemiesKilled: state.bigEnemiesKilled + 1}
-              | TallZ => {...state, tallEnemiesKilled: state.tallEnemiesKilled + 1}
+              | Normal3Z => {
+                  ...state,
+                  stats: {...state.stats, normalEnemiesKilled: state.stats.normalEnemiesKilled + 1}
+                }
+              | BigZ => {
+                  ...state,
+                  stats: {...state.stats, bigEnemiesKilled: state.stats.bigEnemiesKilled + 1}
+                }
+              | TallZ => {
+                  ...state,
+                  stats: {...state.stats, tallEnemiesKilled: state.stats.tallEnemiesKilled + 1}
+                }
               }
             } else {
               {...state, enemies: [enemy, ...state.enemies]}
@@ -1498,6 +1628,15 @@ let draw = (state, env) => {
       {...state, animatingAchievement: None, animatingAchievementTime: 0.}
     } else {
       {...state, animatingAchievementTime: state.animatingAchievementTime -. Env.deltaTime(env)}
+    };
+  let state =
+    if (state.animatingWaveNumberTime > 0.) {
+      {
+        ...state,
+        animatingWaveNumberTime: max(0., state.animatingWaveNumberTime -. Env.deltaTime(env))
+      }
+    } else {
+      state
     };
   Draw.pushMatrix(env);
   Draw.scale(scale, scale, env);
@@ -1671,7 +1810,7 @@ let draw = (state, env) => {
       | Player(p) =>
         let texPos =
           if (state.moving) {
-            if (truncate(state.stepTaken /. 20.) mod 2 == 1) {
+            if (truncate(state.stats.stepTaken /. 20.) mod 2 == 1) {
               (128, 0)
             } else {
               (224, 0)
@@ -1720,7 +1859,17 @@ let draw = (state, env) => {
   drawForest(state, env);
   Draw.popMatrix(env);
   let length = List.length(state.guns);
-  drawHealthBar(160., 50., 30., 250., state.health, 50., Utils.color(220, 0, 0, 255), env);
+  drawHealthBar(
+    160.,
+    35.,
+    30.,
+    250.,
+    state.health,
+    50.,
+    Utils.color(220, 0, 0, 255),
+    ~border=5.,
+    env
+  );
   switch length {
   | 0 =>
     Draw.text(
@@ -1737,18 +1886,35 @@ let draw = (state, env) => {
       env
     )
   | _ =>
+    let threshold = 1.0;
+    let startX = float_of_int((Env.width(env) - 50) / 2);
+    let startY = 200.;
+    let endX = 50.;
+    let endY = 70.;
+    let t = state.animatingWaveNumberTime;
+    let (x, y) =
+      if (t > threshold) {
+        (startX, startY)
+      } else {
+        (
+          Utils.remapf(t, 0., threshold, endX, startX),
+          Utils.remapf(t, 0., threshold, endY, startY)
+        )
+      };
     Draw.text(
       ~font=state.mainFont,
       ~body=Printf.sprintf("Wave %d", state.waveNum),
-      ~pos=(50, 90),
+      ~pos=(int_of_float(x), int_of_float(y)),
       env
     );
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
-      ~pos=(50, 120),
-      env
-    )
+    if (t <= 0.) {
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
+        ~pos=(50, 100),
+        env
+      )
+    }
   };
   let defaultSpacing = 90.;
   let padding = 16.;
@@ -1777,12 +1943,12 @@ let draw = (state, env) => {
           {...acc.boundsBottomRight, x: acc.boundsBottomRight.x -. squareSizeX},
           acc.boundsTopLeft
         )
-      | {x: 0., y: 1.0} when y +. squareSizeY > acc.boundsBottomRight.y => (
+      | {x: 0., y: 1.0} when y +. squareSizeY +. 10. > acc.boundsBottomRight.y => (
           {x: (-1.), y: 0.0},
           {...acc.boundsBottomRight, y: acc.boundsBottomRight.y -. squareSizeY},
           acc.boundsTopLeft
         )
-      | {x: (-1.), y: 0.0} when x -. squareSizeX < acc.boundsTopLeft.x => (
+      | {x: (-1.), y: 0.0} when x -. squareSizeX +. 10. < acc.boundsTopLeft.x => (
           {x: 0.0, y: (-1.0)},
           acc.boundsBottomRight,
           {...acc.boundsTopLeft, x: acc.boundsTopLeft.x +. squareSizeX}
@@ -1813,6 +1979,8 @@ let draw = (state, env) => {
             Draw.fill(Utils.color(255, 255, 0, 255), env);
             Draw.rectf(~pos=(centeredX, centeredY), ~width=80., ~height=80., env)
           };
+          /*Draw.fill(Utils.color(55, 55, 55, 150), env);
+            Draw.rectf(~pos=(centeredX +. 3., centeredY +. 3.), ~width=74., ~height=74., env);*/
           Draw.fill(gun.color, env);
           Draw.rectf(~pos=(centeredX +. 5., centeredY +. 5.), ~width=70., ~height=70., env);
           Draw.subImagef(
@@ -1829,11 +1997,12 @@ let draw = (state, env) => {
           drawHealthBar(
             centeredX +. 5. +. 35.,
             centeredY +. 64.,
-            10.,
-            68.,
+            11.,
+            70.,
             float_of_int(gun.ammunition),
             float_of_int(gun.maxAmmunition),
             Utils.color(220, 220, 0, 255),
+            ~border=0.,
             env
           );
           let newAcc = getNextGunIterator(acc);
@@ -1854,6 +2023,8 @@ let draw = (state, env) => {
     switch state.animatingAchievement {
     | None => state
     | Some(achievement) =>
+      /* Still handle gun switching! */
+      let state = handleGunSwitching(state, state.guns, 0, env);
       let width = 550.;
       let height = 300.;
       let opacity = 255;
@@ -1945,6 +2116,10 @@ let draw = (state, env) => {
           )
         };
       Draw.noStroke(env);
+      if (0 == state.equippedGun) {
+        Draw.fill(Utils.color(255, 255, 0, 255), env);
+        Draw.rectf(~pos=(centeredX, centeredY), ~width=gunSize +. 16., ~height=gunSize +. 16., env)
+      };
       Draw.fill(gun.color, env);
       Draw.rectf(
         ~pos=(centeredX +. 5., centeredY +. 5.),
@@ -1967,20 +2142,27 @@ let draw = (state, env) => {
       drawHealthBar(
         centeredX +. 8. +. gunSize /. 2.,
         centeredY +. gunSize,
-        10.,
-        gunSize +. 4.,
+        11.,
+        gunSize +. 6.,
         float_of_int(gun.ammunition),
         float_of_int(gun.maxAmmunition),
         Utils.color(220, 220, 0, 255),
+        ~border=0.,
         env
       );
       Draw.noTint(env);
       t > 0.4 ? state : {...state, running: true}
     };
   if (! state.running && state.animatingAchievement == None) {
-    let windowX = (Env.width(env) - 200) / 2;
-    let windowY = (Env.height(env) - 300) / 2;
-    Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 80, windowY + 40), env)
+    let gameoverW = 160;
+    let gameoverH = 100;
+    let windowX = (Env.width(env) - gameoverW) / 2;
+    let windowY = (Env.height(env) - gameoverH) / 2 - 100;
+    Draw.fill(Constants.black, env);
+    Draw.rect(~pos=(windowX - 2, windowY - 2), ~width=gameoverW + 4, ~height=gameoverH + 4, env);
+    Draw.fill(Utils.color(244, 167, 66, 255), env);
+    Draw.rect(~pos=(windowX, windowY), ~width=gameoverW, ~height=gameoverH, env);
+    Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 38, windowY + 36), env)
   };
   if (state.health <= 0.) {
     let gameoverW = 300;
@@ -2046,12 +2228,16 @@ let draw = (state, env) => {
             deathCountdown
           }
         ],
-        normalEnemiesKilled: 0,
-        bigEnemiesKilled: 0,
-        tallEnemiesKilled: 0,
-        numberOfBulletsFired: 0,
-        damageDone: 0.,
-        stepTaken: 0.,
+        stats: {
+          normalEnemiesKilled: 0,
+          bigEnemiesKilled: 0,
+          tallEnemiesKilled: 0,
+          numberOfBulletsFired: 0,
+          damageDone: 0.,
+          stepTaken: 0.,
+          numberOfShotgunShots: 0,
+          numberOfWeaponSwaps: 0
+        },
         elapsedTime: 0.,
         animatingAchievementTime: 0.,
         animatingAchievement: None,
