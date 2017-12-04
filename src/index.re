@@ -21,6 +21,14 @@ type vec2T = {
   y: float
 };
 
+type gunIterationT = {
+  i: int,
+  pos: vec2T,
+  boundsTopLeft: vec2T,
+  boundsBottomRight: vec2T,
+  direction: vec2T
+};
+
 type bulletT = {
   pos: vec2T,
   direction: vec2T,
@@ -75,13 +83,18 @@ type crateT = {
   kind: gunKindT
 };
 
+type keyToggleT = {
+  primaryKey: Reprocessing_Events.keycodeT,
+  modifier: bool
+};
+
 type gunT = {
   fireRate: float,
   lastShotTime: float,
   ammunition: int,
   maxAmmunition: int,
   color: colorT,
-  keyToggle: Reprocessing_Events.keycodeT,
+  keyToggle: keyToggleT,
   fire: (stateT, float, Reprocessing_Events.keycodeT) => stateT,
   kind: gunKindT,
   soundName: string
@@ -455,36 +468,71 @@ let makeShotgunFire =
 let generateGun: unit => gunT = {
   let keyCount = ref(0);
   let keySet = ref([]);
-  let getNextGunKey: unit => Reprocessing_Events.keycodeT =
+  let getNextGunKey: unit => keyToggleT =
     () => {
       keyCount := keyCount^ + 1;
       switch keyCount^ {
-      | 1 => Num_1
-      | 2 => Num_2
-      | 3 => Num_3
-      | 4 => Num_4
-      | 5 => Num_5
-      | 6 => Num_6
-      | 7 => Num_7
-      | 8 => Num_8
-      | 9 => Num_9
+      | 1 => {primaryKey: Num_1, modifier: false}
+      | 2 => {primaryKey: Num_2, modifier: false}
+      | 3 => {primaryKey: Num_3, modifier: false}
+      | 4 => {primaryKey: Num_4, modifier: false}
+      | 5 => {primaryKey: Num_5, modifier: false}
+      | 6 => {primaryKey: Num_6, modifier: false}
+      | 7 => {primaryKey: Num_7, modifier: false}
+      | 8 => {primaryKey: Num_8, modifier: false}
+      | 9 => {primaryKey: Num_9, modifier: false}
       | _ =>
-        let key = ref(Utils.random(0, 10));
+        let key = ref(Utils.random(0, 44));
         while (List.mem(key^, keySet^)) {
-          key := Utils.random(0, 10)
+          key := Utils.random(0, 44)
         };
         keySet := [key^, ...keySet^];
         switch key^ {
-        | 0 => T
-        | 1 => Y
-        | 2 => U
-        | 3 => I
-        | 4 => O
-        | 5 => P
-        | 6 => K
-        | 7 => J
-        | 8 => H
-        | 9 => G
+        | 0 => {primaryKey: T, modifier: false}
+        | 1 => {primaryKey: Y, modifier: false}
+        | 2 => {primaryKey: U, modifier: false}
+        | 3 => {primaryKey: I, modifier: false}
+        | 4 => {primaryKey: O, modifier: false}
+        | 5 => {primaryKey: P, modifier: false}
+        | 6 => {primaryKey: K, modifier: false}
+        | 7 => {primaryKey: J, modifier: false}
+        | 8 => {primaryKey: H, modifier: false}
+        | 9 => {primaryKey: G, modifier: false}
+        | 10 => {primaryKey: Z, modifier: false}
+        | 11 => {primaryKey: C, modifier: false}
+        | 12 => {primaryKey: V, modifier: false}
+        | 13 => {primaryKey: B, modifier: false}
+        | 14 => {primaryKey: N, modifier: false}
+        | 15 => {primaryKey: M, modifier: false}
+        | 16 => {primaryKey: Comma, modifier: false}
+        | 17 => {primaryKey: Period, modifier: false}
+        | 18 => {primaryKey: T, modifier: true}
+        | 19 => {primaryKey: Y, modifier: true}
+        | 20 => {primaryKey: U, modifier: true}
+        | 21 => {primaryKey: I, modifier: true}
+        | 22 => {primaryKey: O, modifier: true}
+        | 23 => {primaryKey: P, modifier: true}
+        | 24 => {primaryKey: K, modifier: true}
+        | 25 => {primaryKey: J, modifier: true}
+        | 26 => {primaryKey: H, modifier: true}
+        | 27 => {primaryKey: G, modifier: true}
+        | 28 => {primaryKey: Z, modifier: true}
+        | 29 => {primaryKey: C, modifier: true}
+        | 30 => {primaryKey: V, modifier: true}
+        | 31 => {primaryKey: B, modifier: true}
+        | 32 => {primaryKey: N, modifier: true}
+        | 33 => {primaryKey: M, modifier: true}
+        | 34 => {primaryKey: Comma, modifier: true}
+        | 35 => {primaryKey: Period, modifier: true}
+        | 36 => {primaryKey: Num_1, modifier: true}
+        | 37 => {primaryKey: Num_2, modifier: true}
+        | 38 => {primaryKey: Num_3, modifier: true}
+        | 39 => {primaryKey: Num_4, modifier: true}
+        | 40 => {primaryKey: Num_5, modifier: true}
+        | 41 => {primaryKey: Num_6, modifier: true}
+        | 42 => {primaryKey: Num_7, modifier: true}
+        | 43 => {primaryKey: Num_8, modifier: true}
+        | 44 => {primaryKey: Num_9, modifier: true}
         | _ => assert false
         }
       }
@@ -508,7 +556,7 @@ let generateGun: unit => gunT = {
       switch (Utils.random(0, 8)) {
       | 0 => (
           Pistol,
-          makeDefaultFire(bulletSpeed, Utils.lerpf(400., 1000., damage)),
+          makeDefaultFire(bulletSpeed, Utils.lerpf(200., 2000., damage)),
           Utils.lerpf(0.5, 0.3, fireRate),
           Utils.lerp(1, 10, maxAmmunition),
           "machinegun_singleshot"
@@ -526,7 +574,7 @@ let generateGun: unit => gunT = {
         )
       | 2 => (
           Rifle,
-          makeBurstFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
+          makeBurstFire(bulletSpeed, Utils.lerpf(200., 900., damage)),
           Utils.lerpf(0.7, 0.5, fireRate),
           Utils.lerp(1, 6, maxAmmunition),
           "machinegun_threeshots"
@@ -673,29 +721,41 @@ let generateAchievements = () => {
 let drawKey = (x, y, gun, state, env) => {
   let body =
     switch gun.keyToggle {
-    | Num_1 => "1"
-    | Num_2 => "2"
-    | Num_3 => "3"
-    | Num_4 => "4"
-    | Num_5 => "5"
-    | Num_6 => "6"
-    | Num_7 => "7"
-    | Num_8 => "8"
-    | Num_9 => "9"
-    | T => "T"
-    | Y => "Y"
-    | U => "U"
-    | I => "I"
-    | O => "O"
-    | P => "P"
-    | H => "H"
-    | G => "G"
-    | J => "J"
-    | K => "K"
-    | L => "L"
+    | {primaryKey: Num_1} => "1"
+    | {primaryKey: Num_2} => "2"
+    | {primaryKey: Num_3} => "3"
+    | {primaryKey: Num_4} => "4"
+    | {primaryKey: Num_5} => "5"
+    | {primaryKey: Num_6} => "6"
+    | {primaryKey: Num_7} => "7"
+    | {primaryKey: Num_8} => "8"
+    | {primaryKey: Num_9} => "9"
+    | {primaryKey: T} => "T"
+    | {primaryKey: Y} => "Y"
+    | {primaryKey: U} => "U"
+    | {primaryKey: I} => "I"
+    | {primaryKey: O} => "O"
+    | {primaryKey: P} => "P"
+    | {primaryKey: H} => "H"
+    | {primaryKey: G} => "G"
+    | {primaryKey: J} => "J"
+    | {primaryKey: K} => "K"
+    | {primaryKey: L} => "L"
+    | {primaryKey: Z} => "Z"
+    | {primaryKey: C} => "C"
+    | {primaryKey: V} => "V"
+    | {primaryKey: B} => "B"
+    | {primaryKey: N} => "N"
+    | {primaryKey: M} => "M"
+    | {primaryKey: Comma} => ","
+    | {primaryKey: Period} => "."
     | _ => failwith("Fuck")
     };
-  Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
+  if (! gun.keyToggle.modifier) {
+    Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
+  } else {
+    Draw.text(state.mainFont, "+ " ++ body, (int_of_float(x), int_of_float(y) + 10), env)
+  }
 };
 
 let generateWave = (state) => {
@@ -956,10 +1016,11 @@ let draw = (state, env) => {
   let rec foldOverGuns = (state, guns, i) =>
     switch guns {
     | [] => state
-    | [gun] => Env.keyPressed(gun.keyToggle, env) ? {...state, equippedGun: i} : state
     | [gun, ...guns] =>
       foldOverGuns(
-        Env.keyPressed(gun.keyToggle, env) ? {...state, equippedGun: i} : state,
+        Env.keyPressed(gun.keyToggle.primaryKey, env)
+        && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
+          {...state, equippedGun: i} : state,
         guns,
         i + 1
       )
@@ -1026,7 +1087,19 @@ let draw = (state, env) => {
           print_endline(achievement.message);
           {
             ...state,
-            guns: [generateGun(), ...state.guns],
+            guns: [
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              generateGun(),
+              ...state.guns
+            ],
             equippedGun: state.equippedGun + 1,
             achievements:
               List.map(
@@ -1357,18 +1430,70 @@ let draw = (state, env) => {
       env
     )
   };
+  let defaultSpacing = 90.;
+  let padding = 16.;
+  let boundsTopLeft = {x: padding, y: padding};
+  let boundsBottomRight = {
+    x: float_of_int(Env.width(env)) -. padding,
+    y: float_of_int(Env.height(env)) -. padding
+  };
+  let width = boundsBottomRight.x -. boundsTopLeft.x;
+  let height = boundsBottomRight.y -. boundsTopLeft.y;
+  let numX = floor(width /. defaultSpacing);
+  let numY = floor(height /. defaultSpacing);
+  let diffX = width -. numX *. defaultSpacing;
+  let diffY = height -. numY *. defaultSpacing;
+  let squareSizeX = defaultSpacing +. diffX /. numX;
+  let squareSizeY = defaultSpacing +. diffY /. numY;
+  let boundsTopLeft = {x: padding, y: padding +. squareSizeY};
+  let boundsBottomRight = {x: boundsBottomRight.x -. squareSizeX, y: boundsBottomRight.y};
   ignore @@
   List.fold_left(
-    ((x, y, i), gun) => {
+    ({pos: {x, y}, i} as acc, gun) => {
+      let (newDirection, newBottomRight, newTopLeft) =
+        switch acc.direction {
+        | {x: 1., y: 0.} when x +. squareSizeX > acc.boundsBottomRight.x => (
+            {x: 0., y: 1.0},
+            {...acc.boundsBottomRight, x: acc.boundsBottomRight.x -. squareSizeX},
+            acc.boundsTopLeft
+          )
+        | {x: 0., y: 1.0} when y +. squareSizeY > acc.boundsBottomRight.y => (
+            {x: (-1.), y: 0.0},
+            {...acc.boundsBottomRight, y: acc.boundsBottomRight.y -. squareSizeY},
+            acc.boundsTopLeft
+          )
+        | {x: (-1.), y: 0.0} when x -. squareSizeX < acc.boundsTopLeft.x => (
+            {x: 0.0, y: (-1.0)},
+            acc.boundsBottomRight,
+            {...acc.boundsTopLeft, x: acc.boundsTopLeft.x +. squareSizeX}
+          )
+        | {x: 0.0, y: (-1.0)} when y -. squareSizeY < acc.boundsTopLeft.y => (
+            {x: 1., y: 0.},
+            acc.boundsBottomRight,
+            {...acc.boundsTopLeft, y: acc.boundsTopLeft.y +. squareSizeY}
+          )
+        | _ => (acc.direction, acc.boundsBottomRight, acc.boundsTopLeft)
+        };
+      /*Draw.fill(Utils.color(255, 255, 0, 255), env);
+        Draw.rectf(~pos=(x, y), ~width=squareSizeX, ~height=squareSizeY, env);
+        Draw.fill(Utils.color(0, 0, 0, 255), env);
+        Draw.rectf(
+          ~pos=(x +. 2., y +. 2.),
+          ~width=squareSizeX -. 4.,
+          ~height=squareSizeY -. 4.,
+          env
+        );*/
+      let centeredX = x +. squareSizeX /. 2. -. 40.;
+      let centeredY = y +. squareSizeY /. 2. -. 40.;
       if (length - i - 1 === state.equippedGun) {
         Draw.fill(Utils.color(255, 255, 0, 255), env);
-        Draw.rectf(~pos=(x +. 20., y), ~width=80., ~height=80., env)
+        Draw.rectf(~pos=(centeredX, centeredY), ~width=80., ~height=80., env)
       };
       Draw.fill(gun.color, env);
-      Draw.rectf(~pos=(x +. 25., y +. 5.), ~width=70., ~height=70., env);
+      Draw.rectf(~pos=(centeredX +. 5., centeredY +. 5.), ~width=70., ~height=70., env);
       Draw.subImagef(
         state.mainSpriteSheet,
-        ~pos=(x +. 30., y),
+        ~pos=(centeredX +. 10., centeredY),
         ~width=64.,
         ~height=64.,
         ~texPos=gunTexPos(gun.kind),
@@ -1376,10 +1501,10 @@ let draw = (state, env) => {
         ~texHeight=64,
         env
       );
-      drawKey(x +. 30., y +. 22., gun, state, env);
+      drawKey(centeredX +. 10., centeredY +. 22., gun, state, env);
       drawHealthBar(
-        x +. 25. +. 35.,
-        y +. 64.,
+        centeredX +. 5. +. 35.,
+        centeredY +. 64.,
         10.,
         68.,
         float_of_int(gun.ammunition),
@@ -1387,9 +1512,21 @@ let draw = (state, env) => {
         Utils.color(220, 220, 0, 255),
         env
       );
-      (x +. 90., y, i + 1)
+      {
+        direction: newDirection,
+        boundsTopLeft: newTopLeft,
+        boundsBottomRight: newBottomRight,
+        pos: {x: x +. newDirection.x *. squareSizeX, y: y +. newDirection.y *. squareSizeY},
+        i: i + 1
+      }
     },
-    (10., 20., 0),
+    {
+      pos: {x: padding +. squareSizeX *. 3., y: padding},
+      i: 0,
+      boundsTopLeft,
+      boundsBottomRight,
+      direction: {x: 1., y: 0.}
+    },
     List.rev(state.guns)
   );
   state
