@@ -57,16 +57,15 @@ type enemyKindT =
   | BigZ
   | TallZ;
 
-/* TODO: fix anim:| Normal3Z => [(1348, 0), (1396, 0)] */
 let enemyTexPos = (kind, isDead) =>
   switch (kind, isDead) {
   | (Normal1Z, false) => [(917, 0), (965, 0)]
   | (Normal2Z, false) => [(1206, 0), (1254, 0)]
-  | (Normal3Z, false) => [(917, 0), (965, 0)]
+  | (Normal3Z, false) => [(1348, 0), (1396, 0)]
   | (BigZ, false) => [(1062, 0), (1110, 0)]
   | (TallZ, false) => [(1493, 0), (1541, 0)]
   | (Normal1Z, true) => [(1904, 0)]
-  | (Normal2Z, true) => [(1904, 0)]
+  | (Normal2Z, true) => [(1904, 0)] /* TODO: replace with special death anims? */
   | (Normal3Z, true) => [(1904, 0)]
   | (BigZ, true) => [(2000, 0)]
   | (TallZ, true) => [(2288, 0)]
