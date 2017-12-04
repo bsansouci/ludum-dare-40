@@ -90,7 +90,7 @@ let gunTexPos = (kind) =>
   | AlienGun2 => (802, 0)
   | LaserGun => (738, 0)
   | Rifle => (0, 0)
-  | Uzi => (1659, (-3))
+  | Uzi => (1655, (-3))
   };
 
 type crateT = {
@@ -884,7 +884,11 @@ let soundNames = [
   "laser",
   "aliengun_threeshots",
   "shotgun",
-  "theme"
+  "theme",
+  "achievement",
+  "zombie_one",
+  "zombie_two",
+  "zombie_three"
 ];
 
 let playSound = (name, sounds, ~loop=false, env) =>
@@ -1001,6 +1005,27 @@ let draw = (state, env) => {
   let state = Env.keyPressed(Escape, env) ? {...state, running: ! state.running} : state;
   let state =
     if (state.running) {
+      let offset = {x: 0., y: 0.};
+      let numZombies = List.length(state.enemies);
+      if (Random.float(1.) +. float_of_int(numZombies) *. 0.0002 > 0.995) {
+        let num =
+          switch (Random.int(3)) {
+          | 0 => "one"
+          | 1 => "two"
+          | _ => "three"
+          };
+        playSound("zombie_" ++ num, state.sounds, env)
+      };
+      let playerSpeedDt = playerSpeed *. dt;
+      let offset =
+        checkOffset(offset, Env.key(A, env) ? {...offset, x: -. playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(D, env) ? {...offset, x: playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(W, env) ? {...offset, y: -. playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
+      let mag = Utils.magf((offset.x, offset.y));
       let offset = {x: 0., y: 0.};
       let playerSpeedDt = playerSpeed *. dt;
       let offset =
