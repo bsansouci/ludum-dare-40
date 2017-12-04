@@ -885,15 +885,17 @@ let generateWave = (state) => {
     }
   };
   let enemies = list_init(state.enemies, makeEnemy, enemyCount);
-  let startWaveForMiniBosses = 1;
+  let startWaveForMiniBosses = 2;
   let enemies =
-    if (state.waveNum >= startWaveForMiniBosses) {
-      let n = max(0, Utils.random(- state.waveNum, state.waveNum - startWaveForMiniBosses));
+    if (state.waveNum == startWaveForMiniBosses) {
+      list_init(enemies, makeMiniBosses, 2)
+    } else if (state.waveNum > startWaveForMiniBosses) {
+      let n = max(0, Utils.random(0, state.waveNum));
       list_init(enemies, makeMiniBosses, n)
     } else {
       enemies
     };
-  let crateCount = state.waveNum > 1 ? Utils.random(0, 2) : 0;
+  let crateCount = state.waveNum > startWaveForMiniBosses - 1 ? Utils.random(0, 2) : 0;
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
