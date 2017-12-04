@@ -15190,51 +15190,129 @@ var directions = /* :: */[
 
 var StringMap = Make([compare$3]);
 
-function enemyTexPos(kind) {
-  if (kind !== 3) {
-    if (kind >= 4) {
-      return /* :: */[
-              /* tuple */[
-                1493,
-                0
-              ],
-              /* :: */[
-                /* tuple */[
-                  1541,
-                  0
-                ],
-                /* [] */0
-              ]
-            ];
-    } else {
-      return /* :: */[
-              /* tuple */[
-                917,
-                0
-              ],
-              /* :: */[
-                /* tuple */[
-                  965,
-                  0
-                ],
-                /* [] */0
-              ]
-            ];
-    }
-  } else {
-    return /* :: */[
-            /* tuple */[
-              1062,
-              0
-            ],
-            /* :: */[
-              /* tuple */[
-                1110,
-                0
-              ],
-              /* [] */0
-            ]
-          ];
+function enemyTexPos(kind, isDead) {
+  switch (kind) {
+    case 0 : 
+        if (isDead !== 0) {
+          return /* :: */[
+                  /* tuple */[
+                    1904,
+                    0
+                  ],
+                  /* [] */0
+                ];
+        } else {
+          return /* :: */[
+                  /* tuple */[
+                    917,
+                    0
+                  ],
+                  /* :: */[
+                    /* tuple */[
+                      965,
+                      0
+                    ],
+                    /* [] */0
+                  ]
+                ];
+        }
+    case 1 : 
+        if (isDead !== 0) {
+          return /* :: */[
+                  /* tuple */[
+                    1904,
+                    0
+                  ],
+                  /* [] */0
+                ];
+        } else {
+          return /* :: */[
+                  /* tuple */[
+                    1206,
+                    0
+                  ],
+                  /* :: */[
+                    /* tuple */[
+                      1254,
+                      0
+                    ],
+                    /* [] */0
+                  ]
+                ];
+        }
+    case 2 : 
+        if (isDead !== 0) {
+          return /* :: */[
+                  /* tuple */[
+                    1904,
+                    0
+                  ],
+                  /* [] */0
+                ];
+        } else {
+          return /* :: */[
+                  /* tuple */[
+                    1348,
+                    0
+                  ],
+                  /* :: */[
+                    /* tuple */[
+                      1396,
+                      0
+                    ],
+                    /* [] */0
+                  ]
+                ];
+        }
+    case 3 : 
+        if (isDead !== 0) {
+          return /* :: */[
+                  /* tuple */[
+                    2000,
+                    0
+                  ],
+                  /* [] */0
+                ];
+        } else {
+          return /* :: */[
+                  /* tuple */[
+                    1062,
+                    0
+                  ],
+                  /* :: */[
+                    /* tuple */[
+                      1110,
+                      0
+                    ],
+                    /* [] */0
+                  ]
+                ];
+        }
+    case 4 : 
+        if (isDead !== 0) {
+          return /* :: */[
+                  /* tuple */[
+                    2288,
+                    0
+                  ],
+                  /* [] */0
+                ];
+        } else {
+          return /* :: */[
+                  /* tuple */[
+                    1493,
+                    0
+                  ],
+                  /* :: */[
+                    /* tuple */[
+                      1541,
+                      0
+                    ],
+                    /* [] */0
+                  ]
+                ];
+        }
+    
   }
 }
 
@@ -15371,7 +15449,7 @@ function makeDefaultFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            189,
+            197,
             11
           ]
         ];
@@ -15448,7 +15526,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            217,
+            225,
             11
           ]
         ];
@@ -15504,7 +15582,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            225,
+            233,
             11
           ]
         ];
@@ -15560,7 +15638,7 @@ function makeTripleShotGunFire(bulletSpeed, otherSpeed, damage, state, deltaTime
           assert_failure,
           [
             "index.re",
-            233,
+            241,
             11
           ]
         ];
@@ -15661,7 +15739,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            275,
+            283,
             11
           ]
         ];
@@ -15717,7 +15795,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            283,
+            291,
             11
           ]
         ];
@@ -15773,7 +15851,7 @@ function makeSineFire(bulletSpeed, otherSpeed, damage, state, deltaTime$$1, dire
           assert_failure,
           [
             "index.re",
-            291,
+            299,
             11
           ]
         ];
@@ -15900,7 +15978,7 @@ function makeLaserFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            349,
+            357,
             11
           ]
         ];
@@ -15991,7 +16069,7 @@ function makeBurstFire(bulletSpeed, damage, state, deltaTime$$1, direction) {
           assert_failure,
           [
             "index.re",
-            390,
+            398,
             11
           ]
         ];
@@ -16095,7 +16173,7 @@ function makeUziFire(bulletSpeed, otherSpeed, damage) {
               assert_failure,
               [
                 "index.re",
-                439,
+                447,
                 13
               ]
             ];
@@ -16184,7 +16262,7 @@ function makeShotgunFire(bulletSpeed, otherSpeed, maxBullets, damage, state, del
                 assert_failure,
                 [
                   "index.re",
-                  480,
+                  488,
                   15
                 ]
               ];
@@ -16242,7 +16320,7 @@ function getNextGunKey() {
               assert_failure,
               [
                 "index.re",
-                575,
+                583,
                 19
               ]
             ];
@@ -17115,7 +17193,7 @@ function generateWave(state) {
             assert_failure,
             [
               "index.re",
-              841,
+              849,
               11
             ]
           ];
@@ -17160,6 +17238,7 @@ function generateWave(state) {
             ],
             /* speed */25,
             /* damage */100,
+            /* deathCountdown */1.0,
             /* kind */monsterKind
           ];
   };
@@ -17187,13 +17266,16 @@ function generateWave(state) {
             ],
             /* speed */match$1[2],
             /* damage */match$1[3],
+            /* deathCountdown */1.0,
             /* kind */match$1[0]
           ];
   };
   var enemies = list_init(state[/* enemies */13], makeEnemy, enemyCount);
   var enemies$1;
-  if (state[/* waveNum */14] >= 1) {
-    var n = max(0, random$3(-state[/* waveNum */14] | 0, state[/* waveNum */14] - 1 | 0));
+  if (state[/* waveNum */14] === 2) {
+    enemies$1 = list_init(enemies, makeMiniBosses, 2);
+  } else if (state[/* waveNum */14] > 2) {
+    var n = max(0, random$3(0, state[/* waveNum */14]));
     enemies$1 = list_init(enemies, makeMiniBosses, n);
   } else {
     enemies$1 = enemies;
@@ -17388,6 +17470,7 @@ function setup(env) {
               ],
               /* speed */70,
               /* damage */100,
+              /* deathCountdown */1.0,
               /* kind : Normal1Z */0
             ],
             /* [] */0
@@ -17561,7 +17644,7 @@ function draw(state, env) {
       state$1[/* invulnCountdown */6] = max(0, state$1[/* invulnCountdown */6] - dt);
     } else {
       iter((function (e) {
-              if (state$1[/* invulnCountdown */6] <= 0 && intersectRectRect(/* tuple */[
+              if (state$1[/* invulnCountdown */6] <= 0 && e[/* health */1] >= 1 && intersectRectRect(/* tuple */[
                       state$1[/* pos */0][/* x */0] - 20,
                       state$1[/* pos */0][/* y */1] - 20
                     ], 40, 40, /* tuple */[
@@ -17822,7 +17905,7 @@ function draw(state, env) {
                 ]);
             var dx = (state$10[/* pos */0][/* x */0] - enemy[/* pos */2][/* x */0]) / size * enemy[/* speed */4] * dt;
             var dy = (state$10[/* pos */0][/* y */1] - enemy[/* pos */2][/* y */1]) / size * enemy[/* speed */4] * dt;
-            var match = enemy[/* kind */6];
+            var match = enemy[/* kind */7];
             var error = match >= 4 ? /* float array */[
                 constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4),
                 constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4)
@@ -17830,18 +17913,18 @@ function draw(state, env) {
                 constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4]),
                 constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4])
               ];
-            return /* record */[
-                    /* maxHealth */enemy[/* maxHealth */0],
-                    /* health */enemy[/* health */1],
-                    /* pos : float array */[
-                      enemy[/* pos */2][/* x */0] + dx + enemy[/* error */3][/* x */0] * dt,
-                      enemy[/* pos */2][/* y */1] + dy + enemy[/* error */3][/* y */1] * dt
-                    ],
-                    /* error */error,
-                    /* speed */enemy[/* speed */4],
-                    /* damage */enemy[/* damage */5],
-                    /* kind */enemy[/* kind */6]
-                  ];
+            var match$1 = +(enemy[/* health */1] >= 1);
+            if (match$1 !== 0) {
+              var newrecord = enemy.slice();
+              newrecord[/* pos */2] = /* float array */[
+                enemy[/* pos */2][/* x */0] + dx + enemy[/* error */3][/* x */0] * dt,
+                enemy[/* pos */2][/* y */1] + dy + enemy[/* error */3][/* y */1] * dt
+              ];
+              newrecord[/* error */3] = error;
+              return newrecord;
+            } else {
+              return enemy;
+            }
           }), state$10[/* enemies */13]);
     var newrecord$14 = newrecord$13.slice();
     var state$11 = fold_left((function (state, bullet) {
@@ -17852,7 +17935,7 @@ function draw(state, env) {
                 if (enemies) {
                   var rest = enemies[1];
                   var e = enemies[0];
-                  if (e[/* health */1] > 0 && intersectRectRect(/* tuple */[
+                  if (e[/* health */1] > 1 && intersectRectRect(/* tuple */[
                           bullet[/* pos */0][/* x */0],
                           bullet[/* pos */0][/* y */1]
                         ], 5, 5, /* tuple */[
@@ -17915,9 +17998,20 @@ function draw(state, env) {
     newrecord$16[/* nextWaveCountdown */15] = state$12[/* nextWaveCountdown */15] - deltaTime(env);
     var state$13 = newrecord$16[/* nextWaveCountdown */15] <= 0 || length(newrecord$16[/* enemies */13]) === 0 ? generateWave(newrecord$16) : newrecord$16;
     var newrecord$17 = state$13.slice();
+    newrecord$17[/* enemies */13] = map((function (e) {
+            var match = +(e[/* health */1] < 1);
+            if (match !== 0) {
+              var newrecord = e.slice();
+              newrecord[/* deathCountdown */6] = e[/* deathCountdown */6] - dt;
+              return newrecord;
+            } else {
+              return e;
+            }
+          }), state$13[/* enemies */13]);
+    var newrecord$18 = newrecord$17.slice();
     state$2 = fold_left((function (state, enemy) {
-            if (enemy[/* health */1] < 1) {
-              var match = enemy[/* kind */6];
+            if (enemy[/* deathCountdown */6] <= 0) {
+              var match = enemy[/* kind */7];
               if (match !== 3) {
                 if (match >= 4) {
                   var newrecord = state.slice();
@@ -17941,21 +18035,21 @@ function draw(state, env) {
               ];
               return newrecord$3;
             }
-          }), (newrecord$17[/* enemies */13] = /* [] */0, newrecord$17), state$13[/* enemies */13]);
+          }), (newrecord$18[/* enemies */13] = /* [] */0, newrecord$18), newrecord$17[/* enemies */13]);
   } else {
     state$2 = state$1;
   }
   var state$14;
   if (state$2[/* animatingAchievement */24]) {
     if (state$2[/* animatingAchievementTime */23] - deltaTime(env) <= 0) {
-      var newrecord$18 = state$2.slice();
-      newrecord$18[/* animatingAchievementTime */23] = 0;
-      newrecord$18[/* animatingAchievement */24] = /* None */0;
-      state$14 = newrecord$18;
-    } else {
       var newrecord$19 = state$2.slice();
-      newrecord$19[/* animatingAchievementTime */23] = state$2[/* animatingAchievementTime */23] - deltaTime(env);
+      newrecord$19[/* animatingAchievementTime */23] = 0;
+      newrecord$19[/* animatingAchievement */24] = /* None */0;
       state$14 = newrecord$19;
+    } else {
+      var newrecord$20 = state$2.slice();
+      newrecord$20[/* animatingAchievementTime */23] = state$2[/* animatingAchievementTime */23] - deltaTime(env);
+      state$14 = newrecord$20;
     }
   } else {
     state$14 = state$2;
@@ -18089,10 +18183,10 @@ function draw(state, env) {
             case 1 : 
                 var enemy = thing[0];
                 if (enemy[/* pos */2][/* x */0] > -30 && enemy[/* pos */2][/* x */0] < mapSizePx + 30 && enemy[/* pos */2][/* y */1] > -30 && enemy[/* pos */2][/* y */1] < mapSizePx + 30) {
-                  var animList = enemyTexPos(enemy[/* kind */6]);
+                  var animList = enemyTexPos(enemy[/* kind */7], +(enemy[/* health */1] < 1));
                   var animLen = length(animList);
                   var texPos$1 = nth(animList, mod_(state$14[/* elapsedTime */22] / 0.2 | 0, animLen));
-                  var match = enemy[/* kind */6];
+                  var match = enemy[/* kind */7];
                   var match$1 = match >= 4 ? /* tuple */[
                       2,
                       -5
@@ -18100,7 +18194,10 @@ function draw(state, env) {
                       -5,
                       0
                     ];
-                  if (enemy[/* pos */2][/* x */0] > state$14[/* pos */0][/* x */0]) {
+                  if (enemy[/* health */1] < 1) {
+                    tint(color(255, 255, 255, enemy[/* deathCountdown */6] / 1.0 * 255 | 0), env);
+                  }
+                  if (enemy[/* pos */2][/* x */0] > state$14[/* pos */0][/* x */0] || enemy[/* health */1] < 1) {
                     subImagef(state$14[/* mainSpriteSheet */11], /* tuple */[
                           enemy[/* pos */2][/* x */0] - 25,
                           enemy[/* pos */2][/* y */1] - 32
@@ -18111,7 +18208,10 @@ function draw(state, env) {
                           enemy[/* pos */2][/* y */1] - 32
                         ], -46, 64, texPos$1, 46, 64, env);
                   }
-                  return drawHealthBar(enemy[/* pos */2][/* x */0] + 5 + match$1[0], enemy[/* pos */2][/* y */1] - 35 + match$1[1], 5, 40, enemy[/* health */1], enemy[/* maxHealth */0], red, env);
+                  if (enemy[/* health */1] >= 1) {
+                    drawHealthBar(enemy[/* pos */2][/* x */0] + 5 + match$1[0], enemy[/* pos */2][/* y */1] - 35 + match$1[1], 5, 40, enemy[/* health */1], enemy[/* maxHealth */0], red, env);
+                  }
+                  return noTint(env);
                 } else {
                   return 0;
                 }
@@ -18521,9 +18621,9 @@ function draw(state, env) {
     if (match$11 !== 0) {
       state$15 = state$14;
     } else {
-      var newrecord$20 = state$14.slice();
-      newrecord$20[/* running */25] = /* true */1;
-      state$15 = newrecord$20;
+      var newrecord$21 = state$14.slice();
+      newrecord$21[/* running */25] = /* true */1;
+      state$15 = newrecord$21;
     }
   } else {
     state$15 = state$14;
@@ -18613,6 +18713,7 @@ function draw(state, env) {
                   ],
                   /* speed */70,
                   /* damage */100,
+                  /* deathCountdown */1.0,
                   /* kind : Normal1Z */0
                 ],
                 /* [] */0
@@ -18657,6 +18758,8 @@ var scale = 2;
 
 var invulnerabilityTime = 1.0;
 
+var deathCountdown = 1.0;
+
 var backgroundTileGrid = grid;
 
 
@@ -18672,6 +18775,7 @@ exports.defaultRange = defaultRange;
 exports.scale = scale;
 exports.directions = directions;
 exports.invulnerabilityTime = invulnerabilityTime;
+exports.deathCountdown = deathCountdown;
 exports.StringMap = StringMap;
 exports.enemyTexPos = enemyTexPos;
 exports.gunTexPos = gunTexPos;
