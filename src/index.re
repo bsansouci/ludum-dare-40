@@ -121,6 +121,17 @@ type rankT =
   | Epic
   | Legendary;
 
+type statsT = {
+  normalEnemiesKilled: int,
+  bigEnemiesKilled: int,
+  tallEnemiesKilled: int,
+  numberOfBulletsFired: int,
+  damageDone: float,
+  stepTaken: float,
+  numberOfShotgunShots: int,
+  numberOfWeaponSwaps: int
+};
+
 type gunT = {
   fireRate: float,
   lastShotTime: float,
@@ -155,18 +166,13 @@ and stateT = {
   enemies: list(enemyT),
   waveNum: int,
   nextWaveCountdown: float,
-  normalEnemiesKilled: int,
-  bigEnemiesKilled: int,
-  tallEnemiesKilled: int,
-  numberOfBulletsFired: int,
-  damageDone: float,
-  stepTaken: float,
   elapsedTime: float,
   animatingAchievementTime: float,
   animatingAchievement: option(achievementT),
   animatingWaveNumberTime: float,
   running: bool,
-  shiftIcon: imageT
+  shiftIcon: imageT,
+  stats: statsT
 };
 
 type orderT =
@@ -199,7 +205,7 @@ let makeDefaultFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -243,7 +249,7 @@ let makeTripleShotGunFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -318,7 +324,7 @@ let makeSineFire =
   };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -382,7 +388,7 @@ let makeLaserFire =
   let newBullets = recur([], 10);
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
     playerBullets: newBullets @ state.playerBullets
   }
 };
@@ -400,7 +406,7 @@ let makeBurstFire =
     };
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + 3,
+    stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 3},
     playerBullets: [
       {
         pos: {x: state.pos.x, y: state.pos.y},
@@ -456,7 +462,7 @@ let makeUziFire = (bulletSpeed, otherSpeed, damage) => {
     };
     {
       ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 1,
+      stats: {...state.stats, numberOfBulletsFired: state.stats.numberOfBulletsFired + 1},
       playerBullets: [newBullet, ...state.playerBullets]
     }
   }
@@ -505,7 +511,11 @@ let makeShotgunFire =
   let newBullets = recur([], Utils.random(max(1, maxBullets - 3), maxBullets + 1));
   {
     ...state,
-    numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
+    stats: {
+      ...state.stats,
+      numberOfBulletsFired: state.stats.numberOfBulletsFired + List.length(newBullets),
+      numberOfShotgunShots: state.stats.numberOfShotgunShots + 1
+    },
     playerBullets: newBullets @ state.playerBullets
   }
 };
@@ -702,7 +712,7 @@ let generateAchievements = () => {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.stepTaken >= 800.,
+          condition: (state, _env) => state.stats.stepTaken >= 800.,
           message: "You walked your first 100 steps!"
         },
         ...acc
@@ -712,7 +722,7 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.stepTaken >= 10000. *. float_of_int(i),
+            condition: (state, _env) => state.stats.stepTaken >= 10000. *. float_of_int(i),
             message: Printf.sprintf("You walked more than %d steps!", 1000 * i)
           },
           ...acc
@@ -729,7 +739,7 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.numberOfBulletsFired >= 100 * i,
+            condition: (state, _env) => state.stats.numberOfBulletsFired >= 100 * i,
             message: Printf.sprintf("You fired more than %d bullets!", 100 * i)
           },
           ...acc
@@ -740,20 +750,54 @@ let generateAchievements = () => {
   let achievements = loop(achievements, 25);
   let rec loop = (acc, i) =>
     if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.stats.numberOfWeaponSwaps >= 10 * Utils.pow(2, i),
+            message: Printf.sprintf("You swapped guns more than %d times!", 10 * Utils.pow(2, i))
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop(achievements, 15);
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
+      acc
+    } else {
+      loop(
+        [
+          {
+            state: Locked,
+            condition: (state, _env) => state.stats.numberOfShotgunShots >= 10 * i,
+            message: Printf.sprintf("You fired the shotgun %d times!", 10 * i)
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let achievements = loop(achievements, 15);
+  let rec loop = (acc, i) =>
+    if (i <= 0) {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.normalEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.normalEnemiesKilled >= 1,
           message: "You killed your first zombie!"
         },
         {
           state: Locked,
-          condition: (state, _env) => state.tallEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.tallEnemiesKilled >= 1,
           message: "You killed your first Runner!"
         },
         {
           state: Locked,
-          condition: (state, _env) => state.bigEnemiesKilled >= 1,
+          condition: (state, _env) => state.stats.bigEnemiesKilled >= 1,
           message: "You killed your first Biggy!"
         },
         ...acc
@@ -763,17 +807,17 @@ let generateAchievements = () => {
         [
           {
             state: Locked,
-            condition: (state, _env) => state.normalEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.normalEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d zombies!", Utils.pow(2, i))
           },
           {
             state: Locked,
-            condition: (state, _env) => state.bigEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.bigEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d Biggies!", Utils.pow(2, i))
           },
           {
             state: Locked,
-            condition: (state, _env) => state.tallEnemiesKilled >= Utils.pow(2, i),
+            condition: (state, _env) => state.stats.tallEnemiesKilled >= Utils.pow(2, i),
             message: Printf.sprintf("You killed %d Runners!", Utils.pow(2, i))
           },
           ...acc
@@ -911,15 +955,16 @@ let generateWave = (state) => {
   }
 };
 
-let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
+let drawHealthBar = (x, y, h, w, health, maxHealth, color, ~border=2., env) => {
   let xOffset = w /. 2.;
-  let border = 1.;
-  let border2 = 2.;
+  let halfBorder = border /. 2.;
+  /*let (border, border2) = border ? (1., 2.) : (0., 0.);*/
+  /*let border2 = 0.;*/
   Draw.fill(Constants.black, env);
   Draw.rectf(
-    ~pos=(x -. xOffset -. border, y -. border),
-    ~width=w +. border2,
-    ~height=h +. border2,
+    ~pos=(x -. xOffset -. halfBorder, y -. halfBorder),
+    ~width=w +. border,
+    ~height=h +. border,
     env
   );
   let healthW = Utils.remapf(~value=health, ~low1=0., ~high1=maxHealth, ~low2=0., ~high2=w);
@@ -987,12 +1032,16 @@ let setup = (env) => {
         deathCountdown
       }
     ],
-    normalEnemiesKilled: 0,
-    bigEnemiesKilled: 0,
-    tallEnemiesKilled: 0,
-    numberOfBulletsFired: 0,
-    damageDone: 0.,
-    stepTaken: 0.,
+    stats: {
+      normalEnemiesKilled: 0,
+      bigEnemiesKilled: 0,
+      tallEnemiesKilled: 0,
+      numberOfBulletsFired: 0,
+      damageDone: 0.,
+      stepTaken: 0.,
+      numberOfShotgunShots: 0,
+      numberOfWeaponSwaps: 0
+    },
     elapsedTime: 0.,
     animatingAchievementTime: 0.,
     animatingAchievement: None,
@@ -1199,7 +1248,7 @@ let draw = (state, env) => {
           {
             ...state,
             pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
-            stepTaken: state.stepTaken +. playerSpeedDt
+            stats: {...state.stats, stepTaken: state.stats.stepTaken +. playerSpeedDt}
           }
         } else {
           state
@@ -1242,7 +1291,12 @@ let draw = (state, env) => {
           foldOverGuns(
             Env.keyPressed(gun.keyToggle.primaryKey, env)
             && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
-              {...state, equippedGun: i} : state,
+              {
+                ...state,
+                equippedGun: i,
+                stats: {...state.stats, numberOfWeaponSwaps: state.stats.numberOfWeaponSwaps + 1}
+              } :
+              state,
             guns,
             i + 1
           )
@@ -1441,8 +1495,13 @@ let draw = (state, env) => {
               };
             {
               ...state,
-              damageDone:
-                didHit ? state.damageDone +. bullet.damage *. Env.deltaTime(env) : state.damageDone,
+              stats: {
+                ...state.stats,
+                damageDone:
+                  didHit ?
+                    state.stats.damageDone +. bullet.damage *. Env.deltaTime(env) :
+                    state.stats.damageDone
+              },
               playerBullets: bullets,
               enemies
             }
@@ -1482,9 +1541,18 @@ let draw = (state, env) => {
               switch enemy.kind {
               | Normal1Z
               | Normal2Z
-              | Normal3Z => {...state, normalEnemiesKilled: state.normalEnemiesKilled + 1}
-              | BigZ => {...state, bigEnemiesKilled: state.bigEnemiesKilled + 1}
-              | TallZ => {...state, tallEnemiesKilled: state.tallEnemiesKilled + 1}
+              | Normal3Z => {
+                  ...state,
+                  stats: {...state.stats, normalEnemiesKilled: state.stats.normalEnemiesKilled + 1}
+                }
+              | BigZ => {
+                  ...state,
+                  stats: {...state.stats, bigEnemiesKilled: state.stats.bigEnemiesKilled + 1}
+                }
+              | TallZ => {
+                  ...state,
+                  stats: {...state.stats, tallEnemiesKilled: state.stats.tallEnemiesKilled + 1}
+                }
               }
             } else {
               {...state, enemies: [enemy, ...state.enemies]}
@@ -1685,7 +1753,7 @@ let draw = (state, env) => {
       | Player(p) =>
         let texPos =
           if (state.moving) {
-            if (truncate(state.stepTaken /. 20.) mod 2 == 1) {
+            if (truncate(state.stats.stepTaken /. 20.) mod 2 == 1) {
               (128, 0)
             } else {
               (224, 0)
@@ -1734,7 +1802,17 @@ let draw = (state, env) => {
   drawForest(state, env);
   Draw.popMatrix(env);
   let length = List.length(state.guns);
-  drawHealthBar(160., 50., 30., 250., state.health, 50., Utils.color(220, 0, 0, 255), env);
+  drawHealthBar(
+    160.,
+    50.,
+    30.,
+    250.,
+    state.health,
+    50.,
+    Utils.color(220, 0, 0, 255),
+    ~border=5.,
+    env
+  );
   switch length {
   | 0 =>
     Draw.text(
@@ -1844,6 +1922,8 @@ let draw = (state, env) => {
             Draw.fill(Utils.color(255, 255, 0, 255), env);
             Draw.rectf(~pos=(centeredX, centeredY), ~width=80., ~height=80., env)
           };
+          /*Draw.fill(Utils.color(55, 55, 55, 150), env);
+            Draw.rectf(~pos=(centeredX +. 3., centeredY +. 3.), ~width=74., ~height=74., env);*/
           Draw.fill(gun.color, env);
           Draw.rectf(~pos=(centeredX +. 5., centeredY +. 5.), ~width=70., ~height=70., env);
           Draw.subImagef(
@@ -1860,11 +1940,12 @@ let draw = (state, env) => {
           drawHealthBar(
             centeredX +. 5. +. 35.,
             centeredY +. 64.,
-            10.,
-            68.,
+            11.,
+            70.,
             float_of_int(gun.ammunition),
             float_of_int(gun.maxAmmunition),
             Utils.color(220, 220, 0, 255),
+            ~border=0.,
             env
           );
           let newAcc = getNextGunIterator(acc);
@@ -1998,20 +2079,27 @@ let draw = (state, env) => {
       drawHealthBar(
         centeredX +. 8. +. gunSize /. 2.,
         centeredY +. gunSize,
-        10.,
-        gunSize +. 4.,
+        11.,
+        gunSize +. 6.,
         float_of_int(gun.ammunition),
         float_of_int(gun.maxAmmunition),
         Utils.color(220, 220, 0, 255),
+        ~border=0.,
         env
       );
       Draw.noTint(env);
       t > 0.4 ? state : {...state, running: true}
     };
   if (! state.running && state.animatingAchievement == None) {
-    let windowX = (Env.width(env) - 200) / 2;
-    let windowY = (Env.height(env) - 300) / 2;
-    Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 80, windowY + 40), env)
+    let gameoverW = 160;
+    let gameoverH = 100;
+    let windowX = (Env.width(env) - gameoverW) / 2;
+    let windowY = (Env.height(env) - gameoverH) / 2 - 100;
+    Draw.fill(Constants.black, env);
+    Draw.rect(~pos=(windowX - 2, windowY - 2), ~width=gameoverW + 4, ~height=gameoverH + 4, env);
+    Draw.fill(Utils.color(244, 167, 66, 255), env);
+    Draw.rect(~pos=(windowX, windowY), ~width=gameoverW, ~height=gameoverH, env);
+    Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 38, windowY + 36), env)
   };
   if (state.health <= 0.) {
     let gameoverW = 300;
@@ -2077,12 +2165,16 @@ let draw = (state, env) => {
             deathCountdown
           }
         ],
-        normalEnemiesKilled: 0,
-        bigEnemiesKilled: 0,
-        tallEnemiesKilled: 0,
-        numberOfBulletsFired: 0,
-        damageDone: 0.,
-        stepTaken: 0.,
+        stats: {
+          normalEnemiesKilled: 0,
+          bigEnemiesKilled: 0,
+          tallEnemiesKilled: 0,
+          numberOfBulletsFired: 0,
+          damageDone: 0.,
+          stepTaken: 0.,
+          numberOfShotgunShots: 0,
+          numberOfWeaponSwaps: 0
+        },
         elapsedTime: 0.,
         animatingAchievementTime: 0.,
         animatingAchievement: None,
