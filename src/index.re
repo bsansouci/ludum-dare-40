@@ -18,7 +18,7 @@ let scale = 2.;
 
 let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
 
-let invulnerabilityTime = 0.01;
+let invulnerabilityTime = 0.05;
 
 /* let invulnerabilityTime = 1.0; */
 module StringMap = Map.Make(String);
@@ -816,7 +816,7 @@ let drawKey = (x, y, gun, state, env) => {
     | {primaryKey: Period} => "."
     | _ => failwith("Fuck")
     };
-  if (gun.keyToggle.modifier) {
+  if (! gun.keyToggle.modifier) {
     Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
   } else {
     Draw.subImage(
