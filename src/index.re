@@ -1087,19 +1087,7 @@ let draw = (state, env) => {
           print_endline(achievement.message);
           {
             ...state,
-            guns: [
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              generateGun(),
-              ...state.guns
-            ],
+            guns: [generateGun(), ...state.guns],
             equippedGun: state.equippedGun + 1,
             achievements:
               List.map(
