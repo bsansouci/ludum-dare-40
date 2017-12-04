@@ -8,7 +8,7 @@ let mapSize = 20;
 
 let mapSizePx = float_of_int(mapSize * 64);
 
-let bulletSpeed = 600.;
+let bulletSpeed = 400.;
 
 let scale = 2.;
 
@@ -61,9 +61,9 @@ let gunTexPos = (kind) =>
   | Shotgun => (650, 0)
   | AlienGun1 => (64, 0)
   | AlienGun2 => (772, 0)
-  | LaserGun => (712, 0)
+  | LaserGun => (713, 0)
   | Rifle => (0, 0)
-  | Uzi => (1666, 0)
+  | Uzi => (1660, (-3))
   };
 
 type crateT = {
@@ -106,6 +106,10 @@ and stateT = {
 };
 
 let add = (v1, v2) => {x: v1.x +. v2.x, y: v1.y +. v2.y};
+
+let mul = (v1, v2) => {x: v1.x *. v2.x, y: v1.y *. v2.y};
+
+let mulConst = (v1, c) => {x: v1.x *. c, y: v1.y *. c};
 
 let makeDefaultFire =
     (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
@@ -262,7 +266,62 @@ let makeSineFire =
   }
 };
 
-let makeRifleFire =
+let makeLaserFire =
+    (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) =>
+  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
+    let bulletSpeed = bulletSpeed *. deltaTime;
+    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
+    let dir =
+      switch direction {
+      | Up => {x: 0., y: (-1.0)}
+      | Down => {x: 0., y: 1.0}
+      | Left => {x: (-1.0), y: 0.}
+      | Right => {x: 1.0, y: 0.}
+      | _ => assert false
+      };
+    let spacing = 1.5;
+    let rec recur = (acc, i) =>
+      if (i < 0) {
+        acc
+      } else {
+        recur(
+          [
+            {
+              pos: {
+                x: state.pos.x -. mulConst(dir, float_of_int(i) *. spacing).x,
+                y: state.pos.y -. mulConst(dir, float_of_int(i) *. spacing).y
+              },
+              direction: mulConst(dir, bulletSpeed),
+              moveBullet,
+              time: 0.,
+              damage
+            },
+            ...acc
+          ],
+          i - 1
+        )
+      };
+    let newBullets = recur([], 10);
+    {
+      ...state,
+      numberOfBulletsFired: state.numberOfBulletsFired + 1,
+      guns:
+        List.mapi(
+          (i, gun) =>
+            if (i === state.equippedGun) {
+              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+            } else {
+              gun
+            },
+          state.guns
+        ),
+      playerBullets: newBullets @ state.playerBullets
+    }
+  } else {
+    state
+  };
+
+let makeBurstFire =
     (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
   let bulletSpeed = bulletSpeed *. deltaTime;
   let dir2 =
@@ -317,7 +376,7 @@ let makeUziFire =
   if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
     otherNoise :=
       Utils.constrain(
-        ~amt=otherNoise^ +. Utils.randomf(-2000. *. deltaTime, 2000. *. deltaTime),
+        ~amt=otherNoise^ +. Utils.randomf((-2000.) *. deltaTime, 2000. *. deltaTime),
         ~low=otherSpeed *. (-1.),
         ~high=otherSpeed
       );
@@ -359,7 +418,7 @@ let makeUziFire =
   }
 };
 
-let makeShotGunFire =
+let makeShotgunFire =
     (
       bulletSpeed,
       otherSpeed,
@@ -458,7 +517,7 @@ let generateGun: unit => gunT = {
     let damage = Utils.randomf(0., 1.);
     let fireRate = Utils.randomf(0., 1.);
     let (kind, fire, fireRate, maxAmmunition) =
-      switch (Utils.random(0, 7)) {
+      switch (Utils.random(0, 8)) {
       | 0 => (
           Pistol,
           makeDefaultFire(bulletSpeed, Utils.lerpf(400., 1000., damage)),
@@ -477,13 +536,13 @@ let generateGun: unit => gunT = {
         )
       | 2 => (
           Rifle,
-          makeRifleFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
+          makeBurstFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
           Utils.lerpf(0.7, 0.5, fireRate),
           Utils.lerp(1, 10, maxAmmunition)
         )
       | 3 => (
           Shotgun,
-          makeShotGunFire(
+          makeShotgunFire(
             bulletSpeed,
             Utils.randomf(50., 200.),
             15,
@@ -500,14 +559,27 @@ let generateGun: unit => gunT = {
         )
       | 5 => (
           Uzi,
-          makeUziFire(bulletSpeed -. 200., Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
+          makeUziFire(
+            bulletSpeed,
+            Utils.randomf(100., 500.),
+            Utils.lerpf(50., 200., damage)
+          ),
           Utils.lerpf(0.1, 0.03, fireRate),
           Utils.lerp(20, 50, maxAmmunition)
+        )
+      | 6 => (
+          LaserGun,
+          makeLaserFire(
+            bulletSpeed -. 200.,
+            Utils.lerpf(100., 300., damage)
+          ),
+          Utils.lerpf(1.5, 0.5, fireRate),
+          Utils.lerp(2, 10, maxAmmunition)
         )
       | _ => (
           AlienGun1,
           makeSineFire(
-            bulletSpeed /. 2.,
+            bulletSpeed -. 200.,
             Utils.randomf(50., 200.),
             Utils.lerpf(400., 1000., damage)
           ),
