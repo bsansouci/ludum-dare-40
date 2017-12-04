@@ -684,7 +684,7 @@ let generateAchievements = () => {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.stepTaken >= 1000.,
+          condition: (state, _env) => state.stepTaken >= 800.,
           message: "You walked your first 100 steps!"
         },
         ...acc
@@ -968,10 +968,10 @@ let drawForest = (state, env) => {
   }*/
 let backgroundTileGrid = {
   let grid = Array.make_matrix(mapSize, mapSize, 0);
-  for (_ in 0 to Utils.random(5, 20)) {
+  for (_ in 0 to 300) {
     let x = Utils.random(0, mapSize);
     let y = Utils.random(0, mapSize);
-    grid[x][y] = 1
+    grid[x][y] = Utils.random(1, 4)
   };
   grid
 };
@@ -1304,32 +1304,25 @@ let draw = (state, env) => {
   Array.iteri(
     (y, row) =>
       Array.iteri(
-        (x, id) =>
-          switch id {
-          | 0 =>
-            Draw.subImagef(
-              state.mainSpriteSheet,
-              ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
-              ~height=64.,
-              ~width=64.,
-              ~texPos=(474, 0),
-              ~texWidth=64,
-              ~texHeight=64,
-              env
-            )
-          | 1 =>
-            Draw.subImagef(
-              state.mainSpriteSheet,
-              ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
-              ~height=64.,
-              ~width=64.,
-              ~texPos=(408, 0),
-              ~texWidth=64,
-              ~texHeight=64,
-              env
-            )
-          | _ => ()
-          },
+        (x, id) => {
+          let texPos =
+            switch id {
+            | 0 => (474, 0)
+            | 1 => (408, 0)
+            | 2 => (1722, 0)
+            | _ => (1788, 0)
+            };
+          Draw.subImagef(
+            state.mainSpriteSheet,
+            ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
+            ~height=64.,
+            ~width=64.,
+            ~texPos,
+            ~texWidth=64,
+            ~texHeight=64,
+            env
+          )
+        },
         row
       ),
     backgroundTileGrid
