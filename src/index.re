@@ -68,14 +68,14 @@ type gunKindT =
 
 let gunTexPos = (kind) =>
   switch kind {
-  | Machinegun => (330, 0)
-  | Pistol => (587, 0)
-  | Shotgun => (650, 0)
-  | AlienGun1 => (64, 0)
-  | AlienGun2 => (778, 0)
-  | LaserGun => (713, 0)
+  | Machinegun => (342, 0)
+  | Pistol => (606, 0)
+  | Shotgun => (672, 0)
+  | AlienGun1 => (67, 0)
+  | AlienGun2 => (802, 0)
+  | LaserGun => (738, 0)
   | Rifle => (0, 0)
-  | Uzi => (1660, (-3))
+  | Uzi => (1722, (-3))
   };
 
 type crateT = {
@@ -895,29 +895,26 @@ let setup = (env) => {
   }
 };
 
-let drawForest = (state, env) =>
+let drawForest = (state, env) =>{
+  Draw.fill(Utils.color(~r=43, ~g=109, ~b=50, ~a=255), env);
   for (i in 0 to mapSize) {
-    Draw.subImagef(
-      state.mainSpriteSheet,
-      ~pos=(float_of_int(i) *. 63., (-10.)),
+    Draw.rectf(
+      ~pos=(float_of_int(i) *. 63., (-25.)),
       ~height=(-64.),
       ~width=65.,
-      ~texPos=(523, 0),
-      ~texWidth=64,
-      ~texHeight=64,
       env
     );
     Draw.subImagef(
       state.mainSpriteSheet,
-      ~pos=(float_of_int(i) *. 63., 20.),
+      ~pos=(float_of_int(i) *. 63., (25.)),
       ~height=(-64.),
       ~width=65.,
-      ~texPos=(523, 0),
+      ~texPos=(540, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
-    )
-  };
+    );
+  }};
 
 /*for (i in 0 to mapSize) {
     Draw.subImagef(
@@ -957,7 +954,8 @@ let checkOffset = (prevOffset, offset, state) =>
 
 let draw = (state, env) => {
   let dt = Env.deltaTime(env);
-  Draw.background(Utils.color(~r=32, ~g=59, ~b=24, ~a=255), env);
+  Draw.background(Utils.color(~r=100, ~g=100, ~b=100, ~a=255), env);
+  /* Draw.background(Utils.color(~r=43, ~g=109, ~b=50, ~a=255), env); */
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
   let offset = {x: 0., y: 0.};
@@ -1244,7 +1242,7 @@ let draw = (state, env) => {
               ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
               ~height=64.,
               ~width=64.,
-              ~texPos=(458, 0),
+              ~texPos=(474, 0),
               ~texWidth=64,
               ~texHeight=64,
               env
@@ -1255,7 +1253,7 @@ let draw = (state, env) => {
               ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
               ~height=64.,
               ~width=64.,
-              ~texPos=(394, 0),
+              ~texPos=(408, 0),
               ~texWidth=64,
               ~texHeight=64,
               env
@@ -1311,9 +1309,9 @@ let draw = (state, env) => {
         +. 30.) {
       let (texPos, healthBarOffsetX, healthBarOffsetY) =
         switch enemy.kind {
-        | NormalZ => ((842, 0), 0., 0.)
-        | BigZ => ((1026, 0), 0., 0.)
-        | TallZ => ((1391, 0), 2., (-5.))
+        | NormalZ => ((869, 0), 0., 0.)
+        | BigZ => ((1015, 0), 0., 0.)
+        | TallZ => ((1444, 0), 2., (-5.))
         };
       Draw.subImagef(
         state.mainSpriteSheet,
@@ -1342,7 +1340,7 @@ let draw = (state, env) => {
       ~pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
       ~width=40.,
       ~height=40.,
-      ~texPos=(1532, 0),
+      ~texPos=(1590, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
