@@ -18,7 +18,7 @@ let scale = 2.;
 
 let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
 
-let invulnerabilityTime = 0.05;
+let invulnerabilityTime = 1.0;
 
 /* let invulnerabilityTime = 1.0; */
 module StringMap = Map.Make(String);
@@ -585,15 +585,6 @@ let generateGun: list(gunT) => list(gunT) = {
       let damage = Utils.randomf(0., 1.);
       let fireRate = Utils.randomf(0., 1.);
       let gunRank = damage +. fireRate;
-      /*print_endline(
-          Printf.sprintf(
-            "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
-            gunRank,
-            damage,
-            fireRate,
-            maxAmmunition
-          )
-        );*/
       let (kind, fire, fireRate, maxAmmunition, soundName) =
         switch (Utils.random(0, 8)) {
         | 0 => (
@@ -608,7 +599,7 @@ let generateGun: list(gunT) => list(gunT) = {
             makeTripleShotGunFire(
               bulletSpeed,
               Utils.randomf(50., 200.),
-              Utils.lerpf(400., 700., damage)
+              Utils.lerpf(200., 1200., damage)
             ),
             Utils.lerpf(0.7, 0.5, fireRate),
             Utils.lerp(1, 10, maxAmmunition),
@@ -616,7 +607,7 @@ let generateGun: list(gunT) => list(gunT) = {
           )
         | 2 => (
             Rifle,
-            makeBurstFire(bulletSpeed, Utils.lerpf(200., 900., damage)),
+            makeBurstFire(bulletSpeed, Utils.lerpf(200., 1200., damage)),
             Utils.lerpf(0.7, 0.5, fireRate),
             Utils.lerp(1, 6, maxAmmunition),
             "machinegun_threeshots"
@@ -649,7 +640,7 @@ let generateGun: list(gunT) => list(gunT) = {
           )
         | 6 => (
             LaserGun,
-            makeLaserFire(bulletSpeed -. 200., Utils.lerpf(50., 200., damage)),
+            makeLaserFire(bulletSpeed -. 200., Utils.lerpf(50., 250., damage)),
             Utils.lerpf(1.5, 0.5, fireRate),
             Utils.lerp(2, 10, maxAmmunition),
             "laser"
@@ -764,17 +755,17 @@ let generateAchievements = () => {
           {
             state: Locked,
             condition: (state, _env) => state.normalEnemiesKilled >= Utils.pow(2, i),
-            message: Printf.sprintf("You killed more than %d zombies!", Utils.pow(i, 2))
+            message: Printf.sprintf("You killed %d zombies!", Utils.pow(2, i))
           },
           {
             state: Locked,
             condition: (state, _env) => state.bigEnemiesKilled >= Utils.pow(2, i),
-            message: Printf.sprintf("You killed more than %d Biggies!", Utils.pow(i, 2))
+            message: Printf.sprintf("You killed %d Biggies!", Utils.pow(2, i))
           },
           {
             state: Locked,
             condition: (state, _env) => state.tallEnemiesKilled >= Utils.pow(2, i),
-            message: Printf.sprintf("You killed more than %d Runners!", Utils.pow(i, 2))
+            message: Printf.sprintf("You killed %d Runners!", Utils.pow(2, i))
           },
           ...acc
         ],
@@ -836,7 +827,7 @@ let drawKey = (x, y, gun, state, env) => {
 let generateWave = (state) => {
   let enemyCount = Utils.random(10, 15);
   let rec list_init = (acc, f, i) =>
-    if (i < 0) {
+    if (i <= 0) {
       acc
     } else {
       list_init([f(), ...acc], f, i - 1)
@@ -892,12 +883,7 @@ let generateWave = (state) => {
     } else {
       enemies
     };
-  let crateCount =
-    if (List.length(state.crates) == 0) {
-      Utils.random(2, 4)
-    } else {
-      Utils.random(0, 2)
-    };
+  let crateCount = state.waveNum > 1 ?  Utils.random(0, 2) : 0;
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
@@ -965,7 +951,7 @@ let setup = (env) => {
     moving: false,
     equippedGun: (-1),
     guns: [],
-    health: 75.,
+    health: 50.,
     invulnCountdown: 0.,
     playerBullets: [],
     achievements: generateAchievements(),
@@ -1140,7 +1126,6 @@ let checkOffset = (prevOffset, offset, state) =>
 
 let draw = (state, env) => {
   let dt = Env.deltaTime(env);
-  /* Draw.background(Utils.color(~r=100, ~g=100, ~b=100, ~a=255), env); */
   Draw.background(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
@@ -1149,7 +1134,7 @@ let draw = (state, env) => {
     if (state.running && state.health > 0.) {
       let offset = {x: 0., y: 0.};
       let numZombies = List.length(state.enemies);
-      if (Random.float(1.) +. float_of_int(numZombies) *. 0.0002 > 0.995) {
+      if (Random.float(1.) +. float_of_int(numZombies) *. 0.00005 > 0.995) {
         let num =
           switch (Random.int(3)) {
           | 0 => "one"
@@ -1463,7 +1448,7 @@ let draw = (state, env) => {
       let state =
         List.fold_left(
           (state, enemy: enemyT) =>
-            if (enemy.health <= 0.) {
+            if (enemy.health < 1.) {
               switch enemy.kind {
               | Normal1Z
               | Normal2Z
@@ -1664,6 +1649,9 @@ let draw = (state, env) => {
           } else {
             (180, 0)
           };
+        if (state.invulnCountdown > 0.) {
+          Draw.tint(Utils.color(200, 100, 100, truncate(sin(state.invulnCountdown *. 10.) *. 100. +. 155.)), env)
+        };
         if (state.facingLeft) {
           Draw.subImagef(
             state.mainSpriteSheet,
@@ -1686,14 +1674,15 @@ let draw = (state, env) => {
             ~texHeight=64,
             env
           )
-        }
+        };
+        Draw.noTint(env)
       },
     sortedAllThings
   );
   drawForest(state, env);
   Draw.popMatrix(env);
   let length = List.length(state.guns);
-  drawHealthBar(160., 50., 30., 250., state.health, 75., Utils.color(220, 0, 0, 255), env);
+  drawHealthBar(160., 50., 30., 250., state.health, 50., Utils.color(220, 0, 0, 255), env);
   switch length {
   | 0 =>
     Draw.text(
@@ -1950,7 +1939,7 @@ let draw = (state, env) => {
         Utils.color(220, 220, 0, 255),
         env
       );
-      Draw.tint(Utils.color(255, 255, 255, 255), env);
+      Draw.noTint(env);
       t > 0.4 ? state : {...state, running: true}
     };
   if (state.health <= 0.) {
@@ -2000,7 +1989,7 @@ let draw = (state, env) => {
         moving: false,
         equippedGun: (-1),
         guns: [],
-        health: 75.,
+        health: 50.,
         invulnCountdown: 0.,
         playerBullets: [],
         achievements: generateAchievements(),
