@@ -12,6 +12,7 @@
     "backend": "js",
     "main-module": "Index"
   }],
+  "package-specs": ["es6"],
   "refmt": 3,
   "warnings": {
     "error": false,

@@ -4,14 +4,17 @@
     "start": "./lib/bs/bytecode/indexhot.byte",
     "start:native": "./lib/bs/native/index.native",
     "build": "bsb -make-world",
-    "build:web": "bsb -make-world -backend js",
+    "build:web": "bsb -make-world -backend js && rollup -c",
     "build:native": "bsb -make-world -backend native",
     "clean": "bsb -clean-world"
   },
   "dependencies": {
+    "babel-minify": "^0.2.0",
     "reprocessing": "schmavery/reprocessing"
   },
   "devDependencies": {
-    "bs-platform": "bsansouci/bsb-native"
+    "bs-platform": "bsansouci/bsb-native",
+    "rollup": "^0.52.0",
+    "rollup-plugin-node-resolve": "^3.0.0"
   }
 }

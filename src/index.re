@@ -1481,32 +1481,28 @@ let draw = (state, env) => {
     -. state.pos.y +. float_of_int(Env.height(env)) /. (2. *. scale),
     env
   );
-  Array.iteri(
-    (y, row) =>
-      Array.iteri(
-        (x, id) => {
-          let texPos =
-            switch id {
-            | 0 => (474, 0)
-            | 1 => (408, 0)
-            | 2 => (1722, 0)
-            | _ => (1788, 0)
-            };
-          Draw.subImagef(
-            state.mainSpriteSheet,
-            ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
-            ~height=64.,
-            ~width=64.,
-            ~texPos,
-            ~texWidth=64,
-            ~texHeight=64,
-            env
-          )
-        },
-        row
-      ),
-    backgroundTileGrid
-  );
+  for (y in 0 to mapSize - 1) {
+    for (x in 0 to mapSize - 1) {
+      let id = backgroundTileGrid[y][x];
+      let texPos =
+        switch id {
+        | 0 => (474, 0)
+        | 1 => (408, 0)
+        | 2 => (1722, 0)
+        | _ => (1788, 0)
+        };
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(float_of_int(x) *. 63., float_of_int(y) *. 64.),
+        ~height=64.,
+        ~width=64.,
+        ~texPos,
+        ~texWidth=64,
+        ~texHeight=64,
+        env
+      )
+    }
+  };
   let allThings = List.map((v) => Enemy(v), state.enemies);
   let allThings = [Player(state.pos), ...allThings];
   let allThings = allThings @ List.map((c) => Crate(c), state.crates);
@@ -1887,16 +1883,13 @@ let draw = (state, env) => {
       let it = lastGunIterator;
       let endX = it.pos.x +. squareSizeX /. 2. -. 40.;
       let endY = it.pos.y +. squareSizeY /. 2. -. 40.;
-      let (centeredX, gunSize) =
+      let centeredX =
         if (t > threshold1) {
-          (startX, startGunSize)
+          startX
         } else if (t > threshold2) {
-          (startX, startGunSize)
+          startX
         } else {
-          (
-            Utils.remapf(t, 0., threshold2, endX, startX),
-            Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
-          )
+          Utils.remapf(t, 0., threshold2, endX, startX)
         };
       let (centeredY, gunSize) =
         if (t > threshold1) {
