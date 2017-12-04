@@ -151,7 +151,8 @@ and stateT = {
   elapsedTime: float,
   animatingAchievementTime: float,
   animatingAchievement: option(achievementT),
-  running: bool
+  running: bool,
+  shiftIcon: imageT
 };
 
 type orderT =
@@ -810,10 +811,20 @@ let drawKey = (x, y, gun, state, env) => {
     | {primaryKey: Period} => "."
     | _ => failwith("Fuck")
     };
-  if (! gun.keyToggle.modifier) {
+  if (!gun.keyToggle.modifier) {
     Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
   } else {
-    Draw.text(state.mainFont, "+ " ++ body, (int_of_float(x), int_of_float(y) + 10), env)
+    Draw.subImage(
+      state.shiftIcon,
+      (int_of_float(x) - 4, int_of_float(y) + 19),
+      15,
+      15,
+      (0, 0),
+      277,
+      277,
+      env
+    );
+    Draw.text(state.mainFont, " " ++ body, (int_of_float(x) +4, int_of_float(y) + 10), env)
   }
 };
 
@@ -953,6 +964,7 @@ let setup = (env) => {
     crates: [],
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
+    shiftIcon: Draw.loadImage(~filename="assets/shift_icon.png", env),
     sounds,
     enemies: [
       {
@@ -982,7 +994,7 @@ let setup = (env) => {
 
 let drawForest = (state, env) => {
   Draw.fill(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
-  for (i in 0 to mapSize) {
+  for (i in 0 to mapSize - 1) {
     Draw.rectf(~pos=(float_of_int(i) *. 63., (-25.)), ~height=(-64.), ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
@@ -994,7 +1006,28 @@ let drawForest = (state, env) => {
       ~texHeight=64,
       env
     )
-  }
+  };
+  let maxX = float_of_int(mapSize - 1) *. 63.;
+  Draw.pushMatrix(env);
+  Draw.translate(maxX, 0., env);
+  /*Draw.rotate(Constants.pi /. 2., env);*/
+  for (i in 0 to mapSize - 1) {
+    Draw.pushMatrix(env);
+    Draw.translate(maxX, float_of_int(i) *. 63., env);
+    Draw.rectf(~pos=(0., 0.), ~height=(-64.), ~width=65., env);
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(0., 0.),
+      ~height=(-64.),
+      ~width=64.,
+      ~texPos=(540, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    );
+    Draw.popMatrix(env)
+  };
+  Draw.popMatrix(env)
 };
 
 /*for (i in 0 to mapSize) {
