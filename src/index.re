@@ -65,8 +65,8 @@ let enemyTexPos = (kind, isDead) =>
   | (BigZ, false) => [(1062, 0), (1110, 0)]
   | (TallZ, false) => [(1493, 0), (1541, 0)]
   | (Normal1Z, true) => [(1904, 0)]
-  | (Normal2Z, true) => [(1904, 0)] /* TODO: replace with special death anims? */
-  | (Normal3Z, true) => [(1904, 0)]
+  | (Normal2Z, true) => [(2094, 0)] /* TODO: replace with special death anims? */
+  | (Normal3Z, true) => [(2189, 0)]
   | (BigZ, true) => [(2000, 0)]
   | (TallZ, true) => [(2288, 0)]
   };
