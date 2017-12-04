@@ -1002,7 +1002,7 @@ let setup = (env) => {
 
 let drawForest = (state, env) => {
   Draw.fill(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
-  for (i in 0 to mapSize - 1) {
+  for (i in 1 to mapSize - 2) {
     Draw.rectf(~pos=(float_of_int(i) *. 63., (-25.)), ~height=(-64.), ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
@@ -1016,18 +1016,16 @@ let drawForest = (state, env) => {
     )
   };
   let maxX = float_of_int(mapSize - 1) *. 63.;
-  Draw.pushMatrix(env);
-  Draw.translate(maxX, 0., env);
-  /*Draw.rotate(Constants.pi /. 2., env);*/
-  for (i in 0 to mapSize - 1) {
+  for (i in 0 to mapSize - 2) {
     Draw.pushMatrix(env);
-    Draw.translate(maxX, float_of_int(i) *. 63., env);
-    Draw.rectf(~pos=(0., 0.), ~height=(-64.), ~width=65., env);
+    Draw.translate(maxX +. 7., float_of_int(i) *. 64. +. 22., env);
+    Draw.rotate(-. Constants.pi /. 2., env);
+    Draw.rectf(~pos=(0., 125.), ~height=(-64.), ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
       ~pos=(0., 0.),
-      ~height=(-64.),
-      ~width=64.,
+      ~height=64.,
+      ~width=(-65.),
       ~texPos=(540, 0),
       ~texWidth=64,
       ~texHeight=64,
@@ -1035,21 +1033,87 @@ let drawForest = (state, env) => {
     );
     Draw.popMatrix(env)
   };
-  Draw.popMatrix(env)
-};
-
-/*for (i in 0 to mapSize) {
+  Draw.pushMatrix(env);
+  Draw.translate(maxX +. 9., (-41.), env);
+  Draw.rotate(Constants.pi *. 3. /. 2., env);
+  Draw.subImagef(
+    state.mainSpriteSheet,
+    ~pos=(0., 0.),
+    ~height=64.,
+    ~width=(-64.),
+    ~texPos=(276, 0),
+    ~texWidth=64,
+    ~texHeight=64,
+    env
+  );
+  Draw.popMatrix(env);
+  for (i in 1 to mapSize - 2) {
+    Draw.rectf(~pos=(float_of_int(i) *. 63., 20. +. mapSizePx), ~height=64., ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
-      ~pos=(float_of_int(i) *. 63., 20.),
-      ~height=(-64.),
-      ~width=65.,
-      ~texPos=(459, 0),
+      ~pos=(float_of_int(i) *. 64., (-44.) +. mapSizePx),
+      ~height=64.,
+      ~width=64.,
+      ~texPos=(540, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
     )
-  }*/
+  };
+  Draw.rectf(~pos=(mapSizePx -. 64. -. 7., 20. +. mapSizePx), ~height=64., ~width=65., env);
+  Draw.subImagef(
+    state.mainSpriteSheet,
+    ~pos=(mapSizePx -. 1., (-42.) +. mapSizePx),
+    ~height=64.,
+    ~width=(-64.),
+    ~texPos=(276, 0),
+    ~texWidth=64,
+    ~texHeight=64,
+    env
+  );
+  for (i in 0 to mapSize - 2) {
+    Draw.pushMatrix(env);
+    Draw.translate(64., float_of_int(i) *. 64. +. 22., env);
+    Draw.rotate(Constants.pi /. 2., env);
+    Draw.rectf(~pos=(0., 125.), ~height=(-64.), ~width=65., env);
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(0., 0.),
+      ~height=64.,
+      ~width=65.,
+      ~texPos=(540, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    );
+    Draw.popMatrix(env)
+  };
+  Draw.pushMatrix(env);
+  Draw.translate(64., (-41.), env);
+  Draw.rotate(-. Constants.pi *. 3. /. 2., env);
+  Draw.subImagef(
+    state.mainSpriteSheet,
+    ~pos=(0., 0.),
+    ~height=64.,
+    ~width=64.,
+    ~texPos=(276, 0),
+    ~texWidth=64,
+    ~texHeight=64,
+    env
+  );
+  Draw.popMatrix(env);
+  Draw.subImagef(
+    state.mainSpriteSheet,
+    ~pos=(0., (-42.) +. mapSizePx),
+    ~height=64.,
+    ~width=64.,
+    ~texPos=(276, 0),
+    ~texWidth=64,
+    ~texHeight=64,
+    env
+  )
+};
+
 let backgroundTileGrid = {
   let grid = Array.make_matrix(mapSize, mapSize, 0);
   for (_ in 0 to 300) {
