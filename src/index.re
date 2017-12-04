@@ -20,6 +20,8 @@ let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
 
 let invulnerabilityTime = 1.0;
 
+let deathCountdown = 1.0;
+
 /* let invulnerabilityTime = 1.0; */
 module StringMap = Map.Make(String);
 
@@ -55,14 +57,19 @@ type enemyKindT =
   | BigZ
   | TallZ;
 
-let enemyTexPos = (kind) =>
-  switch kind {
-  | Normal1Z => [(917, 0), (965, 0)]
-  | Normal2Z => [(1206, 0), (1254,  0)]
-  | Normal3Z => [(917, 0), (965, 0)]
-  /* TODO: fix anim:| Normal3Z => [(1348, 0), (1396, 0)] */
-  | BigZ => [(1062, 0), (1110, 0)]
-  | TallZ => [(1493, 0), (1541, 0)]
+/* TODO: fix anim:| Normal3Z => [(1348, 0), (1396, 0)] */
+let enemyTexPos = (kind, isDead) =>
+  switch (kind, isDead) {
+  | (Normal1Z, false) => [(917, 0), (965, 0)]
+  | (Normal2Z, false) => [(1206, 0), (1254, 0)]
+  | (Normal3Z, false) => [(917, 0), (965, 0)]
+  | (BigZ, false) => [(1062, 0), (1110, 0)]
+  | (TallZ, false) => [(1493, 0), (1541, 0)]
+  | (Normal1Z, true) => [(1904, 0)]
+  | (Normal2Z, true) => [(1904, 0)]
+  | (Normal3Z, true) => [(1904, 0)]
+  | (BigZ, true) => [(2000, 0)]
+  | (TallZ, true) => [(2288, 0)]
   };
 
 type enemyT = {
@@ -72,6 +79,7 @@ type enemyT = {
   error: vec2T,
   speed: float,
   damage: float,
+  deathCountdown: float,
   kind: enemyKindT
 };
 
@@ -856,7 +864,8 @@ let generateWave = (state) => {
       health: maxHealth,
       maxHealth,
       speed: enemySpeed,
-      error: {x: 0., y: 0.}
+      error: {x: 0., y: 0.},
+      deathCountdown
     }
   };
   let makeMiniBosses = () => {
@@ -872,7 +881,8 @@ let generateWave = (state) => {
       health: maxHealth,
       maxHealth,
       speed: enemySpeed,
-      error: {x: 0., y: 0.}
+      error: {x: 0., y: 0.},
+      deathCountdown
     }
   };
   let enemies = list_init(state.enemies, makeEnemy, enemyCount);
@@ -884,7 +894,7 @@ let generateWave = (state) => {
     } else {
       enemies
     };
-  let crateCount = state.waveNum > 1 ?  Utils.random(0, 2) : 0;
+  let crateCount = state.waveNum > 1 ? Utils.random(0, 2) : 0;
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
@@ -969,7 +979,8 @@ let setup = (env) => {
         health: 100.,
         maxHealth: 100.,
         speed: 70.,
-        error: {x: 5., y: 5.}
+        error: {x: 5., y: 5.},
+        deathCountdown
       }
     ],
     normalEnemiesKilled: 0,
@@ -1150,6 +1161,7 @@ let draw = (state, env) => {
         List.iter(
           (e: enemyT) =>
             if (state.invulnCountdown <= 0.
+                && e.health >= 1.
                 && Utils.intersectRectRect(
                      ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
                      ~rect1W=40.,
@@ -1376,14 +1388,16 @@ let draw = (state, env) => {
                       )
                   }
                 };
-              {
-                ...enemy,
-                pos: {
-                  x: enemy.pos.x +. dx +. enemy.error.x *. dt,
-                  y: enemy.pos.y +. dy +. enemy.error.y *. dt
-                },
-                error
-              }
+              enemy.health >= 1. ?
+                {
+                  ...enemy,
+                  pos: {
+                    x: enemy.pos.x +. dx +. enemy.error.x *. dt,
+                    y: enemy.pos.y +. dy +. enemy.error.y *. dt
+                  },
+                  error
+                } :
+                enemy
             },
             state.enemies
           )
@@ -1395,7 +1409,7 @@ let draw = (state, env) => {
               switch enemies {
               | [] => (false, acc)
               | [e, ...rest] =>
-                if (e.health > 0.
+                if (e.health > 1.
                     && Utils.intersectRectRect(
                          ~rect1Pos=(bullet.pos.x, bullet.pos.y),
                          ~rect1W=5.,
@@ -1445,11 +1459,20 @@ let draw = (state, env) => {
         } else {
           state
         };
+      /* Increase death timers */
+      let state = {
+        ...state,
+        enemies:
+          List.map(
+            (e: enemyT) => e.health < 1. ? {...e, deathCountdown: e.deathCountdown -. dt} : e,
+            state.enemies
+          )
+      };
       /* Do some math for stats */
       let state =
         List.fold_left(
           (state, enemy: enemyT) =>
-            if (enemy.health < 1.) {
+            if (enemy.deathCountdown <= 0.) {
               switch enemy.kind {
               | Normal1Z
               | Normal2Z
@@ -1547,7 +1570,7 @@ let draw = (state, env) => {
         && enemy.pos.y > -. fringePos
         && enemy.pos.y < mapSizePx
         +. 30.) {
-      let animList = enemyTexPos(enemy.kind);
+      let animList = enemyTexPos(enemy.kind, enemy.health < 1.);
       let animLen = List.length(animList);
       let animSpeed = 0.2;
       let texPos = List.nth(animList, truncate(state.elapsedTime /. animSpeed) mod animLen);
@@ -1559,7 +1582,13 @@ let draw = (state, env) => {
         | BigZ => ((-5.), 0.)
         | TallZ => (2., (-5.))
         };
-      if (enemy.pos.x > state.pos.x) {
+      if (enemy.health < 1.) {
+        Draw.tint(
+          Utils.color(255, 255, 255, int_of_float(enemy.deathCountdown /. deathCountdown *. 255.)),
+          env
+        )
+      };
+      if (enemy.pos.x > state.pos.x || enemy.health < 1.) {
         Draw.subImagef(
           state.mainSpriteSheet,
           ~pos=(enemy.pos.x -. 25., enemy.pos.y -. 32.),
@@ -1582,16 +1611,19 @@ let draw = (state, env) => {
           env
         )
       };
-      drawHealthBar(
-        enemy.pos.x +. 5. +. healthBarOffsetX,
-        enemy.pos.y -. 35. +. healthBarOffsetY,
-        5.,
-        40.,
-        enemy.health,
-        enemy.maxHealth,
-        Constants.red,
-        env
-      )
+      if (enemy.health >= 1.) {
+        drawHealthBar(
+          enemy.pos.x +. 5. +. healthBarOffsetX,
+          enemy.pos.y -. 35. +. healthBarOffsetY,
+          5.,
+          40.,
+          enemy.health,
+          enemy.maxHealth,
+          Constants.red,
+          env
+        )
+      };
+      Draw.noTint(env)
     };
   let drawCrate = (crate: crateT) => {
     Draw.subImagef(
@@ -1647,7 +1679,15 @@ let draw = (state, env) => {
             (180, 0)
           };
         if (state.invulnCountdown > 0.) {
-          Draw.tint(Utils.color(200, 100, 100, truncate(sin(state.invulnCountdown *. 10.) *. 100. +. 155.)), env)
+          Draw.tint(
+            Utils.color(
+              200,
+              100,
+              100,
+              truncate(sin(state.invulnCountdown *. 10.) *. 100. +. 155.)
+            ),
+            env
+          )
         };
         if (state.facingLeft) {
           Draw.subImagef(
@@ -1996,7 +2036,8 @@ let draw = (state, env) => {
             health: 100.,
             maxHealth: 100.,
             speed: 70.,
-            error: {x: 5., y: 5.}
+            error: {x: 5., y: 5.},
+            deathCountdown
           }
         ],
         normalEnemiesKilled: 0,
