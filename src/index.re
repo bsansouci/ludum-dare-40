@@ -1,6 +1,6 @@
 open Reprocessing;
 
-let animatingAchievementMaxTime = 2.2;
+let animatingAchievementMaxTime = 3.2;
 
 let fringePos = 30.;
 
@@ -148,7 +148,8 @@ and stateT = {
   stepTaken: float,
   elapsedTime: float,
   animatingAchievementTime: float,
-  animatingAchievement: option(achievementT)
+  animatingAchievement: option(achievementT),
+  running: bool
 };
 
 type orderT =
@@ -634,7 +635,7 @@ let generateGun: unit => gunT = {
         )
       | 6 => (
           LaserGun,
-          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(20., 200., damage)),
+          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(50., 200., damage)),
           Utils.lerpf(1.5, 0.5, fireRate),
           Utils.lerp(2, 10, maxAmmunition),
           "laser"
@@ -933,7 +934,8 @@ let setup = (env) => {
     animatingAchievementTime: 0.,
     animatingAchievement: None,
     waveNum: 0,
-    nextWaveCountdown: 10.
+    nextWaveCountdown: 10.,
+    running: true
   }
 };
 
@@ -996,146 +998,306 @@ let draw = (state, env) => {
   Draw.background(Utils.color(~r=43, ~g=82, ~b=69, ~a=255), env);
   Draw.fill(Utils.color(~r=41, ~g=166, ~b=244, ~a=255), env);
   Draw.rectMode(Corner, env);
-  let offset = {x: 0., y: 0.};
-  let playerSpeedDt = playerSpeed *. dt;
-  let offset =
-    checkOffset(offset, Env.key(A, env) ? {...offset, x: -. playerSpeedDt} : offset, state);
-  let offset =
-    checkOffset(offset, Env.key(D, env) ? {...offset, x: playerSpeedDt} : offset, state);
-  let offset =
-    checkOffset(offset, Env.key(W, env) ? {...offset, y: -. playerSpeedDt} : offset, state);
-  let offset =
-    checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
-  let mag = Utils.magf((offset.x, offset.y));
+  let state = Env.keyPressed(Escape, env) ? {...state, running: ! state.running} : state;
   let state =
-    if (mag > 0.) {
-      let dx = offset.x /. mag *. playerSpeedDt;
-      let dy = offset.y /. mag *. playerSpeedDt;
-      {
-        ...state,
-        pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
-        stepTaken: state.stepTaken +. playerSpeedDt
-      }
-    } else {
-      state
-    };
-  let state =
-    List.fold_left(
-      (state, crate: crateT) =>
-        if (Utils.intersectRectRect(
-              ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
-              ~rect1W=40.,
-              ~rect1H=40.,
-              ~rect2Pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
-              ~rect2W=40.,
-              ~rect2H=40.
-            )
-            && List.exists(
-                 (g: gunT) => g.kind === crate.kind && g.ammunition < g.maxAmmunition,
-                 state.guns
-               )) {
-          playSound("reload", state.sounds, env);
+    if (state.running) {
+      let offset = {x: 0., y: 0.};
+      let playerSpeedDt = playerSpeed *. dt;
+      let offset =
+        checkOffset(offset, Env.key(A, env) ? {...offset, x: -. playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(D, env) ? {...offset, x: playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(W, env) ? {...offset, y: -. playerSpeedDt} : offset, state);
+      let offset =
+        checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
+      let mag = Utils.magf((offset.x, offset.y));
+      let state =
+        if (mag > 0.) {
+          let dx = offset.x /. mag *. playerSpeedDt;
+          let dy = offset.y /. mag *. playerSpeedDt;
           {
             ...state,
-            guns:
-              List.map(
-                (gun) => gun.kind === crate.kind ? {...gun, ammunition: gun.maxAmmunition} : gun,
-                state.guns
-              )
+            pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
+            stepTaken: state.stepTaken +. playerSpeedDt
           }
         } else {
-          {...state, crates: [crate, ...state.crates]}
-        },
-      {...state, crates: []},
-      state.crates
-    );
-  let rec foldOverGuns = (state, guns, i) =>
-    switch guns {
-    | [] => state
-    | [gun, ...guns] =>
-      foldOverGuns(
-        Env.keyPressed(gun.keyToggle.primaryKey, env)
-        && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
-          {...state, equippedGun: i} : state,
-        guns,
-        i + 1
-      )
-    };
-  let state = foldOverGuns(state, state.guns, 0);
-  let fireGun = (state) => {
-    ...state,
-    guns:
-      List.mapi(
-        (i, gun) =>
-          if (i === state.equippedGun) {
-            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          state
+        };
+      let state =
+        List.fold_left(
+          (state, crate: crateT) =>
+            if (Utils.intersectRectRect(
+                  ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
+                  ~rect1W=40.,
+                  ~rect1H=40.,
+                  ~rect2Pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
+                  ~rect2W=40.,
+                  ~rect2H=40.
+                )
+                && List.exists(
+                     (g: gunT) => g.kind === crate.kind && g.ammunition < g.maxAmmunition,
+                     state.guns
+                   )) {
+              playSound("reload", state.sounds, env);
+              {
+                ...state,
+                guns:
+                  List.map(
+                    (gun) =>
+                      gun.kind === crate.kind ? {...gun, ammunition: gun.maxAmmunition} : gun,
+                    state.guns
+                  )
+              }
+            } else {
+              {...state, crates: [crate, ...state.crates]}
+            },
+          {...state, crates: []},
+          state.crates
+        );
+      let rec foldOverGuns = (state, guns, i) =>
+        switch guns {
+        | [] => state
+        | [gun, ...guns] =>
+          foldOverGuns(
+            Env.keyPressed(gun.keyToggle.primaryKey, env)
+            && (gun.keyToggle.modifier ? Env.key(LeftShift, env) : ! Env.key(LeftShift, env)) ?
+              {...state, equippedGun: i} : state,
+            guns,
+            i + 1
+          )
+        };
+      let state = foldOverGuns(state, state.guns, 0);
+      let fireGun = (state) => {
+        ...state,
+        guns:
+          List.mapi(
+            (i, gun) =>
+              if (i === state.equippedGun) {
+                {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+              } else {
+                gun
+              },
+            state.guns
+          )
+      };
+      let state =
+        if (state.equippedGun >= 0) {
+          let curGun = List.nth(state.guns, state.equippedGun);
+          if (state.elapsedTime -. curGun.lastShotTime > curGun.fireRate && curGun.ammunition > 0) {
+            let (state, fired) =
+              List.fold_left(
+                ((s, f), dir) => Env.key(dir, env) ? (curGun.fire(s, dt, dir), true) : (s, f),
+                (state, false),
+                directions
+              );
+            if (fired) {
+              playSound(curGun.soundName, state.sounds, env);
+              fireGun(state)
+            } else {
+              state
+            }
+          } else if (state.elapsedTime
+                     -. curGun.lastShotTime > curGun.fireRate
+                     && curGun.ammunition === 0) {
+            if (List.exists((dir) => Env.key(dir, env), directions)) {
+              playSound("emptygun", state.sounds, env);
+              fireGun(state)
+            } else {
+              state
+            }
           } else {
-            gun
+            state
+          }
+        } else {
+          state
+        };
+      /** Handle player facing/moving */
+      let state =
+        if (Env.key(D, env)) {
+          {...state, facingLeft: false, moving: true}
+        } else if (Env.key(A, env)) {
+          {...state, facingLeft: true, moving: true}
+        } else if (Env.key(W, env)) {
+          {...state, moving: true}
+        } else if (Env.key(S, env)) {
+          {...state, moving: true}
+        } else {
+          {...state, moving: false}
+        };
+      let state =
+        if (Env.key(Right, env)) {
+          {...state, facingLeft: false}
+        } else if (Env.key(Left, env)) {
+          {...state, facingLeft: true}
+        } else {
+          state
+        };
+      let state = {...state, elapsedTime: state.elapsedTime +. Env.deltaTime(env)};
+      let state = {
+        ...state,
+        playerBullets: List.map((bullet) => bullet.moveBullet(bullet), state.playerBullets)
+      };
+      let state = {
+        ...state,
+        playerBullets: List.filter((bullet) => bullet.remainingRange > 0., state.playerBullets)
+      };
+      let state =
+        List.fold_left(
+          (state, achievement) =>
+            if (achievement.state === Locked && achievement.condition(state, env)) {
+              print_endline(achievement.message);
+              {
+                ...state,
+                guns: [generateGun(), ...state.guns],
+                equippedGun: state.equippedGun + 1,
+                animatingAchievementTime: animatingAchievementMaxTime,
+                animatingAchievement: Some(achievement),
+                running: false,
+                achievements:
+                  List.map(
+                    (a) =>
+                      if (a === achievement) {
+                        {...a, state: Unlocked}
+                      } else {
+                        a
+                      },
+                    state.achievements
+                  )
+              }
+            } else {
+              state
+            },
+          state,
+          state.achievements
+        );
+      let state = {
+        ...state,
+        enemies:
+          List.map(
+            (enemy: enemyT) => {
+              let size = Utils.distf((state.pos.x, state.pos.y), (enemy.pos.x, enemy.pos.y));
+              let dx = (state.pos.x -. enemy.pos.x) /. size *. enemy.speed *. dt;
+              let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. dt;
+              let error =
+                switch enemy.kind {
+                | Normal1Z
+                | Normal2Z
+                | Normal3Z
+                | BigZ => {
+                    x:
+                      Utils.constrain(
+                        ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed,
+                        ~low=(-1.) *. enemy.speed
+                      ),
+                    y:
+                      Utils.constrain(
+                        ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed,
+                        ~low=(-1.) *. enemy.speed
+                      )
+                  }
+                | TallZ => {
+                    x:
+                      Utils.constrain(
+                        ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed /. 4.,
+                        ~low=(-1.) *. enemy.speed /. 4.
+                      ),
+                    y:
+                      Utils.constrain(
+                        ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed /. 4.,
+                        ~low=(-1.) *. enemy.speed /. 4.
+                      )
+                  }
+                };
+              {
+                ...enemy,
+                pos: {
+                  x: enemy.pos.x +. dx +. enemy.error.x *. dt,
+                  y: enemy.pos.y +. dy +. enemy.error.y *. dt
+                },
+                error
+              }
+            },
+            state.enemies
+          )
+      };
+      let state =
+        List.fold_left(
+          (state, bullet: bulletT) => {
+            let rec hurtEnemies = (acc, enemies) =>
+              switch enemies {
+              | [] => (false, acc)
+              | [e, ...rest] =>
+                if (e.health > 0.
+                    && Utils.intersectRectRect(
+                         ~rect1Pos=(bullet.pos.x, bullet.pos.y),
+                         ~rect1W=5.,
+                         ~rect1H=5.,
+                         ~rect2Pos=(e.pos.x -. 20., e.pos.y -. 20.),
+                         ~rect2W=40.,
+                         ~rect2H=40.
+                       )) {
+                  (
+                    true,
+                    acc
+                    @ [{...e, health: e.health -. bullet.damage *. Env.deltaTime(env)}, ...rest]
+                  )
+                } else {
+                  hurtEnemies([e, ...acc], rest)
+                }
+              };
+            let (didHit, enemies) = hurtEnemies([], state.enemies);
+            let bullets =
+              if (didHit) {
+                state.playerBullets
+              } else {
+                [bullet, ...state.playerBullets]
+              };
+            {
+              ...state,
+              damageDone:
+                didHit ? state.damageDone +. bullet.damage *. Env.deltaTime(env) : state.damageDone,
+              playerBullets: bullets,
+              enemies
+            }
           },
-        state.guns
-      )
-  };
-  let state =
-    if (state.equippedGun >= 0) {
-      let curGun = List.nth(state.guns, state.equippedGun);
-      if (state.elapsedTime -. curGun.lastShotTime > curGun.fireRate && curGun.ammunition > 0) {
-        let (state, fired) =
-          List.fold_left(
-            ((s, f), dir) => Env.key(dir, env) ? (curGun.fire(s, dt, dir), true) : (s, f),
-            (state, false),
-            directions
-          );
-        if (fired) {
-          playSound(curGun.soundName, state.sounds, env);
-          fireGun(state)
+          {...state, playerBullets: []},
+          state.playerBullets
+        );
+      let state =
+        if (List.length(state.guns) > 0 && List.for_all((gun) => gun.ammunition === 0, state.guns)) {
+          playSound("reload", state.sounds, env);
+          {...state, guns: List.map((gun) => {...gun, ammunition: gun.maxAmmunition}, state.guns)}
         } else {
           state
-        }
-      } else if (state.elapsedTime
-                 -. curGun.lastShotTime > curGun.fireRate
-                 && curGun.ammunition === 0) {
-        if (List.exists((dir) => Env.key(dir, env), directions)) {
-          playSound("emptygun", state.sounds, env);
-          fireGun(state)
+        };
+      let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
+      let state =
+        if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
+          generateWave(state)
         } else {
           state
-        }
-      } else {
-        state
-      }
+        };
+      /* Do some math for stats */
+      let state =
+        List.fold_left(
+          (state, enemy) =>
+            if (enemy.health <= 0.) {
+              {...state, enemiesKilled: state.enemiesKilled + 1}
+            } else {
+              {...state, enemies: [enemy, ...state.enemies]}
+            },
+          {...state, enemies: []},
+          state.enemies
+        );
+      state
     } else {
       state
     };
-  /** Handle player facing/moving */
-  let state =
-    if (Env.key(D, env)) {
-      {...state, facingLeft: false, moving: true}
-    } else if (Env.key(A, env)) {
-      {...state, facingLeft: true, moving: true}
-    } else if (Env.key(W, env)) {
-      {...state, moving: true}
-    } else if (Env.key(S, env)) {
-      {...state, moving: true}
-    } else {
-      {...state, moving: false}
-    };
-  let state =
-    if (Env.key(Right, env)) {
-      {...state, facingLeft: false}
-    } else if (Env.key(Left, env)) {
-      {...state, facingLeft: true}
-    } else {
-      state
-    };
-  let state = {...state, elapsedTime: state.elapsedTime +. Env.deltaTime(env)};
-  let state = {
-    ...state,
-    playerBullets: List.map((bullet) => bullet.moveBullet(bullet), state.playerBullets)
-  };
-  let state = {
-    ...state,
-    playerBullets: List.filter((bullet) => bullet.remainingRange > 0., state.playerBullets)
-  };
   let state =
     if (state.animatingAchievement == None) {
       state
@@ -1144,156 +1306,6 @@ let draw = (state, env) => {
     } else {
       {...state, animatingAchievementTime: state.animatingAchievementTime -. Env.deltaTime(env)}
     };
-  let state =
-    List.fold_left(
-      (state, achievement) =>
-        if (achievement.state === Locked && achievement.condition(state, env)) {
-          print_endline(achievement.message);
-          {
-            ...state,
-            guns: [generateGun(), ...state.guns],
-            equippedGun: state.equippedGun + 1,
-            animatingAchievementTime: animatingAchievementMaxTime,
-            animatingAchievement: Some(achievement),
-            achievements:
-              List.map(
-                (a) =>
-                  if (a === achievement) {
-                    {...a, state: Unlocked}
-                  } else {
-                    a
-                  },
-                state.achievements
-              )
-          }
-        } else {
-          state
-        },
-      state,
-      state.achievements
-    );
-  let state = {
-    ...state,
-    enemies:
-      List.map(
-        (enemy: enemyT) => {
-          let size = Utils.distf((state.pos.x, state.pos.y), (enemy.pos.x, enemy.pos.y));
-          let dx = (state.pos.x -. enemy.pos.x) /. size *. enemy.speed *. dt;
-          let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. dt;
-          let error =
-            switch enemy.kind {
-            | Normal1Z
-            | Normal2Z
-            | Normal3Z
-            | BigZ => {
-                x:
-                  Utils.constrain(
-                    ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
-                    ~high=enemy.speed,
-                    ~low=(-1.) *. enemy.speed
-                  ),
-                y:
-                  Utils.constrain(
-                    ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
-                    ~high=enemy.speed,
-                    ~low=(-1.) *. enemy.speed
-                  )
-              }
-            | TallZ => {
-                x:
-                  Utils.constrain(
-                    ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
-                    ~high=enemy.speed /. 4.,
-                    ~low=(-1.) *. enemy.speed /. 4.
-                  ),
-                y:
-                  Utils.constrain(
-                    ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
-                    ~high=enemy.speed /. 4.,
-                    ~low=(-1.) *. enemy.speed /. 4.
-                  )
-              }
-            };
-          {
-            ...enemy,
-            pos: {
-              x: enemy.pos.x +. dx +. enemy.error.x *. dt,
-              y: enemy.pos.y +. dy +. enemy.error.y *. dt
-            },
-            error
-          }
-        },
-        state.enemies
-      )
-  };
-  let state =
-    List.fold_left(
-      (state, bullet: bulletT) => {
-        let rec hurtEnemies = (acc, enemies) =>
-          switch enemies {
-          | [] => (false, acc)
-          | [e, ...rest] =>
-            if (e.health > 0.
-                && Utils.intersectRectRect(
-                     ~rect1Pos=(bullet.pos.x, bullet.pos.y),
-                     ~rect1W=5.,
-                     ~rect1H=5.,
-                     ~rect2Pos=(e.pos.x -. 20., e.pos.y -. 20.),
-                     ~rect2W=40.,
-                     ~rect2H=40.
-                   )) {
-              (
-                true,
-                acc @ [{...e, health: e.health -. bullet.damage *. Env.deltaTime(env)}, ...rest]
-              )
-            } else {
-              hurtEnemies([e, ...acc], rest)
-            }
-          };
-        let (didHit, enemies) = hurtEnemies([], state.enemies);
-        let bullets =
-          if (didHit) {
-            state.playerBullets
-          } else {
-            [bullet, ...state.playerBullets]
-          };
-        {
-          ...state,
-          damageDone:
-            didHit ? state.damageDone +. bullet.damage *. Env.deltaTime(env) : state.damageDone,
-          playerBullets: bullets,
-          enemies
-        }
-      },
-      {...state, playerBullets: []},
-      state.playerBullets
-    );
-  let state =
-    if (List.length(state.guns) > 0 && List.for_all((gun) => gun.ammunition === 0, state.guns)) {
-      playSound("reload", state.sounds, env);
-      {...state, guns: List.map((gun) => {...gun, ammunition: gun.maxAmmunition}, state.guns)}
-    } else {
-      state
-    };
-  let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
-  let state =
-    if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
-      generateWave(state)
-    } else {
-      state
-    };
-  /* Do some math for stats */
-  let state =
-    List.fold_left(
-      (state, enemy) =>
-        if (enemy.health <= 0.) {
-          {...state, enemiesKilled: state.enemiesKilled + 1}
-        } else {
-          {...state, enemies: [enemy, ...state.enemies]}
-        },
-      {...state, enemies: []},
-      state.enemies
-    );
   Draw.pushMatrix(env);
   Draw.scale(scale, scale, env);
   Draw.translate(
@@ -1627,15 +1639,15 @@ let draw = (state, env) => {
       },
       List.rev(state.guns)
     );
-  switch state.animatingAchievement {
-  | None => ()
+  let state = switch state.animatingAchievement {
+  | None => state
   | Some(achievement) =>
     let width = 550.;
     let height = 300.;
     let opacity = 255;
     let x = float_of_int(Env.width(env)) /. 2.;
     let y = float_of_int(Env.height(env)) /. 2.;
-    let threshold1 = 1.8;
+    let threshold1 = 2.8;
     let threshold2 = 1.;
     let t = state.animatingAchievementTime;
     let (width, height, opacity, opacity2) =
@@ -1671,12 +1683,22 @@ let draw = (state, env) => {
       ~pos=(int_of_float(x -. 130.), int_of_float(y -. 130.)),
       env
     );
+    Draw.tint(
+      Utils.color(
+        int_of_float(gun.color.r *. 255.),
+        int_of_float(gun.color.g *. 255.),
+        int_of_float(gun.color.b *. 255.),
+        opacity
+      ),
+      env
+    );
     Draw.text(
       ~font=state.mainFont,
       ~body=Printf.sprintf("Quality: %s", kindName),
       ~pos=(int_of_float(x -. 80.), int_of_float(y -. 100.)),
       env
     );
+    Draw.tint(Utils.color(255, 255, 255, opacity), env);
     let startGunSize = 128.;
     let endGunSize = 64.;
     let startX = x -. (startGunSize +. 12.) /. 2.;
@@ -1742,7 +1764,8 @@ let draw = (state, env) => {
       Utils.color(220, 220, 0, 255),
       env
     );
-    Draw.tint(Utils.color(255, 255, 255, 255), env)
+    Draw.tint(Utils.color(255, 255, 255, 255), env);
+    (t > 0.4) ? state : {...state, running: true}
   };
   state
 };
