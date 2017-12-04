@@ -10,7 +10,11 @@ let mapSizePx = float_of_int(mapSize * 64);
 
 let bulletSpeed = 400.;
 
+let defaultRange = 400.;
+
 let scale = 2.;
+
+module StringMap = Map.Make(String);
 
 type vec2T = {
   x: float,
@@ -20,9 +24,9 @@ type vec2T = {
 type bulletT = {
   pos: vec2T,
   direction: vec2T,
-  time: float,
-  moveBullet: bulletT => vec2T,
-  damage: float
+  moveBullet: bulletT => bulletT,
+  damage: float,
+  remainingRange: float
 };
 
 type achievementStateT =
@@ -111,6 +115,12 @@ let mul = (v1, v2) => {x: v1.x *. v2.x, y: v1.y *. v2.y};
 
 let mulConst = (v1, c) => {x: v1.x *. c, y: v1.y *. c};
 
+let moveBullet = (bullet: bulletT) => {
+  ...bullet,
+  pos: add(bullet.pos, bullet.direction),
+  remainingRange: bullet.remainingRange -. Utils.magf((bullet.direction.x, bullet.direction.y))
+};
+
 let makeDefaultFire =
     (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
   let bulletSpeed = bulletSpeed *. deltaTime;
@@ -122,7 +132,6 @@ let makeDefaultFire =
     | Right => {x: bulletSpeed, y: 0.}
     | _ => assert false
     };
-  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 1,
@@ -139,7 +148,13 @@ let makeDefaultFire =
     playerBullets:
       List.nth(state.guns, state.equippedGun).ammunition > 0 ?
         [
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir, moveBullet, time: 0., damage},
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
           ...state.playerBullets
         ] :
         state.playerBullets
@@ -174,7 +189,6 @@ let makeTripleShotGunFire =
     | Right => {x: bulletSpeed, y: otherSpeed}
     | _ => assert false
     };
-  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 3,
@@ -191,9 +205,27 @@ let makeTripleShotGunFire =
     playerBullets:
       List.nth(state.guns, state.equippedGun).ammunition > 0 ?
         [
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir1, moveBullet, time: 0., damage},
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir3, moveBullet, time: 0., damage},
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir1,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir2,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir3,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
           ...state.playerBullets
         ] :
         state.playerBullets
@@ -229,7 +261,6 @@ let makeSineFire =
     | _ => assert false
     };
   let moveBullet = (bullet: bulletT) => {
-    let pos = add(bullet.pos, bullet.direction);
     let perpendicular = {x: -. bullet.direction.y, y: bullet.direction.x};
     let perpendicularSize =
       sqrt(perpendicular.x *. perpendicular.x +. perpendicular.y *. perpendicular.y);
@@ -237,9 +268,14 @@ let makeSineFire =
       x: perpendicular.x /. perpendicularSize,
       y: perpendicular.y /. perpendicularSize
     };
-    let norm = cos(bullet.time /. 5.);
-    let offset = {x: perpendicular.x *. norm *. 3., y: perpendicular.y *. norm *. 3.};
-    add(pos, offset)
+    let norm = cos(bullet.remainingRange /. 10.) *. 4.;
+    let offset = {x: perpendicular.x *. norm, y: perpendicular.y *. norm};
+    let totalOffset = add(bullet.direction, offset);
+    {
+      ...bullet,
+      pos: add(bullet.pos, totalOffset),
+      remainingRange: bullet.remainingRange -. Utils.magf((totalOffset.x, totalOffset.y))
+    }
   };
   {
     ...state,
@@ -257,9 +293,27 @@ let makeSineFire =
     playerBullets:
       List.nth(state.guns, state.equippedGun).ammunition > 0 ?
         [
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir1, moveBullet, time: 0., damage},
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir3, moveBullet, time: 0., damage},
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir1,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir2,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir3,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
           ...state.playerBullets
         ] :
         state.playerBullets
@@ -270,7 +324,6 @@ let makeLaserFire =
     (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) =>
   if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
     let bulletSpeed = bulletSpeed *. deltaTime;
-    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
     let dir =
       switch direction {
       | Up => {x: 0., y: (-1.0)}
@@ -293,8 +346,8 @@ let makeLaserFire =
               },
               direction: mulConst(dir, bulletSpeed),
               moveBullet,
-              time: 0.,
-              damage
+              damage,
+              remainingRange: defaultRange
             },
             ...acc
           ],
@@ -332,7 +385,6 @@ let makeBurstFire =
     | Right => {x: bulletSpeed, y: 0.}
     | _ => assert false
     };
-  let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 3,
@@ -349,20 +401,26 @@ let makeBurstFire =
     playerBullets:
       List.nth(state.guns, state.equippedGun).ammunition > 0 ?
         [
-          {pos: {x: state.pos.x, y: state.pos.y}, direction: dir2, moveBullet, time: 0., damage},
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir2,
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
           {
             pos: add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2),
             direction: dir2,
             moveBullet,
-            time: 0.,
-            damage
+            damage,
+            remainingRange: defaultRange
           },
           {
             pos: add(add(add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2), dir2), dir2),
             direction: dir2,
             moveBullet,
-            time: 0.,
-            damage
+            damage,
+            remainingRange: defaultRange
           },
           ...state.playerBullets
         ] :
@@ -382,7 +440,6 @@ let makeUziFire =
       );
     let bulletSpeed = bulletSpeed *. deltaTime;
     let otherSpeed = otherNoise^ *. deltaTime;
-    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
     let dir =
       switch direction {
       | Up => {x: -. otherSpeed, y: -. bulletSpeed}
@@ -395,8 +452,8 @@ let makeUziFire =
       pos: {x: state.pos.x, y: state.pos.y},
       direction: dir,
       moveBullet,
-      time: 0.,
-      damage
+      damage,
+      remainingRange: defaultRange
     };
     {
       ...state,
@@ -431,7 +488,6 @@ let makeShotgunFire =
   if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
     let otherSpeed = otherSpeed *. deltaTime;
     let bulletSpeed = bulletSpeed *. deltaTime;
-    let moveBullet = (bullet: bulletT) => add(bullet.pos, bullet.direction);
     let rec recur = (acc, i) =>
       if (i < 0) {
         acc
@@ -448,7 +504,13 @@ let makeShotgunFire =
           };
         recur(
           [
-            {pos: {x: state.pos.x, y: state.pos.y}, direction: dir, moveBullet, time: 0., damage},
+            {
+              pos: {x: state.pos.x, y: state.pos.y},
+              direction: dir,
+              moveBullet,
+              damage,
+              remainingRange: 100. +. Utils.randomf(0., 50.)
+            },
             ...acc
           ],
           i - 1
@@ -553,7 +615,7 @@ let generateGun: unit => gunT = {
       | 3 => (
           Shotgun,
           makeShotgunFire(
-            bulletSpeed,
+            bulletSpeed +. 300.,
             Utils.randomf(50., 200.),
             15,
             Utils.lerpf(400., 1000., damage)
@@ -973,11 +1035,11 @@ let draw = (state, env) => {
   let state = {...state, elapsedTime: state.elapsedTime +. Env.deltaTime(env)};
   let state = {
     ...state,
-    playerBullets:
-      List.map(
-        (bullet) => {...bullet, pos: bullet.moveBullet(bullet), time: bullet.time +. 1.},
-        state.playerBullets
-      )
+    playerBullets: List.map((bullet) => bullet.moveBullet(bullet), state.playerBullets)
+  };
+  let state = {
+    ...state,
+    playerBullets: List.filter((bullet) => bullet.remainingRange > 0., state.playerBullets)
   };
   let state =
     List.fold_left(
