@@ -83,7 +83,8 @@ type gunT = {
   color: colorT,
   keyToggle: Reprocessing_Events.keycodeT,
   fire: (stateT, float, Reprocessing_Events.keycodeT) => stateT,
-  kind: gunKindT
+  kind: gunKindT,
+  soundName: string
 }
 and achievementT = {
   state: achievementStateT,
@@ -99,6 +100,7 @@ and stateT = {
   crates: list(crateT),
   mainFont: fontT,
   mainSpriteSheet: imageT,
+  sounds: StringMap.t(soundT),
   enemies: list(enemyT),
   waveNum: int,
   nextWaveCountdown: float,
@@ -140,29 +142,16 @@ let makeDefaultFire =
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 1,
-    guns:
-      List.mapi(
-        (i, gun) =>
-          if (i === state.equippedGun) {
-            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-          } else {
-            gun
-          },
-        state.guns
-      ),
-    playerBullets:
-      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
-        [
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          ...state.playerBullets
-        ] :
-        state.playerBullets
+    playerBullets: [
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      ...state.playerBullets
+    ]
   }
 };
 
@@ -197,43 +186,30 @@ let makeTripleShotGunFire =
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 3,
-    guns:
-      List.mapi(
-        (i, gun) =>
-          if (i === state.equippedGun) {
-            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-          } else {
-            gun
-          },
-        state.guns
-      ),
-    playerBullets:
-      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
-        [
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir1,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir2,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir3,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          ...state.playerBullets
-        ] :
-        state.playerBullets
+    playerBullets: [
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir1,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir2,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir3,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      ...state.playerBullets
+    ]
   }
 };
 
@@ -285,99 +261,73 @@ let makeSineFire =
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 3,
-    guns:
-      List.mapi(
-        (i, gun) =>
-          if (i === state.equippedGun) {
-            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-          } else {
-            gun
-          },
-        state.guns
-      ),
-    playerBullets:
-      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
-        [
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir1,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir2,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir3,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          ...state.playerBullets
-        ] :
-        state.playerBullets
+    playerBullets: [
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir1,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir2,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir3,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      ...state.playerBullets
+    ]
   }
 };
 
 let makeLaserFire =
-    (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) =>
-  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
-    let bulletSpeed = bulletSpeed *. deltaTime;
-    let dir =
-      switch direction {
-      | Up => {x: 0., y: (-1.0)}
-      | Down => {x: 0., y: 1.0}
-      | Left => {x: (-1.0), y: 0.}
-      | Right => {x: 1.0, y: 0.}
-      | _ => assert false
-      };
-    let spacing = 1.5;
-    let rec recur = (acc, i) =>
-      if (i < 0) {
-        acc
-      } else {
-        recur(
-          [
-            {
-              pos: {
-                x: state.pos.x -. mulConst(dir, float_of_int(i) *. spacing).x,
-                y: state.pos.y -. mulConst(dir, float_of_int(i) *. spacing).y
-              },
-              direction: mulConst(dir, bulletSpeed),
-              moveBullet,
-              damage,
-              remainingRange: defaultRange
+    (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let dir =
+    switch direction {
+    | Up => {x: 0., y: (-1.0)}
+    | Down => {x: 0., y: 1.0}
+    | Left => {x: (-1.0), y: 0.}
+    | Right => {x: 1.0, y: 0.}
+    | _ => assert false
+    };
+  let spacing = 1.5;
+  let rec recur = (acc, i) =>
+    if (i < 0) {
+      acc
+    } else {
+      recur(
+        [
+          {
+            pos: {
+              x: state.pos.x -. mulConst(dir, float_of_int(i) *. spacing).x,
+              y: state.pos.y -. mulConst(dir, float_of_int(i) *. spacing).y
             },
-            ...acc
-          ],
-          i - 1
-        )
-      };
-    let newBullets = recur([], 10);
-    {
-      ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + 1,
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-            } else {
-              gun
-            },
-          state.guns
-        ),
-      playerBullets: newBullets @ state.playerBullets
-    }
-  } else {
-    state
-  };
+            direction: mulConst(dir, bulletSpeed),
+            moveBullet,
+            damage,
+            remainingRange: defaultRange
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let newBullets = recur([], 10);
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + 1,
+    playerBullets: newBullets @ state.playerBullets
+  }
+};
 
 let makeBurstFire =
     (bulletSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
@@ -393,50 +343,36 @@ let makeBurstFire =
   {
     ...state,
     numberOfBulletsFired: state.numberOfBulletsFired + 3,
-    guns:
-      List.mapi(
-        (i, gun) =>
-          if (i === state.equippedGun) {
-            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-          } else {
-            gun
-          },
-        state.guns
-      ),
-    playerBullets:
-      List.nth(state.guns, state.equippedGun).ammunition > 0 ?
-        [
-          {
-            pos: {x: state.pos.x, y: state.pos.y},
-            direction: dir2,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2),
-            direction: dir2,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          {
-            pos: add(add(add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2), dir2), dir2),
-            direction: dir2,
-            moveBullet,
-            damage,
-            remainingRange: defaultRange
-          },
-          ...state.playerBullets
-        ] :
-        state.playerBullets
+    playerBullets: [
+      {
+        pos: {x: state.pos.x, y: state.pos.y},
+        direction: dir2,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2),
+        direction: dir2,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      {
+        pos: add(add(add(add({x: state.pos.x, y: state.pos.y}, dir2), dir2), dir2), dir2),
+        direction: dir2,
+        moveBullet,
+        damage,
+        remainingRange: defaultRange
+      },
+      ...state.playerBullets
+    ]
   }
 };
 
-let makeUziFire =
-    (bulletSpeed, otherSpeed, damage, state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
+let makeUziFire = (bulletSpeed, otherSpeed, damage) => {
   let otherNoise = ref(0.);
-  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
+  (state, deltaTime, direction: Reprocessing_Events.keycodeT) => {
     otherNoise :=
       Utils.constrain(
         ~amt=otherNoise^ +. Utils.randomf((-2000.) *. deltaTime, 2000. *. deltaTime),
@@ -463,20 +399,8 @@ let makeUziFire =
     {
       ...state,
       numberOfBulletsFired: state.numberOfBulletsFired + 1,
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-            } else {
-              gun
-            },
-          state.guns
-        ),
       playerBullets: [newBullet, ...state.playerBullets]
     }
-  } else {
-    state
   }
 };
 
@@ -489,57 +413,44 @@ let makeShotgunFire =
       state,
       deltaTime,
       direction: Reprocessing_Events.keycodeT
-    ) =>
-  if (List.nth(state.guns, state.equippedGun).ammunition > 0) {
-    let otherSpeed = otherSpeed *. deltaTime;
-    let bulletSpeed = bulletSpeed *. deltaTime;
-    let rec recur = (acc, i) =>
-      if (i < 0) {
-        acc
-      } else {
-        let otherSpeed = Utils.randomf(-. otherSpeed, otherSpeed);
-        let bulletSpeed = Utils.randomf(0.5, 1.) *. bulletSpeed;
-        let dir =
-          switch direction {
-          | Up => {x: -. otherSpeed, y: -. bulletSpeed}
-          | Down => {x: otherSpeed, y: bulletSpeed}
-          | Left => {x: -. bulletSpeed, y: otherSpeed}
-          | Right => {x: bulletSpeed, y: -. otherSpeed}
-          | _ => assert false
-          };
-        recur(
-          [
-            {
-              pos: {x: state.pos.x, y: state.pos.y},
-              direction: dir,
-              moveBullet,
-              damage,
-              remainingRange: 100. +. Utils.randomf(0., 50.)
-            },
-            ...acc
-          ],
-          i - 1
-        )
-      };
-    let newBullets = recur([], Utils.random(max(1, maxBullets - 3), maxBullets + 1));
-    {
-      ...state,
-      numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
-      guns:
-        List.mapi(
-          (i, gun) =>
-            if (i === state.equippedGun) {
-              {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
-            } else {
-              gun
-            },
-          state.guns
-        ),
-      playerBullets: newBullets @ state.playerBullets
-    }
-  } else {
-    state
-  };
+    ) => {
+  let otherSpeed = otherSpeed *. deltaTime;
+  let bulletSpeed = bulletSpeed *. deltaTime;
+  let rec recur = (acc, i) =>
+    if (i < 0) {
+      acc
+    } else {
+      let otherSpeed = Utils.randomf(-. otherSpeed, otherSpeed);
+      let bulletSpeed = Utils.randomf(0.5, 1.) *. bulletSpeed;
+      let dir =
+        switch direction {
+        | Up => {x: -. otherSpeed, y: -. bulletSpeed}
+        | Down => {x: otherSpeed, y: bulletSpeed}
+        | Left => {x: -. bulletSpeed, y: otherSpeed}
+        | Right => {x: bulletSpeed, y: -. otherSpeed}
+        | _ => assert false
+        };
+      recur(
+        [
+          {
+            pos: {x: state.pos.x, y: state.pos.y},
+            direction: dir,
+            moveBullet,
+            damage,
+            remainingRange: 100. +. Utils.randomf(0., 50.)
+          },
+          ...acc
+        ],
+        i - 1
+      )
+    };
+  let newBullets = recur([], Utils.random(max(1, maxBullets - 3), maxBullets + 1));
+  {
+    ...state,
+    numberOfBulletsFired: state.numberOfBulletsFired + List.length(newBullets),
+    playerBullets: newBullets @ state.playerBullets
+  }
+};
 
 let generateGun: unit => gunT = {
   let keyCount = ref(0);
@@ -593,13 +504,14 @@ let generateGun: unit => gunT = {
           maxAmmunition
         )
       );*/
-    let (kind, fire, fireRate, maxAmmunition) =
+    let (kind, fire, fireRate, maxAmmunition, soundName) =
       switch (Utils.random(0, 8)) {
       | 0 => (
           Pistol,
           makeDefaultFire(bulletSpeed, Utils.lerpf(400., 1000., damage)),
           Utils.lerpf(0.5, 0.3, fireRate),
-          Utils.lerp(1, 10, maxAmmunition)
+          Utils.lerp(1, 10, maxAmmunition),
+          "machinegun_singleshot"
         )
       | 1 => (
           AlienGun2,
@@ -609,13 +521,15 @@ let generateGun: unit => gunT = {
             Utils.lerpf(400., 700., damage)
           ),
           Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 10, maxAmmunition)
+          Utils.lerp(1, 10, maxAmmunition),
+          "aliengun_threeshots"
         )
       | 2 => (
           Rifle,
           makeBurstFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
           Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 6, maxAmmunition)
+          Utils.lerp(1, 6, maxAmmunition),
+          "machinegun_threeshots"
         )
       | 3 => (
           Shotgun,
@@ -626,25 +540,29 @@ let generateGun: unit => gunT = {
             Utils.lerpf(100., 1000., damage)
           ),
           Utils.lerpf(2.0, 1.2, fireRate),
-          Utils.lerp(2, 6, maxAmmunition)
+          Utils.lerp(2, 6, maxAmmunition),
+          "machinegun_singleshot"
         )
       | 4 => (
           Machinegun,
           makeDefaultFire(bulletSpeed, Utils.lerpf(100., 400., damage)),
           Utils.lerpf(0.2, 0.06, fireRate),
-          Utils.lerp(5, 30, maxAmmunition)
+          Utils.lerp(5, 30, maxAmmunition),
+          "machinegun_singleshot"
         )
       | 5 => (
           Uzi,
           makeUziFire(bulletSpeed, Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
           Utils.lerpf(0.1, 0.03, fireRate),
-          Utils.lerp(20, 50, maxAmmunition)
+          Utils.lerp(20, 50, maxAmmunition),
+          "machinegun_singleshot"
         )
       | 6 => (
           LaserGun,
           makeLaserFire(bulletSpeed -. 200., Utils.lerpf(100., 300., damage)),
           Utils.lerpf(1.5, 0.5, fireRate),
-          Utils.lerp(2, 10, maxAmmunition)
+          Utils.lerp(2, 10, maxAmmunition),
+          "laser"
         )
       | _ => (
           AlienGun1,
@@ -654,7 +572,8 @@ let generateGun: unit => gunT = {
             Utils.lerpf(400., 1000., damage)
           ),
           Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 10, maxAmmunition)
+          Utils.lerp(1, 10, maxAmmunition),
+          "aliengun_threeshots"
         )
       };
     let color =
@@ -675,6 +594,7 @@ let generateGun: unit => gunT = {
       fireRate,
       lastShotTime: 0.,
       keyToggle,
+      soundName,
       fire,
       kind,
       color
@@ -861,8 +781,29 @@ let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
   Draw.rectf(~pos=(x -. xOffset, y), ~width=healthW, ~height=h, env)
 };
 
+let soundNames = [
+  "emptygun",
+  "reload",
+  "machinegun_singleshot",
+  "machinegun_threeshots",
+  "laser",
+  "aliengun_threeshots"
+];
+
+let playSound = (name, state, env) =>
+  switch (StringMap.find(name, state.sounds)) {
+  | s => Env.playSound(s, env)
+  | exception Not_found => print_endline("Couldn't find sound " ++ name)
+  };
+
 let setup = (env) => {
   Env.size(~width=1280, ~height=720, env);
+  let loadSound = (soundMap: StringMap.t(soundT), soundName: string) =>
+    StringMap.add(
+      soundName,
+      Env.loadSound(Printf.sprintf("assets/sounds/%s.wav", soundName), env),
+      soundMap
+    );
   {
     pos: {x: 400., y: 400.},
     equippedGun: (-1),
@@ -872,6 +813,7 @@ let setup = (env) => {
     crates: [],
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
+    sounds: List.fold_left(loadSound, StringMap.empty, soundNames),
     enemies: [
       {
         pos: {x: 100., y: 250.},
@@ -996,6 +938,7 @@ let draw = (state, env) => {
                  (g: gunT) => g.kind === crate.kind && g.ammunition < g.maxAmmunition,
                  state.guns
                )) {
+          playSound("reload", state, env);
           {
             ...state,
             guns:
@@ -1022,15 +965,45 @@ let draw = (state, env) => {
       )
     };
   let state = foldOverGuns(state, state.guns, 0);
+  let directions: list(Reprocessing_Events.keycodeT) = [Up, Down, Left, Right];
+  let fireGun = (state) => {
+    ...state,
+    guns:
+      List.mapi(
+        (i, gun) =>
+          if (i === state.equippedGun) {
+            {...gun, ammunition: max(gun.ammunition - 1, 0), lastShotTime: state.elapsedTime}
+          } else {
+            gun
+          },
+        state.guns
+      )
+  };
   let state =
     if (state.equippedGun >= 0) {
       let curGun = List.nth(state.guns, state.equippedGun);
-      if (state.elapsedTime -. curGun.lastShotTime > curGun.fireRate) {
-        let state = Env.key(Up, env) ? curGun.fire(state, Env.deltaTime(env), Up) : state;
-        let state = Env.key(Down, env) ? curGun.fire(state, Env.deltaTime(env), Down) : state;
-        let state = Env.key(Left, env) ? curGun.fire(state, Env.deltaTime(env), Left) : state;
-        let state = Env.key(Right, env) ? curGun.fire(state, Env.deltaTime(env), Right) : state;
-        state
+      if (state.elapsedTime -. curGun.lastShotTime > curGun.fireRate && curGun.ammunition > 0) {
+        let (state, fired) =
+          List.fold_left(
+            ((s, f), dir) => Env.key(dir, env) ? (curGun.fire(s, dt, dir), true) : (s, f),
+            (state, false),
+            directions
+          );
+        if (fired) {
+          playSound(curGun.soundName, state, env);
+          fireGun(state)
+        } else {
+          state
+        }
+      } else if (state.elapsedTime
+                 -. curGun.lastShotTime > curGun.fireRate
+                 && curGun.ammunition === 0) {
+        if (List.exists((dir) => Env.key(dir, env), directions)) {
+          playSound("emptygun", state, env);
+          fireGun(state)
+        } else {
+          state
+        }
       } else {
         state
       }
@@ -1167,7 +1140,8 @@ let draw = (state, env) => {
       state.playerBullets
     );
   let state =
-    if (List.for_all((gun) => gun.ammunition === 0, state.guns)) {
+    if (List.length(state.guns) > 0 && List.for_all((gun) => gun.ammunition === 0, state.guns)) {
+      playSound("reload", state, env);
       {...state, guns: List.map((gun) => {...gun, ammunition: gun.maxAmmunition}, state.guns)}
     } else {
       state
@@ -1420,7 +1394,5 @@ let draw = (state, env) => {
   );
   state
 };
-
-run(~setup, ~draw, ());
 
 run(~setup, ~draw, ());
