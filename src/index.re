@@ -869,12 +869,13 @@ let soundNames = [
   "machinegun_threeshots",
   "laser",
   "aliengun_threeshots",
-  "shotgun"
+  "shotgun",
+  "theme"
 ];
 
-let playSound = (name, state, env) =>
-  switch (StringMap.find(name, state.sounds)) {
-  | s => Env.playSound(s, env)
+let playSound = (name, sounds, ~loop=false, env) =>
+  switch (StringMap.find(name, sounds)) {
+  | s => Env.playSound(s, ~loop, env)
   | exception Not_found => print_endline("Couldn't find sound " ++ name)
   };
 
@@ -886,6 +887,9 @@ let setup = (env) => {
       Env.loadSound(Printf.sprintf("assets/sounds/%s.wav", soundName), env),
       soundMap
     );
+  let sounds =
+    List.fold_left(loadSound, StringMap.empty, soundNames);
+  playSound("theme", sounds, ~loop=true, env);
   {
     pos: {x: 400., y: 400.},
     facingLeft: true,
@@ -897,7 +901,7 @@ let setup = (env) => {
     crates: [],
     mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
-    sounds: List.fold_left(loadSound, StringMap.empty, soundNames),
+    sounds,
     enemies: [
       {
         pos: {x: 100., y: 250.},
@@ -1016,7 +1020,7 @@ let draw = (state, env) => {
                  (g: gunT) => g.kind === crate.kind && g.ammunition < g.maxAmmunition,
                  state.guns
                )) {
-          playSound("reload", state, env);
+          playSound("reload", state.sounds, env);
           {
             ...state,
             guns:
@@ -1068,7 +1072,7 @@ let draw = (state, env) => {
             directions
           );
         if (fired) {
-          playSound(curGun.soundName, state, env);
+          playSound(curGun.soundName, state.sounds, env);
           fireGun(state)
         } else {
           state
@@ -1077,7 +1081,7 @@ let draw = (state, env) => {
                  -. curGun.lastShotTime > curGun.fireRate
                  && curGun.ammunition === 0) {
         if (List.exists((dir) => Env.key(dir, env), directions)) {
-          playSound("emptygun", state, env);
+          playSound("emptygun", state.sounds, env);
           fireGun(state)
         } else {
           state
@@ -1242,7 +1246,7 @@ let draw = (state, env) => {
     );
   let state =
     if (List.length(state.guns) > 0 && List.for_all((gun) => gun.ammunition === 0, state.guns)) {
-      playSound("reload", state, env);
+      playSound("reload", state.sounds, env);
       {...state, guns: List.map((gun) => {...gun, ammunition: gun.maxAmmunition}, state.guns)}
     } else {
       state
