@@ -1,16 +1,21 @@
-Reprocessing example project
+Oh no! Zombies!
 ---
 
-This is a starter example project. Just clone to get started!
+This is a game made for [ludum dare 40](https://ldjam.com/events/ludum-dare/40).
 
-## How to
-```
-git clone https://github.com/bsansouci/reprocessing-example.git
-```
+## Play now!
+https://bsansouci.github.io/ludum-dare-40/
+
+- WASD to **move**
+- Arrow keys to **shoot**
+- **Switch guns** using hotkeys specified on their icons
+- Guns will automatically **reload** when they are all out of bullets. You can also walk over ammo boxes to refill any guns of that type.
+- **Kill zombies**, get achievements!
 
 ### Install
 _warning_: this doesn't work with npm5 yet. Use npm4 or use yarn. To downgrade to npm4 you can `npm install -g npm@latest-4`
 ```
+git clone https://github.com/bsansouci/reprocessing-example.git
 yarn
 ```
 
@@ -24,7 +29,7 @@ npm run build
 npm start
 ```
 
-To build to JS run `npm run build:web` and then run a static server, like `python -m SimpleHTTPServer` and go to `localhost:8000`. If you're using safari you can simply open the `index.html` and tick `Develop > Disable Cross-Origin Restrictions`.
+To build to JS run `npm run build:web` and then open `index.html`
 
 To build to native run `npm run build:native` and run `npm run start:native`
 
