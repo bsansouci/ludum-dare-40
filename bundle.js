@@ -17417,7 +17417,7 @@ function playSound(name, sounds, $staropt$star, env) {
 }
 
 function setup(env) {
-  size$1(1280, 720, env);
+  size$1(1120, 720, env);
   var loadSound = function (soundMap, param) {
     var soundName = param[0];
     return _3(StringMap[/* add */3], soundName, /* tuple */[
@@ -18628,24 +18628,32 @@ function draw(state, env) {
   } else {
     state$15 = state$14;
   }
-  if (state$15[/* health */5] <= 0) {
-    fill$4(color(244, 167, 66, 255), env);
-    stroke(color(86, 56, 16, 255), env);
-    var windowX = (width(env) - 300 | 0) / 2 | 0;
+  if (!state$15[/* running */25] && state$15[/* animatingAchievement */24] === /* None */0) {
+    var windowX = (width(env) - 200 | 0) / 2 | 0;
     var windowY = (height(env) - 300 | 0) / 2 | 0;
-    rect(/* tuple */[
-          windowX,
-          windowY
-        ], 300, 300, env);
-    tint(color(232, 58, 27, 255), env);
-    text(state$15[/* mainFont */10], "Game Over", /* tuple */[
+    text(state$15[/* mainFont */10], "PAUSED", /* tuple */[
           windowX + 80 | 0,
           windowY + 40 | 0
         ], env);
+  }
+  if (state$15[/* health */5] <= 0) {
+    fill$4(color(244, 167, 66, 255), env);
+    stroke(color(86, 56, 16, 255), env);
+    var windowX$1 = (width(env) - 300 | 0) / 2 | 0;
+    var windowY$1 = (height(env) - 300 | 0) / 2 | 0;
+    rect(/* tuple */[
+          windowX$1,
+          windowY$1
+        ], 300, 300, env);
+    tint(color(232, 58, 27, 255), env);
+    text(state$15[/* mainFont */10], "Game Over", /* tuple */[
+          windowX$1 + 80 | 0,
+          windowY$1 + 40 | 0
+        ], env);
     noTint(env);
     text(state$15[/* mainFont */10], "You made it to", /* tuple */[
-          windowX + 45 | 0,
-          windowY + 100 | 0
+          windowX$1 + 45 | 0,
+          windowY$1 + 100 | 0
         ], env);
     text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
@@ -18662,11 +18670,11 @@ function draw(state, env) {
                     ]),
                   "wave %d!"
                 ]), state$15[/* waveNum */14]), /* tuple */[
-          windowX + 95 | 0,
-          windowY + 130 | 0
+          windowX$1 + 95 | 0,
+          windowY$1 + 130 | 0
         ], env);
-    var buttonX = windowX + 85 | 0;
-    var buttonY = windowY + 200 | 0;
+    var buttonX = windowX$1 + 85 | 0;
+    var buttonY = windowY$1 + 200 | 0;
     fill$4(color(101, 198, 55, 255), env);
     stroke(color(86, 56, 16, 255), env);
     rect(/* tuple */[
