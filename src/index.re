@@ -1,5 +1,7 @@
 open Reprocessing;
 
+let animatingAchievementMaxTime = 2.2;
+
 let fringePos = 30.;
 
 let playerSpeed = 150.;
@@ -101,6 +103,13 @@ type keyToggleT = {
   modifier: bool
 };
 
+type rankT =
+  | Poor
+  | Common
+  | Rare
+  | Epic
+  | Legendary;
+
 type gunT = {
   fireRate: float,
   lastShotTime: float,
@@ -110,6 +119,7 @@ type gunT = {
   keyToggle: keyToggleT,
   fire: (stateT, float, Reprocessing_Events.keycodeT) => stateT,
   kind: gunKindT,
+  rank: rankT,
   soundName: string
 }
 and achievementT = {
@@ -136,7 +146,9 @@ and stateT = {
   numberOfBulletsFired: int,
   damageDone: float,
   stepTaken: float,
-  elapsedTime: float
+  elapsedTime: float,
+  animatingAchievementTime: float,
+  animatingAchievement: option(achievementT)
 };
 
 type orderT =
@@ -622,7 +634,7 @@ let generateGun: unit => gunT = {
         )
       | 6 => (
           LaserGun,
-          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(100., 300., damage)),
+          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(20., 200., damage)),
           Utils.lerpf(1.5, 0.5, fireRate),
           Utils.lerp(2, 10, maxAmmunition),
           "laser"
@@ -639,17 +651,17 @@ let generateGun: unit => gunT = {
           "aliengun_threeshots"
         )
       };
-    let color =
+    let (rank, color) =
       if (gunRank > 0. && gunRank < 0.1) {
-        Utils.color(188, 191, 187, 255)
+        (Poor, Utils.color(188, 191, 187, 255))
       } else if (gunRank > 0.1 && gunRank < 1.1) {
-        Utils.color(62, 245, 21, 255)
+        (Common, Utils.color(62, 245, 21, 255))
       } else if (gunRank > 1.1 && gunRank < 1.7) {
-        Utils.color(47, 119, 214, 255)
+        (Rare, Utils.color(47, 119, 214, 255))
       } else if (gunRank > 1.7 && gunRank < 1.9) {
-        Utils.color(173, 28, 221, 255)
+        (Epic, Utils.color(173, 28, 221, 255))
       } else {
-        Utils.color(247, 133, 12, 255)
+        (Legendary, Utils.color(247, 133, 12, 255))
       };
     {
       ammunition: maxAmmunition,
@@ -660,7 +672,8 @@ let generateGun: unit => gunT = {
       soundName,
       fire,
       kind,
-      color
+      color,
+      rank
     }
   }
 };
@@ -887,8 +900,7 @@ let setup = (env) => {
       Env.loadSound(Printf.sprintf("assets/sounds/%s.wav", soundName), env),
       soundMap
     );
-  let sounds =
-    List.fold_left(loadSound, StringMap.empty, soundNames);
+  let sounds = List.fold_left(loadSound, StringMap.empty, soundNames);
   playSound("theme", sounds, ~loop=true, env);
   {
     pos: {x: 400., y: 400.},
@@ -918,6 +930,8 @@ let setup = (env) => {
     damageDone: 0.,
     stepTaken: 0.,
     elapsedTime: 0.,
+    animatingAchievementTime: 0.,
+    animatingAchievement: None,
     waveNum: 0,
     nextWaveCountdown: 10.
   }
@@ -1123,6 +1137,14 @@ let draw = (state, env) => {
     playerBullets: List.filter((bullet) => bullet.remainingRange > 0., state.playerBullets)
   };
   let state =
+    if (state.animatingAchievement == None) {
+      state
+    } else if (state.animatingAchievementTime -. Env.deltaTime(env) <= 0.) {
+      {...state, animatingAchievement: None, animatingAchievementTime: 0.}
+    } else {
+      {...state, animatingAchievementTime: state.animatingAchievementTime -. Env.deltaTime(env)}
+    };
+  let state =
     List.fold_left(
       (state, achievement) =>
         if (achievement.state === Locked && achievement.condition(state, env)) {
@@ -1131,6 +1153,8 @@ let draw = (state, env) => {
             ...state,
             guns: [generateGun(), ...state.guns],
             equippedGun: state.equippedGun + 1,
+            animatingAchievementTime: animatingAchievementMaxTime,
+            animatingAchievement: Some(achievement),
             achievements:
               List.map(
                 (a) =>
@@ -1499,6 +1523,12 @@ let draw = (state, env) => {
   | _ =>
     Draw.text(
       ~font=state.mainFont,
+      ~body=Printf.sprintf("Wave %d", state.waveNum),
+      ~pos=(50, 90),
+      env
+    );
+    Draw.text(
+      ~font=state.mainFont,
       ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
       ~pos=(50, 120),
       env
@@ -1521,88 +1551,198 @@ let draw = (state, env) => {
   let squareSizeY = defaultSpacing +. diffY /. numY;
   let boundsTopLeft = {x: padding, y: padding +. squareSizeY};
   let boundsBottomRight = {x: boundsBottomRight.x -. squareSizeX, y: boundsBottomRight.y};
-  ignore @@
-  List.fold_left(
-    ({pos: {x, y}, i} as acc, gun) => {
-      let (newDirection, newBottomRight, newTopLeft) =
-        switch acc.direction {
-        | {x: 1., y: 0.} when x +. squareSizeX > acc.boundsBottomRight.x => (
-            {x: 0., y: 1.0},
-            {...acc.boundsBottomRight, x: acc.boundsBottomRight.x -. squareSizeX},
-            acc.boundsTopLeft
-          )
-        | {x: 0., y: 1.0} when y +. squareSizeY > acc.boundsBottomRight.y => (
-            {x: (-1.), y: 0.0},
-            {...acc.boundsBottomRight, y: acc.boundsBottomRight.y -. squareSizeY},
-            acc.boundsTopLeft
-          )
-        | {x: (-1.), y: 0.0} when x -. squareSizeX < acc.boundsTopLeft.x => (
-            {x: 0.0, y: (-1.0)},
-            acc.boundsBottomRight,
-            {...acc.boundsTopLeft, x: acc.boundsTopLeft.x +. squareSizeX}
-          )
-        | {x: 0.0, y: (-1.0)} when y -. squareSizeY < acc.boundsTopLeft.y => (
-            {x: 1., y: 0.},
-            acc.boundsBottomRight,
-            {...acc.boundsTopLeft, y: acc.boundsTopLeft.y +. squareSizeY}
-          )
-        | _ => (acc.direction, acc.boundsBottomRight, acc.boundsTopLeft)
-        };
-      /*Draw.fill(Utils.color(255, 255, 0, 255), env);
-        Draw.rectf(~pos=(x, y), ~width=squareSizeX, ~height=squareSizeY, env);
-        Draw.fill(Utils.color(0, 0, 0, 255), env);
-        Draw.rectf(
-          ~pos=(x +. 2., y +. 2.),
-          ~width=squareSizeX -. 4.,
-          ~height=squareSizeY -. 4.,
-          env
-        );*/
-      let centeredX = x +. squareSizeX /. 2. -. 40.;
-      let centeredY = y +. squareSizeY /. 2. -. 40.;
-      if (length - i - 1 === state.equippedGun) {
-        Draw.fill(Utils.color(255, 255, 0, 255), env);
-        Draw.rectf(~pos=(centeredX, centeredY), ~width=80., ~height=80., env)
+  let getNextGunIterator = (acc: gunIterationT) => {
+    let x = acc.pos.x;
+    let y = acc.pos.y;
+    let (newDirection, newBottomRight, newTopLeft) =
+      switch acc.direction {
+      | {x: 1., y: 0.} when x +. squareSizeX > acc.boundsBottomRight.x => (
+          {x: 0., y: 1.0},
+          {...acc.boundsBottomRight, x: acc.boundsBottomRight.x -. squareSizeX},
+          acc.boundsTopLeft
+        )
+      | {x: 0., y: 1.0} when y +. squareSizeY > acc.boundsBottomRight.y => (
+          {x: (-1.), y: 0.0},
+          {...acc.boundsBottomRight, y: acc.boundsBottomRight.y -. squareSizeY},
+          acc.boundsTopLeft
+        )
+      | {x: (-1.), y: 0.0} when x -. squareSizeX < acc.boundsTopLeft.x => (
+          {x: 0.0, y: (-1.0)},
+          acc.boundsBottomRight,
+          {...acc.boundsTopLeft, x: acc.boundsTopLeft.x +. squareSizeX}
+        )
+      | {x: 0.0, y: (-1.0)} when y -. squareSizeY < acc.boundsTopLeft.y => (
+          {x: 1., y: 0.},
+          acc.boundsBottomRight,
+          {...acc.boundsTopLeft, y: acc.boundsTopLeft.y +. squareSizeY}
+        )
+      | _ => (acc.direction, acc.boundsBottomRight, acc.boundsTopLeft)
       };
-      Draw.fill(gun.color, env);
-      Draw.rectf(~pos=(centeredX +. 5., centeredY +. 5.), ~width=70., ~height=70., env);
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(centeredX +. 10., centeredY),
-        ~width=64.,
-        ~height=64.,
-        ~texPos=gunTexPos(gun.kind),
-        ~texWidth=64,
-        ~texHeight=64,
-        env
-      );
-      drawKey(centeredX +. 10., centeredY +. 22., gun, state, env);
-      drawHealthBar(
-        centeredX +. 5. +. 35.,
-        centeredY +. 64.,
-        10.,
-        68.,
-        float_of_int(gun.ammunition),
-        float_of_int(gun.maxAmmunition),
-        Utils.color(220, 220, 0, 255),
-        env
-      );
-      {
-        direction: newDirection,
-        boundsTopLeft: newTopLeft,
-        boundsBottomRight: newBottomRight,
-        pos: {x: x +. newDirection.x *. squareSizeX, y: y +. newDirection.y *. squareSizeY},
-        i: i + 1
-      }
-    },
     {
-      pos: {x: padding +. squareSizeX *. 3., y: padding},
-      i: 0,
-      boundsTopLeft,
-      boundsBottomRight,
-      direction: {x: 1., y: 0.}
-    },
-    List.rev(state.guns)
-  );
+      ...acc,
+      direction: newDirection,
+      boundsTopLeft: newTopLeft,
+      boundsBottomRight: newBottomRight,
+      pos: {x: x +. newDirection.x *. squareSizeX, y: y +. newDirection.y *. squareSizeY}
+    }
+  };
+  let gunsLength = List.length(state.guns);
+  let lastGunIterator =
+    List.fold_left(
+      ({pos: {x, y}, i} as acc, gun) =>
+        if (state.animatingAchievement == None || i < gunsLength - 1) {
+          let centeredX = x +. squareSizeX /. 2. -. 40.;
+          let centeredY = y +. squareSizeY /. 2. -. 40.;
+          if (length - i - 1 === state.equippedGun) {
+            Draw.fill(Utils.color(255, 255, 0, 255), env);
+            Draw.rectf(~pos=(centeredX, centeredY), ~width=80., ~height=80., env)
+          };
+          Draw.fill(gun.color, env);
+          Draw.rectf(~pos=(centeredX +. 5., centeredY +. 5.), ~width=70., ~height=70., env);
+          Draw.subImagef(
+            state.mainSpriteSheet,
+            ~pos=(centeredX +. 10., centeredY),
+            ~width=64.,
+            ~height=64.,
+            ~texPos=gunTexPos(gun.kind),
+            ~texWidth=64,
+            ~texHeight=64,
+            env
+          );
+          drawKey(centeredX +. 10., centeredY +. 22., gun, state, env);
+          drawHealthBar(
+            centeredX +. 5. +. 35.,
+            centeredY +. 64.,
+            10.,
+            68.,
+            float_of_int(gun.ammunition),
+            float_of_int(gun.maxAmmunition),
+            Utils.color(220, 220, 0, 255),
+            env
+          );
+          let newAcc = getNextGunIterator(acc);
+          {...newAcc, i: i + 1}
+        } else {
+          acc
+        },
+      {
+        pos: {x: padding +. squareSizeX *. 3., y: padding},
+        i: 0,
+        boundsTopLeft,
+        boundsBottomRight,
+        direction: {x: 1., y: 0.}
+      },
+      List.rev(state.guns)
+    );
+  switch state.animatingAchievement {
+  | None => ()
+  | Some(achievement) =>
+    let width = 550.;
+    let height = 300.;
+    let opacity = 255;
+    let x = float_of_int(Env.width(env)) /. 2.;
+    let y = float_of_int(Env.height(env)) /. 2.;
+    let threshold1 = 1.8;
+    let threshold2 = 1.;
+    let t = state.animatingAchievementTime;
+    let (width, height, opacity, opacity2) =
+      if (state.animatingAchievementTime > threshold1) {
+        let width = Utils.remapf(t, threshold1, animatingAchievementMaxTime, width, width -. 100.);
+        let height =
+          Utils.remapf(t, threshold1, animatingAchievementMaxTime, height, height -. 100.);
+        let opacity =
+          int_of_float(Utils.remapf(t, threshold1, animatingAchievementMaxTime, 255., 155.));
+        (width, height, opacity, opacity)
+      } else if (t > threshold2) {
+        (width, height, opacity, opacity)
+      } else {
+        let opacity = int_of_float(Utils.remapf(t, 0., threshold2, 0., 255.));
+        (width, height, opacity, 255)
+      };
+    Draw.fill(Utils.color(70, 70, 20, opacity), env);
+    Draw.rectf(~pos=(x -. width /. 2., y -. height /. 2.), ~width, ~height, env);
+    let gun = List.hd(state.guns);
+    let kindName =
+      switch gun.rank {
+      | Poor => "POOR"
+      | Common => "COMMON"
+      | Rare => "RARE"
+      | Epic => "EPIC"
+      | Legendary => "LEGENDARY"
+      };
+    Draw.tint(Utils.color(255, 255, 255, opacity), env);
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=kindName,
+      ~pos=(int_of_float(x -. 50.), int_of_float(y -. 120.)),
+      env
+    );
+    let startGunSize = 128.;
+    let endGunSize = 64.;
+    let startX = x -. (startGunSize +. 12.) /. 2.;
+    let startY = y -. (startGunSize +. 12.) /. 2.;
+    Draw.text(
+      ~font=state.mainFont,
+      ~body=achievement.message,
+      ~pos=(int_of_float(x -. width /. 2. +. 20.), int_of_float(y +. 100.)),
+      env
+    );
+    let it = lastGunIterator;
+    let endX = it.pos.x +. squareSizeX /. 2. -. 40.;
+    let endY = it.pos.y +. squareSizeY /. 2. -. 40.;
+    let (centeredX, gunSize) =
+      if (t > threshold1) {
+        (startX, startGunSize)
+      } else if (t > threshold2) {
+        (startX, startGunSize)
+      } else {
+        (
+          Utils.remapf(t, 0., threshold2, endX, startX),
+          Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
+        )
+      };
+    let (centeredY, gunSize) =
+      if (t > threshold1) {
+        (startY, startGunSize)
+      } else if (t > threshold2) {
+        (startY, startGunSize)
+      } else {
+        (
+          Utils.remapf(t, 0., threshold2, endY, startY),
+          Utils.remapf(t, 0., threshold2, endGunSize, startGunSize)
+        )
+      };
+    Draw.fill(gun.color, env);
+    Draw.rectf(
+      ~pos=(centeredX +. 5., centeredY +. 5.),
+      ~width=gunSize +. 6.,
+      ~height=gunSize +. 6.,
+      env
+    );
+    Draw.tint(Utils.color(255, 255, 255, opacity2), env);
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(centeredX +. 10., centeredY),
+      ~width=gunSize,
+      ~height=gunSize,
+      ~texPos=gunTexPos(gun.kind),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    );
+    drawKey(centeredX +. 10., centeredY +. gunSize -. 42., gun, state, env);
+    drawHealthBar(
+      centeredX +. 8. +. gunSize /. 2.,
+      centeredY +. gunSize,
+      10.,
+      gunSize +. 4.,
+      float_of_int(gun.ammunition),
+      float_of_int(gun.maxAmmunition),
+      Utils.color(220, 220, 0, 255),
+      env
+    );
+    Draw.tint(Utils.color(255, 255, 255, 255), env)
+  };
   state
 };
 
