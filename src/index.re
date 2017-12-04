@@ -64,7 +64,7 @@ let gunTexPos = (kind) =>
   | Pistol => (587, 0)
   | Shotgun => (650, 0)
   | AlienGun1 => (64, 0)
-  | AlienGun2 => (772, 0)
+  | AlienGun2 => (778, 0)
   | LaserGun => (713, 0)
   | Rifle => (0, 0)
   | Uzi => (1660, (-3))
@@ -108,6 +108,11 @@ and stateT = {
   stepTaken: float,
   elapsedTime: float
 };
+
+type orderT =
+  | Player(vec2T)
+  | Enemy(enemyT)
+  | Crate(crateT);
 
 let add = (v1, v2) => {x: v1.x +. v2.x, y: v1.y +. v2.y};
 
@@ -578,7 +583,7 @@ let generateGun: unit => gunT = {
     let maxAmmunition = Utils.randomf(0., 1.);
     let damage = Utils.randomf(0., 1.);
     let fireRate = Utils.randomf(0., 1.);
-    let gunRank = damage +. fireRate +. damage *. maxAmmunition *. 2.;
+    let gunRank = damage +. fireRate;
     /*print_endline(
         Printf.sprintf(
           "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
@@ -610,14 +615,14 @@ let generateGun: unit => gunT = {
           Rifle,
           makeBurstFire(bulletSpeed, Utils.lerpf(400., 700., damage)),
           Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 10, maxAmmunition)
+          Utils.lerp(1, 6, maxAmmunition)
         )
       | 3 => (
           Shotgun,
           makeShotgunFire(
             bulletSpeed +. 300.,
             Utils.randomf(50., 200.),
-            15,
+            8,
             Utils.lerpf(400., 1000., damage)
           ),
           Utils.lerpf(2.0, 1.2, fireRate),
@@ -653,13 +658,13 @@ let generateGun: unit => gunT = {
         )
       };
     let color =
-      if (gunRank > 0. && gunRank < 0.4) {
+      if (gunRank > 0. && gunRank < 0.1) {
         Utils.color(188, 191, 187, 255)
-      } else if (gunRank > 0.4 && gunRank < 2.) {
-        Utils.color(255, 221, 0, 255)
-      } else if (gunRank > 2. && gunRank < 2.6) {
+      } else if (gunRank > 0.1 && gunRank < 1.1) {
+        Utils.color(62, 245, 21, 255)
+      } else if (gunRank > 1.1 && gunRank < 1.7) {
         Utils.color(47, 119, 214, 255)
-      } else if (gunRank > 2.6 && gunRank < 2.9) {
+      } else if (gunRank > 1.7 && gunRank < 1.9) {
         Utils.color(173, 28, 221, 255)
       } else {
         Utils.color(247, 133, 12, 255)
@@ -1226,96 +1231,35 @@ let draw = (state, env) => {
       ),
     backgroundTileGrid
   );
+  let allThings = List.map((v) => Enemy(v), state.enemies);
+  let allThings = [Player(state.pos), ...allThings];
+  let allThings = allThings @ List.map((c) => Crate(c), state.crates);
   /* Draw the enemies */
-  let sortedEnemies =
+  let sortedAllThings =
     List.sort(
-      (enemy1: enemyT, enemy2: enemyT) =>
-        if (enemy1.pos.y > enemy2.pos.y) {
+      (thing1: orderT, thing2: orderT) => {
+        let pos1 =
+          switch thing1 {
+          | Crate(c) => c.pos
+          | Player(p) => p
+          | Enemy(e) => e.pos
+          };
+        let pos2 =
+          switch thing2 {
+          | Crate(c) => c.pos
+          | Player(p) => p
+          | Enemy(e) => e.pos
+          };
+        if (pos1.y > pos2.y) {
           1
-        } else if (enemy1.pos.y < enemy2.pos.y) {
+        } else if (pos1.y < pos2.y) {
           (-1)
         } else {
           0
-        },
-      state.enemies
-    );
-  List.iter(
-    (enemy: enemyT) =>
-      if (enemy.pos.x > -. fringePos
-          && enemy.pos.x < mapSizePx
-          +. 30.
-          && enemy.pos.y > -. fringePos
-          && enemy.pos.y < mapSizePx
-          +. 30.) {
-        let (texPos, healthBarOffsetX, healthBarOffsetY) =
-          switch enemy.kind {
-          | NormalZ => ((842, 0), 0., 0.)
-          | BigZ => ((1026, 0), 0., 0.)
-          | TallZ => ((1391, 0), 2., (-5.))
-          };
-        Draw.subImagef(
-          state.mainSpriteSheet,
-          ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
-          ~width=40.,
-          ~height=64.,
-          ~texPos,
-          ~texWidth=40,
-          ~texHeight=64,
-          env
-        );
-        drawHealthBar(
-          enemy.pos.x +. 5. +. healthBarOffsetX,
-          enemy.pos.y -. 35. +. healthBarOffsetY,
-          5.,
-          40.,
-          enemy.health,
-          enemy.maxHealth,
-          Constants.red,
-          env
-        )
+        }
       },
-    sortedEnemies
-  );
-  List.iter(
-    (crate: crateT) => {
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
-        ~width=40.,
-        ~height=40.,
-        ~texPos=(1532, 0),
-        ~texWidth=64,
-        ~texHeight=64,
-        env
-      );
-      let yOffset = sin(state.elapsedTime *. 2.) *. 2. -. 17.;
-      Draw.fill(Constants.white, env);
-      Draw.trianglef(
-        (crate.pos.x -. 5., crate.pos.y +. 9.5 +. yOffset),
-        (crate.pos.x +. 5., crate.pos.y +. 9.5 +. yOffset),
-        (crate.pos.x, crate.pos.y +. 17. +. yOffset),
-        env
-      );
-      Draw.fill(Utils.color(150, 120, 10, 255), env);
-      Draw.trianglef(
-        (crate.pos.x -. 4., crate.pos.y +. 10. +. yOffset),
-        (crate.pos.x +. 4., crate.pos.y +. 10. +. yOffset),
-        (crate.pos.x, crate.pos.y +. 16. +. yOffset),
-        env
-      );
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(crate.pos.x -. 10., crate.pos.y -. 10. +. yOffset),
-        ~width=20.,
-        ~height=20.,
-        ~texPos=gunTexPos(crate.kind),
-        ~texWidth=64,
-        ~texHeight=64,
-        env
-      )
-    },
-    state.crates
-  );
+      allThings
+    );
   List.iter(
     ({pos, direction: _}) => {
       Draw.fill(Constants.black, env);
@@ -1323,16 +1267,95 @@ let draw = (state, env) => {
     },
     state.playerBullets
   );
-  /* Draw the player */
-  Draw.subImagef(
-    state.mainSpriteSheet,
-    ~pos=(state.pos.x -. 20., state.pos.y -. 32.),
-    ~width=40.,
-    ~height=64.,
-    ~texPos=(128, 0),
-    ~texWidth=40,
-    ~texHeight=64,
-    env
+  let drawEnemy = (enemy: enemyT) =>
+    if (enemy.pos.x > -. fringePos
+        && enemy.pos.x < mapSizePx
+        +. 30.
+        && enemy.pos.y > -. fringePos
+        && enemy.pos.y < mapSizePx
+        +. 30.) {
+      let (texPos, healthBarOffsetX, healthBarOffsetY) =
+        switch enemy.kind {
+        | NormalZ => ((842, 0), 0., 0.)
+        | BigZ => ((1026, 0), 0., 0.)
+        | TallZ => ((1391, 0), 2., (-5.))
+        };
+      Draw.subImagef(
+        state.mainSpriteSheet,
+        ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
+        ~width=40.,
+        ~height=64.,
+        ~texPos,
+        ~texWidth=40,
+        ~texHeight=64,
+        env
+      );
+      drawHealthBar(
+        enemy.pos.x +. 5. +. healthBarOffsetX,
+        enemy.pos.y -. 35. +. healthBarOffsetY,
+        5.,
+        40.,
+        enemy.health,
+        enemy.maxHealth,
+        Constants.red,
+        env
+      )
+    };
+  let drawCrate = (crate: crateT) => {
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(crate.pos.x -. 20., crate.pos.y -. 20.),
+      ~width=40.,
+      ~height=40.,
+      ~texPos=(1532, 0),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    );
+    let yOffset = sin(state.elapsedTime *. 2.) *. 2. -. 17.;
+    Draw.fill(Constants.white, env);
+    Draw.trianglef(
+      (crate.pos.x -. 5., crate.pos.y +. 9.5 +. yOffset),
+      (crate.pos.x +. 5., crate.pos.y +. 9.5 +. yOffset),
+      (crate.pos.x, crate.pos.y +. 17. +. yOffset),
+      env
+    );
+    Draw.fill(Utils.color(150, 120, 10, 255), env);
+    Draw.trianglef(
+      (crate.pos.x -. 4., crate.pos.y +. 10. +. yOffset),
+      (crate.pos.x +. 4., crate.pos.y +. 10. +. yOffset),
+      (crate.pos.x, crate.pos.y +. 16. +. yOffset),
+      env
+    );
+    Draw.subImagef(
+      state.mainSpriteSheet,
+      ~pos=(crate.pos.x -. 10., crate.pos.y -. 10. +. yOffset),
+      ~width=20.,
+      ~height=20.,
+      ~texPos=gunTexPos(crate.kind),
+      ~texWidth=64,
+      ~texHeight=64,
+      env
+    )
+  };
+  List.iter(
+    (thing) =>
+      switch thing {
+      | Crate(c) => drawCrate(c)
+      | Enemy(e) => drawEnemy(e)
+      | Player(p) =>
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(p.x -. 20., p.y -. 32.),
+          ~width=40.,
+          ~height=64.,
+          ~texPos=(128, 0),
+          ~texWidth=40,
+          ~texHeight=64,
+          env
+        )
+      },
+    sortedAllThings
   );
   drawForest(state, env);
   Draw.popMatrix(env);
