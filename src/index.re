@@ -600,13 +600,13 @@ let generateGun: list(gunT) => list(gunT) = {
     switch (getNextGunKey()) {
     | None => guns
     | Some(keyToggle) =>
-      
       let maxAmmunition = Utils.randomf(0., 1.);
-      let (damage, fireRate) = if (state.waveNum < 3) {
-        (Utils.randomf(0., 7.), Utils.randomf(0., 7.))
-      } else {
-        (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
-      };
+      let (damage, fireRate) =
+        if (state.waveNum < 3) {
+          (Utils.randomf(0., 7.), Utils.randomf(0., 7.))
+        } else {
+          (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
+        };
       let gunRank = damage +. fireRate;
       let (kind, fire, fireRate, maxAmmunition, soundName) =
         switch (Utils.random(0, 8)) {
