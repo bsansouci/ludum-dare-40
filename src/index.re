@@ -518,14 +518,14 @@ let generateGun: unit => gunT = {
     let fireRate = Utils.randomf(0., 1.);
     let gunRank = damage +. fireRate +. damage *. maxAmmunition *. 2.;
     /*print_endline(
-      Printf.sprintf(
-        "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
-        gunRank,
-        damage,
-        fireRate,
-        maxAmmunition
-      )
-    );*/
+        Printf.sprintf(
+          "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
+          gunRank,
+          damage,
+          fireRate,
+          maxAmmunition
+        )
+      );*/
     let (kind, fire, fireRate, maxAmmunition) =
       switch (Utils.random(0, 8)) {
       | 0 => (
@@ -569,20 +569,13 @@ let generateGun: unit => gunT = {
         )
       | 5 => (
           Uzi,
-          makeUziFire(
-            bulletSpeed,
-            Utils.randomf(100., 500.),
-            Utils.lerpf(50., 200., damage)
-          ),
+          makeUziFire(bulletSpeed, Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
           Utils.lerpf(0.1, 0.03, fireRate),
           Utils.lerp(20, 50, maxAmmunition)
         )
       | 6 => (
           LaserGun,
-          makeLaserFire(
-            bulletSpeed -. 200.,
-            Utils.lerpf(100., 300., damage)
-          ),
+          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(100., 300., damage)),
           Utils.lerpf(1.5, 0.5, fireRate),
           Utils.lerp(2, 10, maxAmmunition)
         )
@@ -598,14 +591,16 @@ let generateGun: unit => gunT = {
         )
       };
     let color =
-      if (gunRank > 0. && gunRank < 2.) {
-        Utils.color(62, 245, 21, 255)
+      if (gunRank > 0. && gunRank < 0.4) {
+        Utils.color(188, 191, 187, 255)
+      } else if (gunRank > 0.4 && gunRank < 2.) {
+        Utils.color(255, 221, 0, 255)
       } else if (gunRank > 2. && gunRank < 2.6) {
         Utils.color(47, 119, 214, 255)
       } else if (gunRank > 2.6 && gunRank < 2.9) {
         Utils.color(173, 28, 221, 255)
       } else {
-        Utils.color(255, 221, 0, 255)
+        Utils.color(247, 133, 12, 255)
       };
     {
       ammunition: maxAmmunition,
