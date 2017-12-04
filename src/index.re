@@ -164,6 +164,7 @@ and stateT = {
   elapsedTime: float,
   animatingAchievementTime: float,
   animatingAchievement: option(achievementT),
+  animatingWaveNumberTime: float,
   running: bool,
   shiftIcon: imageT
 };
@@ -905,7 +906,8 @@ let generateWave = (state) => {
     enemies,
     crates: list_init(state.crates, makeCrate, crateCount),
     waveNum: state.waveNum + 1,
-    nextWaveCountdown: 60.
+    nextWaveCountdown: 60.,
+    animatingWaveNumberTime: 3.
   }
 };
 
@@ -938,7 +940,8 @@ let soundNames = [
   ("achievement", 1.0),
   ("zombie_one", 1.0),
   ("zombie_two", 1.0),
-  ("zombie_three", 1.0)
+  ("zombie_three", 1.0),
+  ("new_wave", 1.0)
 ];
 
 let playSound = (name, sounds, ~loop=false, env) =>
@@ -993,6 +996,7 @@ let setup = (env) => {
     elapsedTime: 0.,
     animatingAchievementTime: 0.,
     animatingAchievement: None,
+    animatingWaveNumberTime: 0.,
     waveNum: 0,
     nextWaveCountdown: 10.,
     running: true
@@ -1456,6 +1460,7 @@ let draw = (state, env) => {
       let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
       let state =
         if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
+          playSound("new_wave", state.sounds, env);
           generateWave(state)
         } else {
           state
@@ -1498,6 +1503,15 @@ let draw = (state, env) => {
       {...state, animatingAchievement: None, animatingAchievementTime: 0.}
     } else {
       {...state, animatingAchievementTime: state.animatingAchievementTime -. Env.deltaTime(env)}
+    };
+  let state =
+    if (state.animatingWaveNumberTime > 0.) {
+      {
+        ...state,
+        animatingWaveNumberTime: max(0., state.animatingWaveNumberTime -. Env.deltaTime(env))
+      }
+    } else {
+      state
     };
   Draw.pushMatrix(env);
   Draw.scale(scale, scale, env);
@@ -1737,18 +1751,35 @@ let draw = (state, env) => {
       env
     )
   | _ =>
+    let threshold = 1.0;
+    let startX = float_of_int((Env.width(env) - 50) / 2);
+    let startY = 200.;
+    let endX = 50.;
+    let endY = 90.;
+    let t = state.animatingWaveNumberTime;
+    let (x, y) =
+      if (t > threshold) {
+        (startX, startY)
+      } else {
+        (
+          Utils.remapf(t, 0., threshold, endX, startX),
+          Utils.remapf(t, 0., threshold, endY, startY)
+        )
+      };
     Draw.text(
       ~font=state.mainFont,
       ~body=Printf.sprintf("Wave %d", state.waveNum),
-      ~pos=(50, 90),
+      ~pos=(int_of_float(x), int_of_float(y)),
       env
     );
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
-      ~pos=(50, 120),
-      env
-    )
+    if (t <= 0.) {
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Next wave in %d", truncate(state.nextWaveCountdown)),
+        ~pos=(50, 120),
+        env
+      )
+    }
   };
   let defaultSpacing = 90.;
   let padding = 16.;
