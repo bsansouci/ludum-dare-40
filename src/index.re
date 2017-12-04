@@ -138,7 +138,7 @@ and stateT = {
   crates: list(crateT),
   mainFont: fontT,
   mainSpriteSheet: imageT,
-  sounds: StringMap.t(soundT),
+  sounds: StringMap.t((soundT, float)),
   enemies: list(enemyT),
   waveNum: int,
   nextWaveCountdown: float,
@@ -904,32 +904,32 @@ let drawHealthBar = (x, y, h, w, health, maxHealth, color, env) => {
 };
 
 let soundNames = [
-  "emptygun",
-  "reload",
-  "machinegun_singleshot",
-  "machinegun_threeshots",
-  "laser",
-  "aliengun_threeshots",
-  "shotgun",
-  "theme",
-  "achievement",
-  "zombie_one",
-  "zombie_two",
-  "zombie_three"
+  ("emptygun", 1.0),
+  ("reload", 1.0),
+  ("machinegun_singleshot", 0.4),
+  ("machinegun_threeshots", 0.4),
+  ("laser", 0.3),
+  ("aliengun_threeshots", 1.0),
+  ("shotgun", 1.0),
+  ("theme", 0.9),
+  ("achievement", 1.0),
+  ("zombie_one", 1.0),
+  ("zombie_two", 1.0),
+  ("zombie_three", 1.0)
 ];
 
 let playSound = (name, sounds, ~loop=false, env) =>
   switch (StringMap.find(name, sounds)) {
-  | s => Env.playSound(s, ~loop, env)
+  | (s, volume) => Env.playSound(s, ~loop, ~volume, env)
   | exception Not_found => print_endline("Couldn't find sound " ++ name)
   };
 
 let setup = (env) => {
   Env.size(~width=1280, ~height=720, env);
-  let loadSound = (soundMap: StringMap.t(soundT), soundName: string) =>
+  let loadSound = (soundMap: StringMap.t((soundT, float)), (soundName: string, volume)) =>
     StringMap.add(
       soundName,
-      Env.loadSound(Printf.sprintf("assets/sounds/%s.wav", soundName), env),
+      (Env.loadSound(Printf.sprintf("assets/sounds/%s.wav", soundName), env), volume),
       soundMap
     );
   let sounds = List.fold_left(loadSound, StringMap.empty, soundNames);
@@ -1201,6 +1201,7 @@ let draw = (state, env) => {
           (state, achievement) =>
             if (achievement.state === Locked && achievement.condition(state, env)) {
               print_endline(achievement.message);
+              playSound("achievement", state.sounds, env);
               {
                 ...state,
                 guns: [generateGun(), ...state.guns],
