@@ -42,9 +42,20 @@ type achievementStateT =
   | Unlocked;
 
 type enemyKindT =
-  | NormalZ
+  | Normal1Z
+  | Normal2Z
+  | Normal3Z
   | BigZ
   | TallZ;
+
+let enemyTexPos = (kind) =>
+  switch kind {
+  | Normal1Z => [(917, 0), (965, 0)]
+  | Normal2Z => [(917, 0), (965, 0)]
+  | Normal3Z => [(917, 0), (965, 0)]
+  | BigZ => [(1062, 0), (1110, 0)]
+  | TallZ => [(1493, 0), (1541, 0)]
+  };
 
 type enemyT = {
   maxHealth: float,
@@ -775,7 +786,13 @@ let generateWave = (state) => {
     | _ => assert false
     };
   let makeEnemy = () => {
-    let (monsterKind, maxHealth, enemySpeed, damage) = (NormalZ, 35., 25., 100.);
+    let monsterKind =
+      switch (Utils.random(0, 3)) {
+      | 0 => Normal1Z
+      | 1 => Normal2Z
+      | _ => Normal3Z
+      };
+    let (maxHealth, enemySpeed, damage) = (35., 25., 100.);
     {
       pos: genEnemyPos(),
       kind: monsterKind,
@@ -878,10 +895,10 @@ let setup = (env) => {
       {
         pos: {x: 100., y: 250.},
         damage: 100.,
-        kind: NormalZ,
+        kind: Normal1Z,
         health: 100.,
         maxHealth: 100.,
-        speed: 100.,
+        speed: 70.,
         error: {x: 5., y: 5.}
       }
     ],
@@ -895,26 +912,22 @@ let setup = (env) => {
   }
 };
 
-let drawForest = (state, env) =>{
+let drawForest = (state, env) => {
   Draw.fill(Utils.color(~r=43, ~g=109, ~b=50, ~a=255), env);
   for (i in 0 to mapSize) {
-    Draw.rectf(
-      ~pos=(float_of_int(i) *. 63., (-25.)),
-      ~height=(-64.),
-      ~width=65.,
-      env
-    );
+    Draw.rectf(~pos=(float_of_int(i) *. 63., (-25.)), ~height=(-64.), ~width=65., env);
     Draw.subImagef(
       state.mainSpriteSheet,
-      ~pos=(float_of_int(i) *. 63., (25.)),
+      ~pos=(float_of_int(i) *. 63., 25.),
       ~height=(-64.),
       ~width=65.,
       ~texPos=(540, 0),
       ~texWidth=64,
       ~texHeight=64,
       env
-    );
-  }};
+    )
+  }
+};
 
 /*for (i in 0 to mapSize) {
     Draw.subImagef(
@@ -1114,7 +1127,9 @@ let draw = (state, env) => {
           let dy = (state.pos.y -. enemy.pos.y) /. size *. enemy.speed *. dt;
           let error =
             switch enemy.kind {
-            | NormalZ
+            | Normal1Z
+            | Normal2Z
+            | Normal3Z
             | BigZ => {
                 x:
                   Utils.constrain(
@@ -1307,22 +1322,41 @@ let draw = (state, env) => {
         && enemy.pos.y > -. fringePos
         && enemy.pos.y < mapSizePx
         +. 30.) {
-      let (texPos, healthBarOffsetX, healthBarOffsetY) =
+      let animList = enemyTexPos(enemy.kind);
+      let animLen = List.length(animList);
+      let animSpeed = 0.2;
+      let texPos = List.nth(animList, truncate(state.elapsedTime /. animSpeed) mod animLen);
+      let (healthBarOffsetX, healthBarOffsetY) =
         switch enemy.kind {
-        | NormalZ => ((869, 0), 0., 0.)
-        | BigZ => ((1015, 0), 0., 0.)
-        | TallZ => ((1444, 0), 2., (-5.))
+        | Normal1Z
+        | Normal2Z
+        | Normal3Z
+        | BigZ => (-5., 0.)
+        | TallZ => (2., (-5.))
         };
-      Draw.subImagef(
-        state.mainSpriteSheet,
-        ~pos=(enemy.pos.x -. 20., enemy.pos.y -. 32.),
-        ~width=40.,
-        ~height=64.,
-        ~texPos,
-        ~texWidth=40,
-        ~texHeight=64,
-        env
-      );
+      if (enemy.pos.x > state.pos.x) {
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(enemy.pos.x -. 25., enemy.pos.y -. 32.),
+          ~width=46.,
+          ~height=64.,
+          ~texPos,
+          ~texWidth=46,
+          ~texHeight=64,
+          env
+        )
+      } else {
+        Draw.subImagef(
+          state.mainSpriteSheet,
+          ~pos=(enemy.pos.x -. 23. +. 45., enemy.pos.y -. 32.),
+          ~width=(-46.),
+          ~height=64.,
+          ~texPos,
+          ~texWidth=46,
+          ~texHeight=64,
+          env
+        )
+      };
       drawHealthBar(
         enemy.pos.x +. 5. +. healthBarOffsetX,
         enemy.pos.y -. 35. +. healthBarOffsetY,
