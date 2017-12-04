@@ -495,190 +495,199 @@ let makeShotgunFire =
   }
 };
 
-let generateGun: unit => gunT = {
+let generateGun: list(gunT) => list(gunT) = {
   let keyCount = ref(0);
   let keySet = ref([]);
-  let getNextGunKey: unit => keyToggleT =
-    () => {
-      keyCount := keyCount^ + 1;
-      switch keyCount^ {
-      | 1 => {primaryKey: Num_1, modifier: false}
-      | 2 => {primaryKey: Num_2, modifier: false}
-      | 3 => {primaryKey: Num_3, modifier: false}
-      | 4 => {primaryKey: Num_4, modifier: false}
-      | 5 => {primaryKey: Num_5, modifier: false}
-      | 6 => {primaryKey: Num_6, modifier: false}
-      | 7 => {primaryKey: Num_7, modifier: false}
-      | 8 => {primaryKey: Num_8, modifier: false}
-      | 9 => {primaryKey: Num_9, modifier: false}
-      | _ =>
-        let key = ref(Utils.random(0, 44));
-        while (List.mem(key^, keySet^)) {
-          key := Utils.random(0, 44)
-        };
-        keySet := [key^, ...keySet^];
-        switch key^ {
-        | 0 => {primaryKey: T, modifier: false}
-        | 1 => {primaryKey: Y, modifier: false}
-        | 2 => {primaryKey: U, modifier: false}
-        | 3 => {primaryKey: I, modifier: false}
-        | 4 => {primaryKey: O, modifier: false}
-        | 5 => {primaryKey: P, modifier: false}
-        | 6 => {primaryKey: K, modifier: false}
-        | 7 => {primaryKey: J, modifier: false}
-        | 8 => {primaryKey: H, modifier: false}
-        | 9 => {primaryKey: G, modifier: false}
-        | 10 => {primaryKey: Z, modifier: false}
-        | 11 => {primaryKey: C, modifier: false}
-        | 12 => {primaryKey: V, modifier: false}
-        | 13 => {primaryKey: B, modifier: false}
-        | 14 => {primaryKey: N, modifier: false}
-        | 15 => {primaryKey: M, modifier: false}
-        | 16 => {primaryKey: Comma, modifier: false}
-        | 17 => {primaryKey: Period, modifier: false}
-        | 18 => {primaryKey: T, modifier: true}
-        | 19 => {primaryKey: Y, modifier: true}
-        | 20 => {primaryKey: U, modifier: true}
-        | 21 => {primaryKey: I, modifier: true}
-        | 22 => {primaryKey: O, modifier: true}
-        | 23 => {primaryKey: P, modifier: true}
-        | 24 => {primaryKey: K, modifier: true}
-        | 25 => {primaryKey: J, modifier: true}
-        | 26 => {primaryKey: H, modifier: true}
-        | 27 => {primaryKey: G, modifier: true}
-        | 28 => {primaryKey: Z, modifier: true}
-        | 29 => {primaryKey: C, modifier: true}
-        | 30 => {primaryKey: V, modifier: true}
-        | 31 => {primaryKey: B, modifier: true}
-        | 32 => {primaryKey: N, modifier: true}
-        | 33 => {primaryKey: M, modifier: true}
-        | 34 => {primaryKey: Comma, modifier: true}
-        | 35 => {primaryKey: Period, modifier: true}
-        | 36 => {primaryKey: Num_1, modifier: true}
-        | 37 => {primaryKey: Num_2, modifier: true}
-        | 38 => {primaryKey: Num_3, modifier: true}
-        | 39 => {primaryKey: Num_4, modifier: true}
-        | 40 => {primaryKey: Num_5, modifier: true}
-        | 41 => {primaryKey: Num_6, modifier: true}
-        | 42 => {primaryKey: Num_7, modifier: true}
-        | 43 => {primaryKey: Num_8, modifier: true}
-        | 44 => {primaryKey: Num_9, modifier: true}
-        | _ => assert false
-        }
-      }
-    };
-  () => {
-    let keyToggle = getNextGunKey();
-    let maxAmmunition = Utils.randomf(0., 1.);
-    let damage = Utils.randomf(0., 1.);
-    let fireRate = Utils.randomf(0., 1.);
-    let gunRank = damage +. fireRate;
-    /*print_endline(
-        Printf.sprintf(
-          "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
-          gunRank,
-          damage,
-          fireRate,
-          maxAmmunition
-        )
-      );*/
-    let (kind, fire, fireRate, maxAmmunition, soundName) =
-      switch (Utils.random(0, 8)) {
-      | 0 => (
-          Pistol,
-          makeDefaultFire(bulletSpeed, Utils.lerpf(200., 2000., damage)),
-          Utils.lerpf(0.5, 0.3, fireRate),
-          Utils.lerp(1, 10, maxAmmunition),
-          "machinegun_singleshot"
-        )
-      | 1 => (
-          AlienGun2,
-          makeTripleShotGunFire(
-            bulletSpeed,
-            Utils.randomf(50., 200.),
-            Utils.lerpf(400., 700., damage)
-          ),
-          Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 10, maxAmmunition),
-          "shotgun"
-        )
-      | 2 => (
-          Rifle,
-          makeBurstFire(bulletSpeed, Utils.lerpf(200., 900., damage)),
-          Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 6, maxAmmunition),
-          "machinegun_threeshots"
-        )
-      | 3 => (
-          Shotgun,
-          makeShotgunFire(
-            bulletSpeed +. 300.,
-            Utils.randomf(50., 200.),
-            8,
-            Utils.lerpf(100., 1000., damage)
-          ),
-          Utils.lerpf(2.0, 1.2, fireRate),
-          Utils.lerp(2, 6, maxAmmunition),
-          "shotgun"
-        )
-      | 4 => (
-          Machinegun,
-          makeDefaultFire(bulletSpeed, Utils.lerpf(100., 400., damage)),
-          Utils.lerpf(0.2, 0.06, fireRate),
-          Utils.lerp(5, 30, maxAmmunition),
-          "machinegun_singleshot"
-        )
-      | 5 => (
-          Uzi,
-          makeUziFire(bulletSpeed, Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
-          Utils.lerpf(0.1, 0.03, fireRate),
-          Utils.lerp(20, 50, maxAmmunition),
-          "machinegun_singleshot"
-        )
-      | 6 => (
-          LaserGun,
-          makeLaserFire(bulletSpeed -. 200., Utils.lerpf(50., 200., damage)),
-          Utils.lerpf(1.5, 0.5, fireRate),
-          Utils.lerp(2, 10, maxAmmunition),
-          "laser"
-        )
-      | _ => (
-          AlienGun1,
-          makeSineFire(
-            bulletSpeed -. 200.,
-            Utils.randomf(50., 200.),
-            Utils.lerpf(400., 1000., damage)
-          ),
-          Utils.lerpf(0.7, 0.5, fireRate),
-          Utils.lerp(1, 10, maxAmmunition),
-          "aliengun_threeshots"
-        )
-      };
-    let (rank, color) =
-      if (gunRank > 0. && gunRank < 0.1) {
-        (Poor, Utils.color(188, 191, 187, 255))
-      } else if (gunRank > 0.1 && gunRank < 1.1) {
-        (Common, Utils.color(62, 245, 21, 255))
-      } else if (gunRank > 1.1 && gunRank < 1.7) {
-        (Rare, Utils.color(47, 119, 214, 255))
-      } else if (gunRank > 1.7 && gunRank < 1.9) {
-        (Epic, Utils.color(173, 28, 221, 255))
+  let getNextGunKey: unit => option(keyToggleT) =
+    () =>
+      if (List.length(keySet^) >= 43) {
+        None
       } else {
-        (Legendary, Utils.color(247, 133, 12, 255))
+        keyCount := keyCount^ + 1;
+        let ret =
+          switch keyCount^ {
+          | 1 => {primaryKey: Num_1, modifier: false}
+          | 2 => {primaryKey: Num_2, modifier: false}
+          | 3 => {primaryKey: Num_3, modifier: false}
+          | 4 => {primaryKey: Num_4, modifier: false}
+          | 5 => {primaryKey: Num_5, modifier: false}
+          | 6 => {primaryKey: Num_6, modifier: false}
+          | 7 => {primaryKey: Num_7, modifier: false}
+          | 8 => {primaryKey: Num_8, modifier: false}
+          | 9 => {primaryKey: Num_9, modifier: false}
+          | _ =>
+            let key = ref(Utils.random(0, 43));
+            while (List.mem(key^, keySet^)) {
+              key := Utils.random(0, 43)
+            };
+            keySet := [key^, ...keySet^];
+            switch key^ {
+            | 0 => {primaryKey: T, modifier: false}
+            | 1 => {primaryKey: Y, modifier: false}
+            | 2 => {primaryKey: U, modifier: false}
+            | 3 => {primaryKey: I, modifier: false}
+            | 4 => {primaryKey: O, modifier: false}
+            | 5 => {primaryKey: P, modifier: false}
+            | 6 => {primaryKey: K, modifier: false}
+            | 7 => {primaryKey: J, modifier: false}
+            | 8 => {primaryKey: H, modifier: false}
+            | 9 => {primaryKey: G, modifier: false}
+            | 10 => {primaryKey: Z, modifier: false}
+            | 11 => {primaryKey: C, modifier: false}
+            | 12 => {primaryKey: V, modifier: false}
+            | 13 => {primaryKey: B, modifier: false}
+            | 14 => {primaryKey: N, modifier: false}
+            | 15 => {primaryKey: M, modifier: false}
+            | 16 => {primaryKey: Comma, modifier: false}
+            | 17 => {primaryKey: Period, modifier: false}
+            | 18 => {primaryKey: T, modifier: true}
+            | 19 => {primaryKey: Y, modifier: true}
+            | 20 => {primaryKey: U, modifier: true}
+            | 21 => {primaryKey: O, modifier: true}
+            | 22 => {primaryKey: P, modifier: true}
+            | 23 => {primaryKey: K, modifier: true}
+            | 24 => {primaryKey: J, modifier: true}
+            | 25 => {primaryKey: H, modifier: true}
+            | 26 => {primaryKey: G, modifier: true}
+            | 27 => {primaryKey: Z, modifier: true}
+            | 28 => {primaryKey: C, modifier: true}
+            | 29 => {primaryKey: V, modifier: true}
+            | 30 => {primaryKey: B, modifier: true}
+            | 31 => {primaryKey: N, modifier: true}
+            | 32 => {primaryKey: M, modifier: true}
+            | 33 => {primaryKey: Comma, modifier: true}
+            | 34 => {primaryKey: Period, modifier: true}
+            | 35 => {primaryKey: Num_1, modifier: true}
+            | 36 => {primaryKey: Num_2, modifier: true}
+            | 37 => {primaryKey: Num_3, modifier: true}
+            | 38 => {primaryKey: Num_4, modifier: true}
+            | 39 => {primaryKey: Num_5, modifier: true}
+            | 40 => {primaryKey: Num_6, modifier: true}
+            | 41 => {primaryKey: Num_7, modifier: true}
+            | 42 => {primaryKey: Num_8, modifier: true}
+            | 43 => {primaryKey: Num_9, modifier: true}
+            | _ => assert false
+            }
+          };
+        Some(ret)
       };
-    {
-      ammunition: maxAmmunition,
-      maxAmmunition,
-      fireRate,
-      lastShotTime: 0.,
-      keyToggle,
-      soundName,
-      fire,
-      kind,
-      color,
-      rank
+  (guns) =>
+    switch (getNextGunKey()) {
+    | None => guns
+    | Some(keyToggle) =>
+      let maxAmmunition = Utils.randomf(0., 1.);
+      let damage = Utils.randomf(0., 1.);
+      let fireRate = Utils.randomf(0., 1.);
+      let gunRank = damage +. fireRate;
+      /*print_endline(
+          Printf.sprintf(
+            "rank: %f, damage: %f, fireRate: %f, maxAmunition: %f",
+            gunRank,
+            damage,
+            fireRate,
+            maxAmmunition
+          )
+        );*/
+      let (kind, fire, fireRate, maxAmmunition, soundName) =
+        switch (Utils.random(0, 8)) {
+        | 0 => (
+            Pistol,
+            makeDefaultFire(bulletSpeed, Utils.lerpf(200., 2000., damage)),
+            Utils.lerpf(0.5, 0.3, fireRate),
+            Utils.lerp(1, 10, maxAmmunition),
+            "machinegun_singleshot"
+          )
+        | 1 => (
+            AlienGun2,
+            makeTripleShotGunFire(
+              bulletSpeed,
+              Utils.randomf(50., 200.),
+              Utils.lerpf(400., 700., damage)
+            ),
+            Utils.lerpf(0.7, 0.5, fireRate),
+            Utils.lerp(1, 10, maxAmmunition),
+            "shotgun"
+          )
+        | 2 => (
+            Rifle,
+            makeBurstFire(bulletSpeed, Utils.lerpf(200., 900., damage)),
+            Utils.lerpf(0.7, 0.5, fireRate),
+            Utils.lerp(1, 6, maxAmmunition),
+            "machinegun_threeshots"
+          )
+        | 3 => (
+            Shotgun,
+            makeShotgunFire(
+              bulletSpeed +. 300.,
+              Utils.randomf(50., 200.),
+              8,
+              Utils.lerpf(100., 1000., damage)
+            ),
+            Utils.lerpf(2.0, 1.2, fireRate),
+            Utils.lerp(2, 6, maxAmmunition),
+            "shotgun"
+          )
+        | 4 => (
+            Machinegun,
+            makeDefaultFire(bulletSpeed, Utils.lerpf(100., 400., damage)),
+            Utils.lerpf(0.2, 0.06, fireRate),
+            Utils.lerp(5, 30, maxAmmunition),
+            "machinegun_singleshot"
+          )
+        | 5 => (
+            Uzi,
+            makeUziFire(bulletSpeed, Utils.randomf(100., 500.), Utils.lerpf(50., 200., damage)),
+            Utils.lerpf(0.1, 0.03, fireRate),
+            Utils.lerp(20, 50, maxAmmunition),
+            "machinegun_singleshot"
+          )
+        | 6 => (
+            LaserGun,
+            makeLaserFire(bulletSpeed -. 200., Utils.lerpf(50., 200., damage)),
+            Utils.lerpf(1.5, 0.5, fireRate),
+            Utils.lerp(2, 10, maxAmmunition),
+            "laser"
+          )
+        | _ => (
+            AlienGun1,
+            makeSineFire(
+              bulletSpeed -. 200.,
+              Utils.randomf(50., 200.),
+              Utils.lerpf(400., 1000., damage)
+            ),
+            Utils.lerpf(0.7, 0.5, fireRate),
+            Utils.lerp(1, 10, maxAmmunition),
+            "aliengun_threeshots"
+          )
+        };
+      let (rank, color) =
+        if (gunRank > 0. && gunRank < 0.1) {
+          (Poor, Utils.color(188, 191, 187, 255))
+        } else if (gunRank > 0.1 && gunRank < 1.1) {
+          (Common, Utils.color(62, 245, 21, 255))
+        } else if (gunRank > 1.1 && gunRank < 1.7) {
+          (Rare, Utils.color(47, 119, 214, 255))
+        } else if (gunRank > 1.7 && gunRank < 1.9) {
+          (Epic, Utils.color(173, 28, 221, 255))
+        } else {
+          (Legendary, Utils.color(247, 133, 12, 255))
+        };
+      [
+        {
+          ammunition: maxAmmunition,
+          maxAmmunition,
+          fireRate,
+          lastShotTime: 0.,
+          keyToggle,
+          soundName,
+          fire,
+          kind,
+          color,
+          rank
+        },
+        ...guns
+      ]
     }
-  }
 };
 
 let generateAchievements = () => {
@@ -784,7 +793,6 @@ let drawKey = (x, y, gun, state, env) => {
     | {primaryKey: T} => "T"
     | {primaryKey: Y} => "Y"
     | {primaryKey: U} => "U"
-    | {primaryKey: I} => "I"
     | {primaryKey: O} => "O"
     | {primaryKey: P} => "P"
     | {primaryKey: H} => "H"
@@ -1055,17 +1063,6 @@ let draw = (state, env) => {
       let offset =
         checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
       let mag = Utils.magf((offset.x, offset.y));
-      let offset = {x: 0., y: 0.};
-      let playerSpeedDt = playerSpeed *. dt;
-      let offset =
-        checkOffset(offset, Env.key(A, env) ? {...offset, x: -. playerSpeedDt} : offset, state);
-      let offset =
-        checkOffset(offset, Env.key(D, env) ? {...offset, x: playerSpeedDt} : offset, state);
-      let offset =
-        checkOffset(offset, Env.key(W, env) ? {...offset, y: -. playerSpeedDt} : offset, state);
-      let offset =
-        checkOffset(offset, Env.key(S, env) ? {...offset, y: playerSpeedDt} : offset, state);
-      let mag = Utils.magf((offset.x, offset.y));
       let state =
         if (mag > 0.) {
           let dx = offset.x /. mag *. playerSpeedDt;
@@ -1204,7 +1201,7 @@ let draw = (state, env) => {
               playSound("achievement", state.sounds, env);
               {
                 ...state,
-                guns: [generateGun(), ...state.guns],
+                guns: generateGun(state.guns),
                 equippedGun: state.equippedGun + 1,
                 animatingAchievementTime: animatingAchievementMaxTime,
                 animatingAchievement: Some(achievement),
