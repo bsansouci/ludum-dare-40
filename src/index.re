@@ -1052,18 +1052,7 @@ let setup = (env) => {
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
     shiftIcon: Draw.loadImage(~filename="assets/shift_icon.png", env),
     sounds,
-    enemies: [
-      {
-        pos: {x: 100., y: 250.},
-        damage: 100.,
-        kind: Normal1Z,
-        health: 100.,
-        maxHealth: 100.,
-        speed: 70.,
-        error: {x: 5., y: 5.},
-        deathCountdown
-      }
-    ],
+    enemies: [],
     stats: {
       normalEnemiesKilled: 0,
       bigEnemiesKilled: 0,
@@ -1131,6 +1120,12 @@ let drawForest = (state, env) => {
   );
   Draw.rectf(
     ~pos=(maxX +. 67., float_of_int(mapSize + 1) *. 64. +. 22.),
+    ~height=(-64.),
+    ~width=65.,
+    env
+  );
+  Draw.rectf(
+    ~pos=(maxX +. 2., float_of_int(mapSize + 1) *. 64. +. 22.),
     ~height=(-64.),
     ~width=65.,
     env
@@ -1329,7 +1324,12 @@ let draw = (state, env) => {
           {
             ...state,
             pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
-            stats: {...state.stats, stepTaken: state.stats.stepTaken +. playerSpeedDt}
+            stats: {
+              ...state.stats,
+              stepTaken:
+                state.elapsedTime < 5.0 ?
+                  state.stats.stepTaken : state.stats.stepTaken +. playerSpeedDt
+            }
           }
         } else {
           state
@@ -1604,7 +1604,29 @@ let draw = (state, env) => {
         };
       let state = {...state, nextWaveCountdown: state.nextWaveCountdown -. Env.deltaTime(env)};
       let state =
-        if (state.nextWaveCountdown <= 0. || List.length(state.enemies) === 0) {
+        if (state.elapsedTime > 5. && state.elapsedTime < 10. && List.length(state.enemies) == 0) {
+          {
+            ...state,
+            enemies: [
+              {
+                pos: {x: 100., y: 250.},
+                damage: 100.,
+                kind: Normal1Z,
+                health: 100.,
+                maxHealth: 100.,
+                speed: 70.,
+                error: {x: 5., y: 5.},
+                deathCountdown
+              }
+            ]
+          }
+        } else {
+          state
+        };
+      let state =
+        if (state.nextWaveCountdown <= 0.
+            || List.length(state.enemies) === 0
+            && state.elapsedTime > 10.) {
           playSound("new_wave", state.sounds, env);
           generateWave(state)
         } else {
@@ -1901,16 +1923,25 @@ let draw = (state, env) => {
   );
   switch length {
   | 0 =>
-    Draw.text(
-      ~font=state.mainFont,
-      ~body=Printf.sprintf("Run away from the zombie!"),
-      ~pos=(50, 120),
-      env
-    )
+    if (state.elapsedTime < 5.0) {
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Use WASD to move"),
+        ~pos=(50, 120),
+        env
+      )
+    } else {
+      Draw.text(
+        ~font=state.mainFont,
+        ~body=Printf.sprintf("Run away from the zombie!"),
+        ~pos=(50, 120),
+        env
+      )
+    }
   | 1 =>
     Draw.text(
       ~font=state.mainFont,
-      ~body=Printf.sprintf("Use your new gun on the zombie!"),
+      ~body=Printf.sprintf("Use arrow keys to shoot"),
       ~pos=(50, 120),
       env
     )
