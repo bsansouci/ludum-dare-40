@@ -16792,13 +16792,41 @@ function generateGun(state) {
     var fireRate = match$1[1];
     var damage = match$1[0];
     var gunRank = damage + fireRate;
-    var match$2 = random$3(0, 8);
-    var match$3;
-    if (match$2 > 6 || match$2 < 0) {
-      var partial_arg = lerpf(400, 1000)(damage);
+    var match$2 = gunRank > 0 && gunRank < 0.1 ? /* tuple */[
+        /* Poor */0,
+        color(188, 191, 187, 255),
+        damage
+      ] : (
+        gunRank > 0.1 && gunRank < 1.1 ? /* tuple */[
+            /* Common */1,
+            color(62, 245, 21, 255),
+            damage
+          ] : (
+            gunRank > 1.1 && gunRank < 1.7 ? /* tuple */[
+                /* Rare */2,
+                color(47, 119, 214, 255),
+                remapf(damage, 0, 1, 0.8, 1.0)
+              ] : (
+                gunRank > 1.7 && gunRank < 1.9 ? /* tuple */[
+                    /* Epic */3,
+                    color(173, 28, 221, 255),
+                    remapf(damage, 0, 1, 0.95, 1.0)
+                  ] : /* tuple */[
+                    /* Legendary */4,
+                    color(247, 133, 12, 255),
+                    1
+                  ]
+              )
+          )
+      );
+    var damage$1 = match$2[2];
+    var match$3 = random$3(0, 8);
+    var match$4;
+    if (match$3 > 6 || match$3 < 0) {
+      var partial_arg = lerpf(400, 1000)(damage$1);
       var partial_arg$1 = randomf(50, 200);
       var partial_arg$2 = 400 - 200;
-      match$3 = /* tuple */[
+      match$4 = /* tuple */[
         /* AlienGun1 */2,
         (function (param, param$1, param$2) {
             return makeSineFire(partial_arg$2, partial_arg$1, partial_arg, param, param$1, param$2);
@@ -16808,10 +16836,10 @@ function generateGun(state) {
         "aliengun_threeshots"
       ];
     } else {
-      switch (match$2) {
+      switch (match$3) {
         case 0 : 
-            var partial_arg$3 = lerpf(200, 2000)(damage);
-            match$3 = /* tuple */[
+            var partial_arg$3 = lerpf(200, 2000)(damage$1);
+            match$4 = /* tuple */[
               /* Pistol */0,
               (function (param, param$1, param$2) {
                   return makeDefaultFire(400, partial_arg$3, param, param$1, param$2);
@@ -16822,9 +16850,9 @@ function generateGun(state) {
             ];
             break;
         case 1 : 
-            var partial_arg$4 = lerpf(200, 1200)(damage);
+            var partial_arg$4 = lerpf(200, 1200)(damage$1);
             var partial_arg$5 = randomf(50, 200);
-            match$3 = /* tuple */[
+            match$4 = /* tuple */[
               /* AlienGun2 */3,
               (function (param, param$1, param$2) {
                   return makeTripleShotGunFire(400, partial_arg$5, partial_arg$4, param, param$1, param$2);
@@ -16835,8 +16863,8 @@ function generateGun(state) {
             ];
             break;
         case 2 : 
-            var partial_arg$6 = lerpf(200, 1200)(damage);
-            match$3 = /* tuple */[
+            var partial_arg$6 = lerpf(200, 1200)(damage$1);
+            match$4 = /* tuple */[
               /* Rifle */1,
               (function (param, param$1, param$2) {
                   return makeBurstFire(400, partial_arg$6, param, param$1, param$2);
@@ -16847,10 +16875,10 @@ function generateGun(state) {
             ];
             break;
         case 3 : 
-            var partial_arg$7 = lerpf(100, 1000)(damage);
+            var partial_arg$7 = lerpf(100, 1000)(damage$1);
             var partial_arg$8 = randomf(50, 200);
             var partial_arg$9 = 400 + 300;
-            match$3 = /* tuple */[
+            match$4 = /* tuple */[
               /* Shotgun */4,
               (function (param, param$1, param$2) {
                   return makeShotgunFire(partial_arg$9, partial_arg$8, 8, partial_arg$7, param, param$1, param$2);
@@ -16861,8 +16889,8 @@ function generateGun(state) {
             ];
             break;
         case 4 : 
-            var partial_arg$10 = lerpf(100, 400)(damage);
-            match$3 = /* tuple */[
+            var partial_arg$10 = lerpf(100, 400)(damage$1);
+            match$4 = /* tuple */[
               /* Machinegun */5,
               (function (param, param$1, param$2) {
                   return makeDefaultFire(400, partial_arg$10, param, param$1, param$2);
@@ -16873,18 +16901,18 @@ function generateGun(state) {
             ];
             break;
         case 5 : 
-            match$3 = /* tuple */[
+            match$4 = /* tuple */[
               /* Uzi */7,
-              makeUziFire(400, randomf(100, 500), lerpf(50, 200)(damage)),
+              makeUziFire(400, randomf(100, 500), lerpf(50, 200)(damage$1)),
               lerpf(0.1, 0.03)(fireRate),
               lerp$4(20, 50, maxAmmunition),
               "machinegun_singleshot"
             ];
             break;
         case 6 : 
-            var partial_arg$11 = lerpf(50, 250)(damage);
+            var partial_arg$11 = lerpf(50, 250)(damage$1);
             var partial_arg$12 = 400 - 200;
-            match$3 = /* tuple */[
+            match$4 = /* tuple */[
               /* LaserGun */6,
               (function (param, param$1, param$2) {
                   return makeLaserFire(partial_arg$12, partial_arg$11, param, param$1, param$2);
@@ -16897,41 +16925,19 @@ function generateGun(state) {
         
       }
     }
-    var maxAmmunition$1 = match$3[3];
-    var match$4 = gunRank > 0 && gunRank < 0.1 ? /* tuple */[
-        /* Poor */0,
-        color(188, 191, 187, 255)
-      ] : (
-        gunRank > 0.1 && gunRank < 1.1 ? /* tuple */[
-            /* Common */1,
-            color(62, 245, 21, 255)
-          ] : (
-            gunRank > 1.1 && gunRank < 1.7 ? /* tuple */[
-                /* Rare */2,
-                color(47, 119, 214, 255)
-              ] : (
-                gunRank > 1.7 && gunRank < 1.9 ? /* tuple */[
-                    /* Epic */3,
-                    color(173, 28, 221, 255)
-                  ] : /* tuple */[
-                    /* Legendary */4,
-                    color(247, 133, 12, 255)
-                  ]
-              )
-          )
-      );
+    var maxAmmunition$1 = match$4[3];
     return /* :: */[
             /* record */[
-              /* fireRate */match$3[2],
+              /* fireRate */match$4[2],
               /* lastShotTime */0,
               /* ammunition */maxAmmunition$1,
               /* maxAmmunition */maxAmmunition$1,
-              /* color */match$4[1],
+              /* color */match$2[1],
               /* keyToggle */match[0],
-              /* fire */match$3[1],
-              /* kind */match$3[0],
-              /* rank */match$4[0],
-              /* soundName */match$3[4]
+              /* fire */match$4[1],
+              /* kind */match$4[0],
+              /* rank */match$2[0],
+              /* soundName */match$4[4]
             ],
             state[/* guns */1]
           ];
@@ -17500,7 +17506,7 @@ function generateWave(state) {
   if (state[/* waveNum */14] === 2) {
     enemies$1 = list_init(enemies, makeMiniBosses, 2);
   } else if (state[/* waveNum */14] > 2) {
-    var n = max(0, random$3(0, state[/* waveNum */14]));
+    var n = max(0, random$3(2, state[/* waveNum */14] - 2 | 0));
     enemies$1 = list_init(enemies, makeMiniBosses, n);
   } else {
     enemies$1 = enemies;
@@ -18276,7 +18282,7 @@ function draw(state, env) {
           /* health */100,
           /* pos : float array */[
             100,
-            250
+            20
           ],
           /* error : float array */[
             5,
