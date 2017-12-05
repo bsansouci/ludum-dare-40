@@ -622,6 +622,8 @@ let generateGun = {
       let (damage, fireRate) =
         if (state.waveNum < 3) {
           (Utils.randomf(0., 0.7), Utils.randomf(0., 0.7))
+        } else if (state.waveNum > 20) {
+          (Utils.randomf(0.5, 1.), Utils.randomf(0.5, 1.0))
         } else {
           (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
         };
@@ -1488,13 +1490,26 @@ let draw = (state, env) => {
                 switch enemy.kind {
                 | Normal1Z
                 | Normal2Z
-                | Normal3Z
-                | BigZ => {
+                | Normal3Z => {
                     x:
                       Utils.constrain(
                         ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
                         ~high=enemy.speed,
                         ~low=(-1.) *. enemy.speed
+                      ),
+                    y:
+                      Utils.constrain(
+                        ~amt=enemy.error.y +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed,
+                        ~low=(-1.) *. enemy.speed
+                      )
+                  }
+                | BigZ => {
+                    x:
+                      Utils.constrain(
+                        ~amt=enemy.error.x +. Utils.randomf((-2.), 2.),
+                        ~high=enemy.speed /. 4.,
+                        ~low=(-1.) *. enemy.speed /. 4.
                       ),
                     y:
                       Utils.constrain(
