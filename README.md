@@ -1,7 +1,9 @@
 Oh no! Zombies!
 ---
 
-This is a game made for [ludum dare 40](https://ldjam.com/events/ludum-dare/40). The theme was "The more you have, the worse it is."
+This is a game made for [Ludum Dare 40](https://ldjam.com/events/ludum-dare/40). The theme was "The more you have, the worse it is."
+
+Our game on Ludum Dare: https://ldjam.com/events/ludum-dare/40/oh-no-zombies
 
 ## Play now!
 https://bsansouci.github.io/ludum-dare-40/
