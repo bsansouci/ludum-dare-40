@@ -16780,10 +16780,15 @@ function generateGun(state) {
     var match$1 = state[/* waveNum */14] < 3 ? /* tuple */[
         randomf(0, 0.7),
         randomf(0, 0.7)
-      ] : /* tuple */[
-        randomf(0, 1),
-        randomf(0, 1)
-      ];
+      ] : (
+        state[/* waveNum */14] > 20 ? /* tuple */[
+            randomf(0.5, 1),
+            randomf(0.5, 1.0)
+          ] : /* tuple */[
+            randomf(0, 1),
+            randomf(0, 1)
+          ]
+      );
     var fireRate = match$1[1];
     var damage = match$1[0];
     var gunRank = damage + fireRate;
@@ -17413,7 +17418,7 @@ function generateWave(state) {
             assert_failure,
             [
               "index.re",
-              924,
+              926,
               11
             ]
           ];
@@ -18179,11 +18184,16 @@ function draw(state, env) {
             var dx = (state$10[/* pos */0][/* x */0] - enemy[/* pos */2][/* x */0]) / size * enemy[/* speed */4] * dt;
             var dy = (state$10[/* pos */0][/* y */1] - enemy[/* pos */2][/* y */1]) / size * enemy[/* speed */4] * dt;
             var match = enemy[/* kind */7];
-            var error = match >= 4 ? /* float array */[
+            var error = match !== 3 ? (
+                match >= 4 ? /* float array */[
+                    constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4),
+                    constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4)
+                  ] : /* float array */[
+                    constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4]),
+                    constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4])
+                  ]
+              ) : /* float array */[
                 constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4),
-                constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4] / 4, enemy[/* speed */4] / 4)
-              ] : /* float array */[
-                constrain(enemy[/* error */3][/* x */0] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4]),
                 constrain(enemy[/* error */3][/* y */1] + randomf(-2, 2), -1 * enemy[/* speed */4], enemy[/* speed */4])
               ];
             var match$1 = +(enemy[/* health */1] >= 1);
