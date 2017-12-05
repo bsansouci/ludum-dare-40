@@ -17690,25 +17690,7 @@ function setup(env) {
           /* mainFont */loadFont("assets/molot/font.fnt", /* None */0, env),
           /* mainSpriteSheet */loadImage$2("assets/spritesheet.png", /* Some */[/* true */1], env),
           /* sounds */sounds,
-          /* enemies : :: */[
-            /* record */[
-              /* maxHealth */100,
-              /* health */100,
-              /* pos : float array */[
-                100,
-                250
-              ],
-              /* error : float array */[
-                5,
-                5
-              ],
-              /* speed */70,
-              /* damage */100,
-              /* deathCountdown */1.0,
-              /* kind : Normal1Z */0
-            ],
-            /* [] */0
-          ],
+          /* enemies : [] */0,
           /* waveNum */0,
           /* nextWaveCountdown */10,
           /* elapsedTime */0,
@@ -17773,6 +17755,10 @@ function drawForest(state, env) {
       ], 65, -64, env);
   rectf(/* tuple */[
         maxX + 67,
+        11 * 64 + 22
+      ], 65, -64, env);
+  rectf(/* tuple */[
+        maxX + 2,
         11 * 64 + 22
       ], 65, -64, env);
   pushMatrix(env);
@@ -17999,7 +17985,8 @@ function draw(state, env) {
         state$1[/* pos */0][/* y */1] + dy
       ];
       var newrecord$2 = state$1[/* stats */22].slice();
-      newrecord$2[/* stepTaken */5] = state$1[/* stats */22][/* stepTaken */5] + playerSpeedDt;
+      var match$6 = +(state$1[/* elapsedTime */16] < 5.0);
+      newrecord$2[/* stepTaken */5] = match$6 !== 0 ? state$1[/* stats */22][/* stepTaken */5] : state$1[/* stats */22][/* stepTaken */5] + playerSpeedDt;
       newrecord$1[/* stats */22] = newrecord$2;
       state$3 = newrecord$1;
     } else {
@@ -18061,7 +18048,7 @@ function draw(state, env) {
     if (state$5[/* equippedGun */4] >= 0) {
       var curGun = nth(state$5[/* guns */1], state$5[/* equippedGun */4]);
       if (state$5[/* elapsedTime */16] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] > 0) {
-        var match$6 = fold_left((function (param, dir) {
+        var match$7 = fold_left((function (param, dir) {
                 var s = param[0];
                 var match = key(dir, env);
                 if (match !== 0) {
@@ -18079,8 +18066,8 @@ function draw(state, env) {
               state$5,
               /* false */0
             ], directions);
-        var state$7 = match$6[0];
-        if (match$6[1]) {
+        var state$7 = match$7[0];
+        if (match$7[1]) {
           playSound(curGun[/* soundName */9], state$7[/* sounds */12], /* None */0, env);
           state$6 = fireGun(state$7);
         } else {
@@ -18281,9 +18268,35 @@ function draw(state, env) {
     }
     var newrecord$17 = state$12.slice();
     newrecord$17[/* nextWaveCountdown */15] = state$12[/* nextWaveCountdown */15] - deltaTime(env);
-    var state$13 = newrecord$17[/* nextWaveCountdown */15] <= 0 || length(newrecord$17[/* enemies */13]) === 0 ? (playSound("new_wave", newrecord$17[/* sounds */12], /* None */0, env), generateWave(newrecord$17)) : newrecord$17;
-    var newrecord$18 = state$13.slice();
-    newrecord$18[/* enemies */13] = map((function (e) {
+    var state$13;
+    if (newrecord$17[/* elapsedTime */16] > 5 && newrecord$17[/* elapsedTime */16] < 10 && length(newrecord$17[/* enemies */13]) === 0) {
+      var newrecord$18 = newrecord$17.slice();
+      newrecord$18[/* enemies */13] = /* :: */[
+        /* record */[
+          /* maxHealth */100,
+          /* health */100,
+          /* pos : float array */[
+            100,
+            250
+          ],
+          /* error : float array */[
+            5,
+            5
+          ],
+          /* speed */70,
+          /* damage */100,
+          /* deathCountdown */1.0,
+          /* kind : Normal1Z */0
+        ],
+        /* [] */0
+      ];
+      state$13 = newrecord$18;
+    } else {
+      state$13 = newrecord$17;
+    }
+    var state$14 = state$13[/* nextWaveCountdown */15] <= 0 || length(state$13[/* enemies */13]) === 0 && state$13[/* elapsedTime */16] > 10 ? (playSound("new_wave", state$13[/* sounds */12], /* None */0, env), generateWave(state$13)) : state$13;
+    var newrecord$19 = state$14.slice();
+    newrecord$19[/* enemies */13] = map((function (e) {
             var match = +(e[/* health */1] < 1);
             if (match !== 0) {
               var newrecord = e.slice();
@@ -18292,8 +18305,8 @@ function draw(state, env) {
             } else {
               return e;
             }
-          }), state$13[/* enemies */13]);
-    var newrecord$19 = newrecord$18.slice();
+          }), state$14[/* enemies */13]);
+    var newrecord$20 = newrecord$19.slice();
     state$2 = fold_left((function (state, enemy) {
             if (enemy[/* deathCountdown */6] <= 0) {
               var match = enemy[/* kind */7];
@@ -18326,36 +18339,36 @@ function draw(state, env) {
               ];
               return newrecord$6;
             }
-          }), (newrecord$19[/* enemies */13] = /* [] */0, newrecord$19), newrecord$18[/* enemies */13]);
+          }), (newrecord$20[/* enemies */13] = /* [] */0, newrecord$20), newrecord$19[/* enemies */13]);
   } else {
     state$2 = state$1;
   }
-  var state$14;
+  var state$15;
   if (state$2[/* animatingAchievement */18]) {
     if (state$2[/* animatingAchievementTime */17] - deltaTime(env) <= 0) {
-      var newrecord$20 = state$2.slice();
-      newrecord$20[/* animatingAchievementTime */17] = 0;
-      newrecord$20[/* animatingAchievement */18] = /* None */0;
-      state$14 = newrecord$20;
-    } else {
       var newrecord$21 = state$2.slice();
-      newrecord$21[/* animatingAchievementTime */17] = state$2[/* animatingAchievementTime */17] - deltaTime(env);
-      state$14 = newrecord$21;
+      newrecord$21[/* animatingAchievementTime */17] = 0;
+      newrecord$21[/* animatingAchievement */18] = /* None */0;
+      state$15 = newrecord$21;
+    } else {
+      var newrecord$22 = state$2.slice();
+      newrecord$22[/* animatingAchievementTime */17] = state$2[/* animatingAchievementTime */17] - deltaTime(env);
+      state$15 = newrecord$22;
     }
   } else {
-    state$14 = state$2;
+    state$15 = state$2;
   }
-  var state$15;
-  if (state$14[/* animatingWaveNumberTime */19] > 0) {
-    var newrecord$22 = state$14.slice();
-    newrecord$22[/* animatingWaveNumberTime */19] = max(0, state$14[/* animatingWaveNumberTime */19] - deltaTime(env));
-    state$15 = newrecord$22;
+  var state$16;
+  if (state$15[/* animatingWaveNumberTime */19] > 0) {
+    var newrecord$23 = state$15.slice();
+    newrecord$23[/* animatingWaveNumberTime */19] = max(0, state$15[/* animatingWaveNumberTime */19] - deltaTime(env));
+    state$16 = newrecord$23;
   } else {
-    state$15 = state$14;
+    state$16 = state$15;
   }
   pushMatrix(env);
   scale$9(2, 2, env);
-  translate$3(-state$15[/* pos */0][/* x */0] + width(env) / (2 * 2), -state$15[/* pos */0][/* y */1] + height(env) / (2 * 2), env);
+  translate$3(-state$16[/* pos */0][/* x */0] + width(env) / (2 * 2), -state$16[/* pos */0][/* y */1] + height(env) / (2 * 2), env);
   for(var y = 0; y <= 9; ++y){
     for(var x = 0; x <= 9; ++x){
       var id = caml_array_get(caml_array_get(grid, y), x);
@@ -18388,7 +18401,7 @@ function draw(state, env) {
           
         }
       }
-      subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+      subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
             x * 63,
             y * 64
           ], 64, 64, texPos, 64, 64, env);
@@ -18396,15 +18409,15 @@ function draw(state, env) {
   }
   var allThings = map((function (v) {
           return /* Enemy */__(1, [v]);
-        }), state$15[/* enemies */13]);
-  var allThings_000 = /* Player */__(0, [state$15[/* pos */0]]);
+        }), state$16[/* enemies */13]);
+  var allThings_000 = /* Player */__(0, [state$16[/* pos */0]]);
   var allThings$1 = /* :: */[
     allThings_000,
     allThings
   ];
   var allThings$2 = $at(allThings$1, map((function (c) {
               return /* Crate */__(2, [c]);
-            }), state$15[/* crates */9]));
+            }), state$16[/* crates */9]));
   var sortedAllThings = sort((function (thing1, thing2) {
           var pos1;
           switch (thing1.tag | 0) {
@@ -18447,13 +18460,13 @@ function draw(state, env) {
                       pos[/* x */0],
                       pos[/* y */1]
                     ], 5, 5, env);
-        }), state$15[/* playerBullets */7]);
+        }), state$16[/* playerBullets */7]);
   iter((function (thing) {
           switch (thing.tag | 0) {
             case 0 : 
                 var p = thing[0];
-                var texPos = state$15[/* moving */3] ? (
-                    (state$15[/* stats */22][/* stepTaken */5] / 20 | 0) % 2 === 1 ? /* tuple */[
+                var texPos = state$16[/* moving */3] ? (
+                    (state$16[/* stats */22][/* stepTaken */5] / 20 | 0) % 2 === 1 ? /* tuple */[
                         128,
                         0
                       ] : /* tuple */[
@@ -18464,16 +18477,16 @@ function draw(state, env) {
                     180,
                     0
                   ];
-                if (state$15[/* invulnCountdown */6] > 0) {
-                  tint(color(200, 100, 100, Math.sin(state$15[/* invulnCountdown */6] * 10) * 100 + 155 | 0), env);
+                if (state$16[/* invulnCountdown */6] > 0) {
+                  tint(color(200, 100, 100, Math.sin(state$16[/* invulnCountdown */6] * 10) * 100 + 155 | 0), env);
                 }
-                if (state$15[/* facingLeft */2]) {
-                  subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                if (state$16[/* facingLeft */2]) {
+                  subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                         p[/* x */0] - 20,
                         p[/* y */1] - 32
                       ], 40, 64, texPos, 40, 64, env);
                 } else {
-                  subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                  subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                         p[/* x */0] + 26,
                         p[/* y */1] - 32
                       ], -40, 64, texPos, 40, 64, env);
@@ -18484,7 +18497,7 @@ function draw(state, env) {
                 if (enemy[/* pos */2][/* x */0] > -30 && enemy[/* pos */2][/* x */0] < mapSizePx + 30 && enemy[/* pos */2][/* y */1] > -30 && enemy[/* pos */2][/* y */1] < mapSizePx + 30) {
                   var animList = enemyTexPos(enemy[/* kind */7], +(enemy[/* health */1] < 1));
                   var animLen = length(animList);
-                  var texPos$1 = nth(animList, mod_(state$15[/* elapsedTime */16] / 0.2 | 0, animLen));
+                  var texPos$1 = nth(animList, mod_(state$16[/* elapsedTime */16] / 0.2 | 0, animLen));
                   var match = enemy[/* kind */7];
                   var match$1 = match >= 4 ? /* tuple */[
                       2,
@@ -18496,13 +18509,13 @@ function draw(state, env) {
                   if (enemy[/* health */1] < 1) {
                     tint(color(255, 255, 255, enemy[/* deathCountdown */6] / 1.0 * 255 | 0), env);
                   }
-                  if (enemy[/* pos */2][/* x */0] > state$15[/* pos */0][/* x */0] || enemy[/* health */1] < 1) {
-                    subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                  if (enemy[/* pos */2][/* x */0] > state$16[/* pos */0][/* x */0] || enemy[/* health */1] < 1) {
+                    subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                           enemy[/* pos */2][/* x */0] - 25,
                           enemy[/* pos */2][/* y */1] - 32
                         ], 46, 64, texPos$1, 46, 64, env);
                   } else {
-                    subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                    subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                           enemy[/* pos */2][/* x */0] - 23 + 45,
                           enemy[/* pos */2][/* y */1] - 32
                         ], -46, 64, texPos$1, 46, 64, env);
@@ -18516,14 +18529,14 @@ function draw(state, env) {
                 }
             case 2 : 
                 var crate = thing[0];
-                subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                       crate[/* pos */0][/* x */0] - 20,
                       crate[/* pos */0][/* y */1] - 20
                     ], 40, 40, /* tuple */[
                       1590,
                       0
                     ], 64, 64, env);
-                var yOffset = Math.sin(state$15[/* elapsedTime */16] * 2) * 2 - 17;
+                var yOffset = Math.sin(state$16[/* elapsedTime */16] * 2) * 2 - 17;
                 fill$4(white, env);
                 trianglef(/* tuple */[
                       crate[/* pos */0][/* x */0] - 5,
@@ -18546,29 +18559,29 @@ function draw(state, env) {
                       crate[/* pos */0][/* x */0],
                       crate[/* pos */0][/* y */1] + 16 + yOffset
                     ], env);
-                return subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+                return subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                             crate[/* pos */0][/* x */0] - 16,
                             crate[/* pos */0][/* y */1] - 16 + yOffset
                           ], 32, 32, gunTexPos(crate[/* kind */1]), 64, 64, env);
             
           }
         }), sortedAllThings);
-  drawForest(state$15, env);
+  drawForest(state$16, env);
   popMatrix(env);
-  var length$$1 = length(state$15[/* guns */1]);
-  drawHealthBar(160, 35, 30, 250, state$15[/* health */5], 50, color(220, 0, 0, 255), /* Some */[5], env);
+  var length$$1 = length(state$16[/* guns */1]);
+  drawHealthBar(160, 35, 30, 250, state$16[/* health */5], 50, color(220, 0, 0, 255), /* Some */[5], env);
   if (length$$1 !== 0) {
     if (length$$1 !== 1) {
       var startX = (width(env) - 50 | 0) / 2 | 0;
-      var t = state$15[/* animatingWaveNumberTime */19];
-      var match$7 = t > 1.0 ? /* tuple */[
+      var t = state$16[/* animatingWaveNumberTime */19];
+      var match$8 = t > 1.0 ? /* tuple */[
           startX,
           200
         ] : /* tuple */[
           remapf(t, 0, 1.0, 50, startX),
           remapf(t, 0, 1.0, 70, 200)
         ];
-      text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
+      text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
                     /* String_literal */__(11, [
                         "Wave ",
                         /* Int */__(4, [
@@ -18579,12 +18592,12 @@ function draw(state, env) {
                           ])
                       ]),
                     "Wave %d"
-                  ]), state$15[/* waveNum */14]), /* tuple */[
-            match$7[0] | 0,
-            match$7[1] | 0
+                  ]), state$16[/* waveNum */14]), /* tuple */[
+            match$8[0] | 0,
+            match$8[1] | 0
           ], env);
       if (t <= 0) {
-        text(state$15[/* mainFont */10], _1(sprintf(/* Format */[
+        text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
                       /* String_literal */__(11, [
                           "Next wave in ",
                           /* Int */__(4, [
@@ -18595,26 +18608,37 @@ function draw(state, env) {
                             ])
                         ]),
                       "Next wave in %d"
-                    ]), state$15[/* nextWaveCountdown */15] | 0), /* tuple */[
+                    ]), state$16[/* nextWaveCountdown */15] | 0), /* tuple */[
               50,
               100
             ], env);
       }
       
     } else {
-      text(state$15[/* mainFont */10], sprintf(/* Format */[
+      text(state$16[/* mainFont */10], sprintf(/* Format */[
                 /* String_literal */__(11, [
-                    "Use your new gun on the zombie!",
+                    "Use arrow keys to shoot",
                     /* End_of_format */0
                   ]),
-                "Use your new gun on the zombie!"
+                "Use arrow keys to shoot"
               ]), /* tuple */[
             50,
             120
           ], env);
     }
+  } else if (state$16[/* elapsedTime */16] < 5.0) {
+    text(state$16[/* mainFont */10], sprintf(/* Format */[
+              /* String_literal */__(11, [
+                  "Use WASD to move",
+                  /* End_of_format */0
+                ]),
+              "Use WASD to move"
+            ]), /* tuple */[
+          50,
+          120
+        ], env);
   } else {
-    text(state$15[/* mainFont */10], sprintf(/* Format */[
+    text(state$16[/* mainFont */10], sprintf(/* Format */[
               /* String_literal */__(11, [
                   "Run away from the zombie!",
                   /* End_of_format */0
@@ -18753,14 +18777,14 @@ function draw(state, env) {
             /* direction */newDirection
           ];
   };
-  var gunsLength = length(state$15[/* guns */1]);
+  var gunsLength = length(state$16[/* guns */1]);
   var lastGunIterator = fold_left((function (acc, gun) {
           var i = acc[/* i */0];
-          if (state$15[/* animatingAchievement */18] === /* None */0 || i < (gunsLength - 1 | 0)) {
+          if (state$16[/* animatingAchievement */18] === /* None */0 || i < (gunsLength - 1 | 0)) {
             var match = acc[/* pos */1];
             var centeredX = match[/* x */0] + squareSizeX / 2 - 40;
             var centeredY = match[/* y */1] + squareSizeY / 2 - 40;
-            if (((length$$1 - i | 0) - 1 | 0) === state$15[/* equippedGun */4]) {
+            if (((length$$1 - i | 0) - 1 | 0) === state$16[/* equippedGun */4]) {
               fill$4(color(255, 255, 0, 255), env);
               rectf(/* tuple */[
                     centeredX,
@@ -18772,11 +18796,11 @@ function draw(state, env) {
                   centeredX + 5,
                   centeredY + 5
                 ], 70, 70, env);
-            subImagef(state$15[/* mainSpriteSheet */11], /* tuple */[
+            subImagef(state$16[/* mainSpriteSheet */11], /* tuple */[
                   centeredX + 10,
                   centeredY
                 ], 64, 64, gunTexPos(gun[/* kind */7]), 64, 64, env);
-            drawKey(centeredX + 10, centeredY + 22, gun, state$15, env);
+            drawKey(centeredX + 10, centeredY + 22, gun, state$16, env);
             drawHealthBar(centeredX + 5 + 35, centeredY + 64, 11, 70, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), /* Some */[0], env);
             var newAcc = getNextGunIterator(acc);
             return /* record */[
@@ -18801,27 +18825,27 @@ function draw(state, env) {
           1,
           0
         ]
-      ], rev(state$15[/* guns */1]));
-  var match$8 = state$15[/* animatingAchievement */18];
-  var state$16;
-  if (match$8) {
-    var state$17 = handleGunSwitching(state$15, state$15[/* guns */1], 0, env);
+      ], rev(state$16[/* guns */1]));
+  var match$9 = state$16[/* animatingAchievement */18];
+  var state$17;
+  if (match$9) {
+    var state$18 = handleGunSwitching(state$16, state$16[/* guns */1], 0, env);
     var x$1 = width(env) / 2;
     var y$1 = height(env) / 2;
-    var t$1 = state$17[/* animatingAchievementTime */17];
-    var match$9;
-    if (state$17[/* animatingAchievementTime */17] > 2.8) {
+    var t$1 = state$18[/* animatingAchievementTime */17];
+    var match$10;
+    if (state$18[/* animatingAchievementTime */17] > 2.8) {
       var width$1 = remapf(t$1, 2.8, 3.2, 550, 550 - 100);
       var height$1 = remapf(t$1, 2.8, 3.2, 300, 300 - 100);
       var opacity = remapf(t$1, 2.8, 3.2, 255, 155) | 0;
-      match$9 = /* tuple */[
+      match$10 = /* tuple */[
         width$1,
         height$1,
         opacity,
         opacity
       ];
     } else if (t$1 > 1) {
-      match$9 = /* tuple */[
+      match$10 = /* tuple */[
         550,
         300,
         255,
@@ -18829,26 +18853,26 @@ function draw(state, env) {
       ];
     } else {
       var opacity$1 = remapf(t$1, 0, 1, 0, 255) | 0;
-      match$9 = /* tuple */[
+      match$10 = /* tuple */[
         550,
         300,
         opacity$1,
         255
       ];
     }
-    var opacity$2 = match$9[2];
-    var height$2 = match$9[1];
-    var width$2 = match$9[0];
+    var opacity$2 = match$10[2];
+    var height$2 = match$10[1];
+    var width$2 = match$10[0];
     fill$4(color(70, 70, 20, opacity$2), env);
     stroke(color(30, 30, 20, opacity$2), env);
     rectf(/* tuple */[
           x$1 - width$2 / 2,
           y$1 - height$2 / 2
         ], width$2, height$2, env);
-    var gun = hd(state$17[/* guns */1]);
-    var match$10 = gun[/* rank */8];
+    var gun = hd(state$18[/* guns */1]);
+    var match$11 = gun[/* rank */8];
     var kindName;
-    switch (match$10) {
+    switch (match$11) {
       case 0 : 
           kindName = "POOR";
           break;
@@ -18867,7 +18891,7 @@ function draw(state, env) {
       
     }
     tint(color(255, 255, 255, opacity$2), env);
-    text(state$17[/* mainFont */10], sprintf(/* Format */[
+    text(state$18[/* mainFont */10], sprintf(/* Format */[
               /* String_literal */__(11, [
                   "Unlocked achievement",
                   /* End_of_format */0
@@ -18878,7 +18902,7 @@ function draw(state, env) {
           y$1 - 130 | 0
         ], env);
     tint(color(gun[/* color */4][/* r */0] * 255 | 0, gun[/* color */4][/* g */1] * 255 | 0, gun[/* color */4][/* b */2] * 255 | 0, opacity$2), env);
-    text(state$17[/* mainFont */10], _1(sprintf(/* Format */[
+    text(state$18[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
                       "Quality: ",
                       /* String */__(2, [
@@ -18894,14 +18918,14 @@ function draw(state, env) {
     tint(color(255, 255, 255, opacity$2), env);
     var startX$1 = x$1 - (128 + 12) / 2;
     var startY = y$1 - 50;
-    text(state$17[/* mainFont */10], match$8[0][/* message */2], /* tuple */[
+    text(state$18[/* mainFont */10], match$9[0][/* message */2], /* tuple */[
           x$1 - width$2 / 2 + 20 | 0,
           y$1 + 100 | 0
         ], env);
     var endX = lastGunIterator[/* pos */1][/* x */0] + squareSizeX / 2 - 40;
     var endY = lastGunIterator[/* pos */1][/* y */1] + squareSizeY / 2 - 40;
     var centeredX = t$1 > 2.8 || t$1 > 1 ? startX$1 : remapf(t$1, 0, 1, endX, startX$1);
-    var match$11 = t$1 > 2.8 ? /* tuple */[
+    var match$12 = t$1 > 2.8 ? /* tuple */[
         startY,
         128
       ] : (
@@ -18913,10 +18937,10 @@ function draw(state, env) {
             remapf(t$1, 0, 1, 64, 128)
           ]
       );
-    var gunSize = match$11[1];
-    var centeredY = match$11[0];
+    var gunSize = match$12[1];
+    var centeredY = match$12[0];
     noStroke(env);
-    if (!state$17[/* equippedGun */4]) {
+    if (!state$18[/* equippedGun */4]) {
       fill$4(color(255, 255, 0, 255), env);
       rectf(/* tuple */[
             centeredX,
@@ -18928,26 +18952,26 @@ function draw(state, env) {
           centeredX + 5,
           centeredY + 5
         ], gunSize + 6, gunSize + 6, env);
-    tint(color(255, 255, 255, match$9[3]), env);
-    subImagef(state$17[/* mainSpriteSheet */11], /* tuple */[
+    tint(color(255, 255, 255, match$10[3]), env);
+    subImagef(state$18[/* mainSpriteSheet */11], /* tuple */[
           centeredX + 10,
           centeredY
         ], gunSize, gunSize, gunTexPos(gun[/* kind */7]), 64, 64, env);
-    drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$17, env);
+    drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$18, env);
     drawHealthBar(centeredX + 8 + gunSize / 2, centeredY + gunSize, 11, gunSize + 6, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), /* Some */[0], env);
     noTint(env);
-    var match$12 = +(t$1 > 0.4);
-    if (match$12 !== 0) {
-      state$16 = state$17;
+    var match$13 = +(t$1 > 0.4);
+    if (match$13 !== 0) {
+      state$17 = state$18;
     } else {
-      var newrecord$23 = state$17.slice();
-      newrecord$23[/* running */20] = /* true */1;
-      state$16 = newrecord$23;
+      var newrecord$24 = state$18.slice();
+      newrecord$24[/* running */20] = /* true */1;
+      state$17 = newrecord$24;
     }
   } else {
-    state$16 = state$15;
+    state$17 = state$16;
   }
-  if (!state$16[/* running */20] && state$16[/* animatingAchievement */18] === /* None */0) {
+  if (!state$17[/* running */20] && state$17[/* animatingAchievement */18] === /* None */0) {
     var windowX = (width(env) - 160 | 0) / 2 | 0;
     var windowY = ((height(env) - 100 | 0) / 2 | 0) - 100 | 0;
     fill$4(black, env);
@@ -18960,12 +18984,12 @@ function draw(state, env) {
           windowX,
           windowY
         ], 160, 100, env);
-    text(state$16[/* mainFont */10], "PAUSED", /* tuple */[
+    text(state$17[/* mainFont */10], "PAUSED", /* tuple */[
           windowX + 38 | 0,
           windowY + 36 | 0
         ], env);
   }
-  if (state$16[/* health */5] <= 0 || length(state$16[/* guns */1]) >= 69) {
+  if (state$17[/* health */5] <= 0 || length(state$17[/* guns */1]) >= 69) {
     fill$4(color(244, 167, 66, 255), env);
     stroke(color(86, 56, 16, 255), env);
     var windowX$1 = (width(env) - 300 | 0) / 2 | 0;
@@ -18974,30 +18998,30 @@ function draw(state, env) {
           windowX$1,
           windowY$1
         ], 300, 300, env);
-    if (length(state$16[/* guns */1]) >= 69) {
+    if (length(state$17[/* guns */1]) >= 69) {
       tint(color(58, 232, 27, 255), env);
-      text(state$16[/* mainFont */10], "Congratulations", /* tuple */[
+      text(state$17[/* mainFont */10], "Congratulations", /* tuple */[
             windowX$1 + 47 | 0,
             windowY$1 + 20 | 0
           ], env);
-      text(state$16[/* mainFont */10], "You Win!", /* tuple */[
+      text(state$17[/* mainFont */10], "You Win!", /* tuple */[
             windowX$1 + 95 | 0,
             windowY$1 + 50 | 0
           ], env);
       noTint(env);
     } else {
       tint(color(232, 58, 27, 255), env);
-      text(state$16[/* mainFont */10], "Game Over", /* tuple */[
+      text(state$17[/* mainFont */10], "Game Over", /* tuple */[
             windowX$1 + 80 | 0,
             windowY$1 + 40 | 0
           ], env);
       noTint(env);
     }
-    text(state$16[/* mainFont */10], "You made it to", /* tuple */[
+    text(state$17[/* mainFont */10], "You made it to", /* tuple */[
           windowX$1 + 54 | 0,
           windowY$1 + 110 | 0
         ], env);
-    text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
+    text(state$17[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
                       "wave ",
                       /* Int */__(4, [
@@ -19011,7 +19035,7 @@ function draw(state, env) {
                         ])
                     ]),
                   "wave %d!"
-                ]), state$16[/* waveNum */14]), /* tuple */[
+                ]), state$17[/* waveNum */14]), /* tuple */[
           windowX$1 + 105 | 0,
           windowY$1 + 140 | 0
         ], env);
@@ -19023,14 +19047,14 @@ function draw(state, env) {
           buttonX,
           buttonY
         ], 120, 50, env);
-    text(state$16[/* mainFont */10], "restart", /* tuple */[
+    text(state$17[/* mainFont */10], "restart", /* tuple */[
           buttonX + 10 | 0,
           buttonY + 10 | 0
         ], env);
     noStroke(env);
-    var match$13 = mouse(env);
-    var my = match$13[1];
-    var mx = match$13[0];
+    var match$14 = mouse(env);
+    var my = match$14[1];
+    var mx = match$14[0];
     if (mousePressed(env) && mx > buttonX && mx < (buttonX + 120 | 0) && my > buttonY && my < (buttonY + 50 | 0)) {
       return /* record */[
               /* pos : float array */[
@@ -19046,9 +19070,9 @@ function draw(state, env) {
               /* playerBullets : [] */0,
               /* achievements */generateAchievements(/* () */0),
               /* crates : [] */0,
-              /* mainFont */state$16[/* mainFont */10],
-              /* mainSpriteSheet */state$16[/* mainSpriteSheet */11],
-              /* sounds */state$16[/* sounds */12],
+              /* mainFont */state$17[/* mainFont */10],
+              /* mainSpriteSheet */state$17[/* mainSpriteSheet */11],
+              /* sounds */state$17[/* sounds */12],
               /* enemies : :: */[
                 /* record */[
                   /* maxHealth */100,
@@ -19073,9 +19097,9 @@ function draw(state, env) {
               /* elapsedTime */0,
               /* animatingAchievementTime */0,
               /* animatingAchievement : None */0,
-              /* animatingWaveNumberTime */state$16[/* animatingWaveNumberTime */19],
+              /* animatingWaveNumberTime */state$17[/* animatingWaveNumberTime */19],
               /* running : true */1,
-              /* shiftIcon */state$16[/* shiftIcon */21],
+              /* shiftIcon */state$17[/* shiftIcon */21],
               /* stats : record */[
                 /* normalEnemiesKilled */0,
                 /* bigEnemiesKilled */0,
@@ -19088,10 +19112,10 @@ function draw(state, env) {
               ]
             ];
     } else {
-      return state$16;
+      return state$17;
     }
   } else {
-    return state$16;
+    return state$17;
   }
 }
 
