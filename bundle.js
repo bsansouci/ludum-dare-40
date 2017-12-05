@@ -16313,7 +16313,7 @@ var keyCount = [0];
 var keySet = [/* [] */0];
 
 function getNextGunKey() {
-  if (length(keySet[0]) >= 43) {
+  if (length(keySet[0]) >= 61) {
     return /* None */0;
   } else {
     keyCount[0] = keyCount[0] + 1 | 0;
@@ -16321,21 +16321,21 @@ function getNextGunKey() {
     var switcher = match - 1 | 0;
     var ret;
     if (switcher > 8 || switcher < 0) {
-      var key$$1 = random$3(0, 46);
+      var key$$1 = random$3(0, 61);
       while(mem(key$$1, keySet[0])) {
-        key$$1 = random$3(0, 46);
+        key$$1 = random$3(0, 61);
       }
       keySet[0] = /* :: */[
         key$$1,
         keySet[0]
       ];
       var match$1 = key$$1;
-      if (match$1 > 46 || match$1 < 0) {
+      if (match$1 > 60 || match$1 < 0) {
         throw [
               assert_failure,
               [
                 "index.re",
-                597,
+                612,
                 19
               ]
             ];
@@ -16343,284 +16343,368 @@ function getNextGunKey() {
         switch (match$1) {
           case 0 : 
               ret = /* record */[
-                /* primaryKey : T */44,
+                /* primaryKey : Q */41,
                 /* modifier : false */0
               ];
               break;
           case 1 : 
               ret = /* record */[
-                /* primaryKey : Y */49,
+                /* primaryKey : E */29,
                 /* modifier : false */0
               ];
               break;
           case 2 : 
               ret = /* record */[
-                /* primaryKey : U */45,
+                /* primaryKey : R */42,
                 /* modifier : false */0
               ];
               break;
           case 3 : 
               ret = /* record */[
-                /* primaryKey : OpenBracket */22,
+                /* primaryKey : T */44,
                 /* modifier : false */0
               ];
               break;
           case 4 : 
               ret = /* record */[
-                /* primaryKey : O */39,
+                /* primaryKey : Y */49,
                 /* modifier : false */0
               ];
               break;
           case 5 : 
               ret = /* record */[
-                /* primaryKey : P */40,
+                /* primaryKey : U */45,
                 /* modifier : false */0
               ];
               break;
           case 6 : 
               ret = /* record */[
-                /* primaryKey : K */35,
+                /* primaryKey : O */39,
                 /* modifier : false */0
               ];
               break;
           case 7 : 
               ret = /* record */[
-                /* primaryKey : J */34,
+                /* primaryKey : P */40,
                 /* modifier : false */0
               ];
               break;
           case 8 : 
               ret = /* record */[
-                /* primaryKey : H */32,
+                /* primaryKey : OpenBracket */22,
                 /* modifier : false */0
               ];
               break;
           case 9 : 
               ret = /* record */[
-                /* primaryKey : G */31,
+                /* primaryKey : CloseBracket */24,
                 /* modifier : false */0
               ];
               break;
           case 10 : 
               ret = /* record */[
-                /* primaryKey : Z */50,
+                /* primaryKey : F */30,
                 /* modifier : false */0
               ];
               break;
           case 11 : 
               ret = /* record */[
-                /* primaryKey : C */27,
+                /* primaryKey : G */31,
                 /* modifier : false */0
               ];
               break;
           case 12 : 
               ret = /* record */[
-                /* primaryKey : V */46,
+                /* primaryKey : H */32,
                 /* modifier : false */0
               ];
               break;
           case 13 : 
               ret = /* record */[
-                /* primaryKey : B */26,
+                /* primaryKey : J */34,
                 /* modifier : false */0
               ];
               break;
           case 14 : 
               ret = /* record */[
-                /* primaryKey : N */38,
+                /* primaryKey : K */35,
                 /* modifier : false */0
               ];
               break;
           case 15 : 
               ret = /* record */[
-                /* primaryKey : M */37,
+                /* primaryKey : L */36,
                 /* modifier : false */0
               ];
               break;
           case 16 : 
               ret = /* record */[
-                /* primaryKey : Comma */6,
+                /* primaryKey : Semicolon */20,
                 /* modifier : false */0
               ];
               break;
           case 17 : 
               ret = /* record */[
-                /* primaryKey : Period */8,
-                /* modifier : false */0
+                /* primaryKey : Num_9 */19,
+                /* modifier : true */1
               ];
               break;
           case 18 : 
               ret = /* record */[
-                /* primaryKey : T */44,
-                /* modifier : true */1
+                /* primaryKey : Z */50,
+                /* modifier : false */0
               ];
               break;
           case 19 : 
               ret = /* record */[
-                /* primaryKey : Y */49,
-                /* modifier : true */1
+                /* primaryKey : X */48,
+                /* modifier : false */0
               ];
               break;
           case 20 : 
               ret = /* record */[
-                /* primaryKey : U */45,
-                /* modifier : true */1
+                /* primaryKey : C */27,
+                /* modifier : false */0
               ];
               break;
           case 21 : 
               ret = /* record */[
-                /* primaryKey : O */39,
-                /* modifier : true */1
+                /* primaryKey : V */46,
+                /* modifier : false */0
               ];
               break;
           case 22 : 
               ret = /* record */[
-                /* primaryKey : P */40,
-                /* modifier : true */1
+                /* primaryKey : B */26,
+                /* modifier : false */0
               ];
               break;
           case 23 : 
               ret = /* record */[
-                /* primaryKey : K */35,
-                /* modifier : true */1
+                /* primaryKey : N */38,
+                /* modifier : false */0
               ];
               break;
           case 24 : 
               ret = /* record */[
-                /* primaryKey : J */34,
-                /* modifier : true */1
+                /* primaryKey : M */37,
+                /* modifier : false */0
               ];
               break;
           case 25 : 
               ret = /* record */[
-                /* primaryKey : H */32,
-                /* modifier : true */1
+                /* primaryKey : Comma */6,
+                /* modifier : false */0
               ];
               break;
           case 26 : 
               ret = /* record */[
-                /* primaryKey : G */31,
-                /* modifier : true */1
+                /* primaryKey : Period */8,
+                /* modifier : false */0
               ];
               break;
           case 27 : 
               ret = /* record */[
-                /* primaryKey : Z */50,
+                /* primaryKey : Q */41,
                 /* modifier : true */1
               ];
               break;
           case 28 : 
               ret = /* record */[
-                /* primaryKey : C */27,
+                /* primaryKey : E */29,
                 /* modifier : true */1
               ];
               break;
           case 29 : 
               ret = /* record */[
-                /* primaryKey : V */46,
+                /* primaryKey : R */42,
                 /* modifier : true */1
               ];
               break;
           case 30 : 
               ret = /* record */[
-                /* primaryKey : B */26,
+                /* primaryKey : T */44,
                 /* modifier : true */1
               ];
               break;
           case 31 : 
               ret = /* record */[
-                /* primaryKey : N */38,
+                /* primaryKey : Y */49,
                 /* modifier : true */1
               ];
               break;
           case 32 : 
               ret = /* record */[
-                /* primaryKey : M */37,
+                /* primaryKey : U */45,
                 /* modifier : true */1
               ];
               break;
           case 33 : 
               ret = /* record */[
-                /* primaryKey : Comma */6,
+                /* primaryKey : O */39,
                 /* modifier : true */1
               ];
               break;
           case 34 : 
               ret = /* record */[
-                /* primaryKey : Period */8,
+                /* primaryKey : P */40,
                 /* modifier : true */1
               ];
               break;
           case 35 : 
               ret = /* record */[
-                /* primaryKey : Num_1 */11,
+                /* primaryKey : OpenBracket */22,
                 /* modifier : true */1
               ];
               break;
           case 36 : 
               ret = /* record */[
-                /* primaryKey : Num_2 */12,
+                /* primaryKey : CloseBracket */24,
                 /* modifier : true */1
               ];
               break;
           case 37 : 
               ret = /* record */[
-                /* primaryKey : Num_3 */13,
+                /* primaryKey : F */30,
                 /* modifier : true */1
               ];
               break;
           case 38 : 
               ret = /* record */[
-                /* primaryKey : Num_4 */14,
+                /* primaryKey : G */31,
                 /* modifier : true */1
               ];
               break;
           case 39 : 
               ret = /* record */[
-                /* primaryKey : Num_5 */15,
+                /* primaryKey : H */32,
                 /* modifier : true */1
               ];
               break;
           case 40 : 
               ret = /* record */[
-                /* primaryKey : Num_6 */16,
+                /* primaryKey : J */34,
                 /* modifier : true */1
               ];
               break;
           case 41 : 
               ret = /* record */[
-                /* primaryKey : Num_7 */17,
+                /* primaryKey : K */35,
                 /* modifier : true */1
               ];
               break;
           case 42 : 
               ret = /* record */[
-                /* primaryKey : Num_8 */18,
+                /* primaryKey : L */36,
                 /* modifier : true */1
               ];
               break;
           case 43 : 
               ret = /* record */[
-                /* primaryKey : Num_9 */19,
+                /* primaryKey : Semicolon */20,
                 /* modifier : true */1
               ];
               break;
           case 44 : 
               ret = /* record */[
-                /* primaryKey : CloseBracket */24,
-                /* modifier : false */0
+                /* primaryKey : Num_8 */18,
+                /* modifier : true */1
               ];
               break;
           case 45 : 
               ret = /* record */[
-                /* primaryKey : Semicolon */20,
-                /* modifier : false */0
+                /* primaryKey : Z */50,
+                /* modifier : true */1
               ];
               break;
           case 46 : 
               ret = /* record */[
-                /* primaryKey : Quote */5,
-                /* modifier : false */0
+                /* primaryKey : X */48,
+                /* modifier : true */1
+              ];
+              break;
+          case 47 : 
+              ret = /* record */[
+                /* primaryKey : C */27,
+                /* modifier : true */1
+              ];
+              break;
+          case 48 : 
+              ret = /* record */[
+                /* primaryKey : V */46,
+                /* modifier : true */1
+              ];
+              break;
+          case 49 : 
+              ret = /* record */[
+                /* primaryKey : B */26,
+                /* modifier : true */1
+              ];
+              break;
+          case 50 : 
+              ret = /* record */[
+                /* primaryKey : N */38,
+                /* modifier : true */1
+              ];
+              break;
+          case 51 : 
+              ret = /* record */[
+                /* primaryKey : M */37,
+                /* modifier : true */1
+              ];
+              break;
+          case 52 : 
+              ret = /* record */[
+                /* primaryKey : Comma */6,
+                /* modifier : true */1
+              ];
+              break;
+          case 53 : 
+              ret = /* record */[
+                /* primaryKey : Period */8,
+                /* modifier : true */1
+              ];
+              break;
+          case 54 : 
+              ret = /* record */[
+                /* primaryKey : Num_1 */11,
+                /* modifier : true */1
+              ];
+              break;
+          case 55 : 
+              ret = /* record */[
+                /* primaryKey : Num_2 */12,
+                /* modifier : true */1
+              ];
+              break;
+          case 56 : 
+              ret = /* record */[
+                /* primaryKey : Num_3 */13,
+                /* modifier : true */1
+              ];
+              break;
+          case 57 : 
+              ret = /* record */[
+                /* primaryKey : Num_4 */14,
+                /* modifier : true */1
+              ];
+              break;
+          case 58 : 
+              ret = /* record */[
+                /* primaryKey : Num_5 */15,
+                /* modifier : true */1
+              ];
+              break;
+          case 59 : 
+              ret = /* record */[
+                /* primaryKey : Num_6 */16,
+                /* modifier : true */1
+              ];
+              break;
+          case 60 : 
+              ret = /* record */[
+                /* primaryKey : Num_7 */17,
+                /* modifier : true */1
               ];
               break;
           
@@ -17143,9 +17227,6 @@ function drawKey(x, y, gun, state, env) {
   var match = gun[/* keyToggle */5];
   var body;
   switch (match[/* primaryKey */0]) {
-    case 5 : 
-        body = "'";
-        break;
     case 6 : 
         body = ",";
         break;
@@ -17153,31 +17234,31 @@ function drawKey(x, y, gun, state, env) {
         body = ".";
         break;
     case 11 : 
-        body = match[/* modifier */1] !== 0 ? "!" : "1";
+        body = "1";
         break;
     case 12 : 
-        body = match[/* modifier */1] !== 0 ? "@" : "2";
+        body = "2";
         break;
     case 13 : 
-        body = match[/* modifier */1] !== 0 ? "#" : "3";
+        body = "3";
         break;
     case 14 : 
-        body = match[/* modifier */1] !== 0 ? "$" : "4";
+        body = "4";
         break;
     case 15 : 
-        body = match[/* modifier */1] !== 0 ? "%" : "5";
+        body = "5";
         break;
     case 16 : 
-        body = match[/* modifier */1] !== 0 ? "^" : "6";
+        body = "6";
         break;
     case 17 : 
-        body = match[/* modifier */1] !== 0 ? "&" : "7";
+        body = "7";
         break;
     case 18 : 
-        body = match[/* modifier */1] !== 0 ? "*" : "8";
+        body = "8";
         break;
     case 19 : 
-        body = match[/* modifier */1] !== 0 ? "(" : "9";
+        body = "9";
         break;
     case 20 : 
         body = ";";
@@ -17193,6 +17274,12 @@ function drawKey(x, y, gun, state, env) {
         break;
     case 27 : 
         body = "C";
+        break;
+    case 29 : 
+        body = "E";
+        break;
+    case 30 : 
+        body = "F";
         break;
     case 31 : 
         body = "G";
@@ -17221,6 +17308,12 @@ function drawKey(x, y, gun, state, env) {
     case 40 : 
         body = "P";
         break;
+    case 41 : 
+        body = "Q";
+        break;
+    case 42 : 
+        body = "R";
+        break;
     case 44 : 
         body = "T";
         break;
@@ -17229,6 +17322,9 @@ function drawKey(x, y, gun, state, env) {
         break;
     case 46 : 
         body = "V";
+        break;
+    case 48 : 
+        body = "X";
         break;
     case 49 : 
         body = "Y";
@@ -17241,6 +17337,7 @@ function drawKey(x, y, gun, state, env) {
     case 2 : 
     case 3 : 
     case 4 : 
+    case 5 : 
     case 7 : 
     case 9 : 
     case 10 : 
@@ -17248,14 +17345,9 @@ function drawKey(x, y, gun, state, env) {
     case 23 : 
     case 25 : 
     case 28 : 
-    case 29 : 
-    case 30 : 
     case 33 : 
-    case 41 : 
-    case 42 : 
     case 43 : 
     case 47 : 
-    case 48 : 
     case 51 : 
     case 52 : 
     case 53 : 
@@ -17321,7 +17413,7 @@ function generateWave(state) {
             assert_failure,
             [
               "index.re",
-              914,
+              924,
               11
             ]
           ];
@@ -17853,9 +17945,9 @@ function draw(state, env) {
     } else {
       iter((function (e) {
               if (state$1[/* invulnCountdown */6] <= 0 && e[/* health */1] >= 1 && intersectRectRect(/* tuple */[
-                      state$1[/* pos */0][/* x */0] - 20,
-                      state$1[/* pos */0][/* y */1] - 20
-                    ], 40, 40, /* tuple */[
+                      state$1[/* pos */0][/* x */0] - 10,
+                      state$1[/* pos */0][/* y */1] - 10
+                    ], 30, 30, /* tuple */[
                       e[/* pos */2][/* x */0] - 20,
                       e[/* pos */2][/* y */1] - 20
                     ], 40, 40)) {
@@ -18055,17 +18147,8 @@ function draw(state, env) {
               playSound("achievement", state[/* sounds */12], /* None */0, env);
               var newrecord = state.slice();
               newrecord[/* guns */1] = generateGun(state);
-              var newrecord$1 = newrecord.slice();
-              newrecord$1[/* guns */1] = generateGun(newrecord);
-              var newrecord$2 = newrecord$1.slice();
-              newrecord$2[/* guns */1] = generateGun(newrecord$1);
-              var newrecord$3 = newrecord$2.slice();
-              newrecord$3[/* guns */1] = generateGun(newrecord$2);
-              var newrecord$4 = newrecord$3.slice();
-              newrecord$4[/* guns */1] = generateGun(newrecord$3);
-              var newrecord$5 = newrecord$4.slice();
-              newrecord$5[/* equippedGun */4] = newrecord$4[/* equippedGun */4] + 1 | 0;
-              newrecord$5[/* achievements */8] = map((function (a) {
+              newrecord[/* equippedGun */4] = state[/* equippedGun */4] + 1 | 0;
+              newrecord[/* achievements */8] = map((function (a) {
                       if (a === achievement) {
                         return /* record */[
                                 /* state : Unlocked */1,
@@ -18075,11 +18158,11 @@ function draw(state, env) {
                       } else {
                         return a;
                       }
-                    }), newrecord$4[/* achievements */8]);
-              newrecord$5[/* animatingAchievementTime */17] = 3.2;
-              newrecord$5[/* animatingAchievement */18] = /* Some */[achievement];
-              newrecord$5[/* running */20] = /* false */0;
-              return newrecord$5;
+                    }), state[/* achievements */8]);
+              newrecord[/* animatingAchievementTime */17] = 3.2;
+              newrecord[/* animatingAchievement */18] = /* Some */[achievement];
+              newrecord[/* running */20] = /* false */0;
+              return newrecord;
             } else {
               return state;
             }
@@ -18795,7 +18878,7 @@ function draw(state, env) {
                     ]),
                   "Quality: %s"
                 ]), kindName), /* tuple */[
-          x$1 - 80 | 0,
+          x$1 - 95 | 0,
           y$1 - 100 | 0
         ], env);
     tint(color(255, 255, 255, opacity$2), env);
@@ -18872,7 +18955,7 @@ function draw(state, env) {
           windowY + 36 | 0
         ], env);
   }
-  if (state$16[/* health */5] <= 0) {
+  if (state$16[/* health */5] <= 0 || length(state$16[/* guns */1]) >= 69) {
     fill$4(color(244, 167, 66, 255), env);
     stroke(color(86, 56, 16, 255), env);
     var windowX$1 = (width(env) - 300 | 0) / 2 | 0;
@@ -18881,15 +18964,28 @@ function draw(state, env) {
           windowX$1,
           windowY$1
         ], 300, 300, env);
-    tint(color(232, 58, 27, 255), env);
-    text(state$16[/* mainFont */10], "Game Over", /* tuple */[
-          windowX$1 + 80 | 0,
-          windowY$1 + 40 | 0
-        ], env);
-    noTint(env);
+    if (length(state$16[/* guns */1]) >= 69) {
+      tint(color(58, 232, 27, 255), env);
+      text(state$16[/* mainFont */10], "Congratulations", /* tuple */[
+            windowX$1 + 47 | 0,
+            windowY$1 + 20 | 0
+          ], env);
+      text(state$16[/* mainFont */10], "You Win!", /* tuple */[
+            windowX$1 + 95 | 0,
+            windowY$1 + 50 | 0
+          ], env);
+      noTint(env);
+    } else {
+      tint(color(232, 58, 27, 255), env);
+      text(state$16[/* mainFont */10], "Game Over", /* tuple */[
+            windowX$1 + 80 | 0,
+            windowY$1 + 40 | 0
+          ], env);
+      noTint(env);
+    }
     text(state$16[/* mainFont */10], "You made it to", /* tuple */[
-          windowX$1 + 45 | 0,
-          windowY$1 + 100 | 0
+          windowX$1 + 54 | 0,
+          windowY$1 + 110 | 0
         ], env);
     text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
                   /* String_literal */__(11, [
@@ -18906,8 +19002,8 @@ function draw(state, env) {
                     ]),
                   "wave %d!"
                 ]), state$16[/* waveNum */14]), /* tuple */[
-          windowX$1 + 95 | 0,
-          windowY$1 + 130 | 0
+          windowX$1 + 105 | 0,
+          windowY$1 + 140 | 0
         ], env);
     var buttonX = windowX$1 + 85 | 0;
     var buttonY = windowY$1 + 200 | 0;
