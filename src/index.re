@@ -523,9 +523,10 @@ let makeShotgunFire =
 let generateGun = {
   let keyCount = ref(0);
   let keySet = ref([]);
+  let totalNumberOfKeys = 61;
   let getNextGunKey: unit => option(keyToggleT) =
     () =>
-      if (List.length(keySet^) >= 43) {
+      if (List.length(keySet^) >= totalNumberOfKeys) {
         None
       } else {
         keyCount := keyCount^ + 1;
@@ -541,59 +542,73 @@ let generateGun = {
           | 8 => {primaryKey: Num_8, modifier: false}
           | 9 => {primaryKey: Num_9, modifier: false}
           | _ =>
-            let key = ref(Utils.random(0, 46));
+            let key = ref(Utils.random(0, totalNumberOfKeys));
             while (List.mem(key^, keySet^)) {
-              key := Utils.random(0, 46)
+              key := Utils.random(0, totalNumberOfKeys)
             };
             keySet := [key^, ...keySet^];
             switch key^ {
-            | 0 => {primaryKey: T, modifier: false}
-            | 1 => {primaryKey: Y, modifier: false}
-            | 2 => {primaryKey: U, modifier: false}
-            | 3 => {primaryKey: OpenBracket, modifier: false}
-            | 4 => {primaryKey: O, modifier: false}
-            | 5 => {primaryKey: P, modifier: false}
-            | 6 => {primaryKey: K, modifier: false}
-            | 7 => {primaryKey: J, modifier: false}
-            | 8 => {primaryKey: H, modifier: false}
-            | 9 => {primaryKey: G, modifier: false}
-            | 10 => {primaryKey: Z, modifier: false}
-            | 11 => {primaryKey: C, modifier: false}
-            | 12 => {primaryKey: V, modifier: false}
-            | 13 => {primaryKey: B, modifier: false}
-            | 14 => {primaryKey: N, modifier: false}
-            | 15 => {primaryKey: M, modifier: false}
-            | 16 => {primaryKey: Comma, modifier: false}
-            | 17 => {primaryKey: Period, modifier: false}
-            | 18 => {primaryKey: T, modifier: true}
-            | 19 => {primaryKey: Y, modifier: true}
-            | 20 => {primaryKey: U, modifier: true}
-            | 21 => {primaryKey: O, modifier: true}
-            | 22 => {primaryKey: P, modifier: true}
-            | 23 => {primaryKey: K, modifier: true}
-            | 24 => {primaryKey: J, modifier: true}
-            | 25 => {primaryKey: H, modifier: true}
-            | 26 => {primaryKey: G, modifier: true}
-            | 27 => {primaryKey: Z, modifier: true}
-            | 28 => {primaryKey: C, modifier: true}
-            | 29 => {primaryKey: V, modifier: true}
-            | 30 => {primaryKey: B, modifier: true}
-            | 31 => {primaryKey: N, modifier: true}
-            | 32 => {primaryKey: M, modifier: true}
-            | 33 => {primaryKey: Comma, modifier: true}
-            | 34 => {primaryKey: Period, modifier: true}
-            | 35 => {primaryKey: Num_1, modifier: true}
-            | 36 => {primaryKey: Num_2, modifier: true}
-            | 37 => {primaryKey: Num_3, modifier: true}
-            | 38 => {primaryKey: Num_4, modifier: true}
-            | 39 => {primaryKey: Num_5, modifier: true}
-            | 40 => {primaryKey: Num_6, modifier: true}
-            | 41 => {primaryKey: Num_7, modifier: true}
-            | 42 => {primaryKey: Num_8, modifier: true}
-            | 43 => {primaryKey: Num_9, modifier: true}
-            | 44 => {primaryKey: CloseBracket, modifier: false}
-            | 45 => {primaryKey: Semicolon, modifier: false}
-            | 46 => {primaryKey: Quote, modifier: false}
+            | 0 => {primaryKey: Q, modifier: false}
+            | 1 => {primaryKey: E, modifier: false}
+            | 2 => {primaryKey: R, modifier: false}
+            | 3 => {primaryKey: T, modifier: false}
+            | 4 => {primaryKey: Y, modifier: false}
+            | 5 => {primaryKey: U, modifier: false}
+            | 6 => {primaryKey: O, modifier: false}
+            | 7 => {primaryKey: P, modifier: false}
+            | 8 => {primaryKey: OpenBracket, modifier: false}
+            | 9 => {primaryKey: CloseBracket, modifier: false}
+            | 10 => {primaryKey: F, modifier: false}
+            | 11 => {primaryKey: G, modifier: false}
+            | 12 => {primaryKey: H, modifier: false}
+            | 13 => {primaryKey: J, modifier: false}
+            | 14 => {primaryKey: K, modifier: false}
+            | 15 => {primaryKey: L, modifier: false}
+            | 16 => {primaryKey: Semicolon, modifier: false}
+            | 17 => {primaryKey: Num_9, modifier: true}
+            | 18 => {primaryKey: Z, modifier: false}
+            | 19 => {primaryKey: X, modifier: false}
+            | 20 => {primaryKey: C, modifier: false}
+            | 21 => {primaryKey: V, modifier: false}
+            | 22 => {primaryKey: B, modifier: false}
+            | 23 => {primaryKey: N, modifier: false}
+            | 24 => {primaryKey: M, modifier: false}
+            | 25 => {primaryKey: Comma, modifier: false}
+            | 26 => {primaryKey: Period, modifier: false}
+            | 27 => {primaryKey: Q, modifier: true}
+            | 28 => {primaryKey: E, modifier: true}
+            | 29 => {primaryKey: R, modifier: true}
+            | 30 => {primaryKey: T, modifier: true}
+            | 31 => {primaryKey: Y, modifier: true}
+            | 32 => {primaryKey: U, modifier: true}
+            | 33 => {primaryKey: O, modifier: true}
+            | 34 => {primaryKey: P, modifier: true}
+            | 35 => {primaryKey: OpenBracket, modifier: true}
+            | 36 => {primaryKey: CloseBracket, modifier: true}
+            | 37 => {primaryKey: F, modifier: true}
+            | 38 => {primaryKey: G, modifier: true}
+            | 39 => {primaryKey: H, modifier: true}
+            | 40 => {primaryKey: J, modifier: true}
+            | 41 => {primaryKey: K, modifier: true}
+            | 42 => {primaryKey: L, modifier: true}
+            | 43 => {primaryKey: Semicolon, modifier: true}
+            | 44 => {primaryKey: Num_8, modifier: true}
+            | 45 => {primaryKey: Z, modifier: true}
+            | 46 => {primaryKey: X, modifier: true}
+            | 47 => {primaryKey: C, modifier: true}
+            | 48 => {primaryKey: V, modifier: true}
+            | 49 => {primaryKey: B, modifier: true}
+            | 50 => {primaryKey: N, modifier: true}
+            | 51 => {primaryKey: M, modifier: true}
+            | 52 => {primaryKey: Comma, modifier: true}
+            | 53 => {primaryKey: Period, modifier: true}
+            | 54 => {primaryKey: Num_1, modifier: true}
+            | 55 => {primaryKey: Num_2, modifier: true}
+            | 56 => {primaryKey: Num_3, modifier: true}
+            | 57 => {primaryKey: Num_4, modifier: true}
+            | 58 => {primaryKey: Num_5, modifier: true}
+            | 59 => {primaryKey: Num_6, modifier: true}
+            | 60 => {primaryKey: Num_7, modifier: true}
             | _ => assert false
             }
           };
@@ -838,39 +853,34 @@ let generateAchievements = () => {
 let drawKey = (x, y, gun, state, env) => {
   let body =
     switch gun.keyToggle {
-    | {primaryKey: Num_1, modifier: false} => "1"
-    | {primaryKey: Num_2, modifier: false} => "2"
-    | {primaryKey: Num_3, modifier: false} => "3"
-    | {primaryKey: Num_4, modifier: false} => "4"
-    | {primaryKey: Num_5, modifier: false} => "5"
-    | {primaryKey: Num_6, modifier: false} => "6"
-    | {primaryKey: Num_7, modifier: false} => "7"
-    | {primaryKey: Num_8, modifier: false} => "8"
-    | {primaryKey: Num_9, modifier: false} => "9"
-    | {primaryKey: Num_1, modifier: true} => "!"
-    | {primaryKey: Num_2, modifier: true} => "@"
-    | {primaryKey: Num_3, modifier: true} => "#"
-    | {primaryKey: Num_4, modifier: true} => "$"
-    | {primaryKey: Num_5, modifier: true} => "%"
-    | {primaryKey: Num_6, modifier: true} => "^"
-    | {primaryKey: Num_7, modifier: true} => "&"
-    | {primaryKey: Num_8, modifier: true} => "*"
-    | {primaryKey: Num_9, modifier: true} => "("
+    | {primaryKey: Num_1} => "1"
+    | {primaryKey: Num_2} => "2"
+    | {primaryKey: Num_3} => "3"
+    | {primaryKey: Num_4} => "4"
+    | {primaryKey: Num_5} => "5"
+    | {primaryKey: Num_6} => "6"
+    | {primaryKey: Num_7} => "7"
+    | {primaryKey: Num_8} => "8"
+    | {primaryKey: Num_9} => "9"
+    | {primaryKey: Q} => "Q"
+    | {primaryKey: E} => "E"
+    | {primaryKey: R} => "R"
     | {primaryKey: T} => "T"
     | {primaryKey: Y} => "Y"
-    | {primaryKey: OpenBracket} => "["
-    | {primaryKey: CloseBracket} => "]"
-    | {primaryKey: Semicolon} => ";"
-    | {primaryKey: Quote} => "'"
     | {primaryKey: U} => "U"
     | {primaryKey: O} => "O"
     | {primaryKey: P} => "P"
-    | {primaryKey: H} => "H"
+    | {primaryKey: OpenBracket} => "["
+    | {primaryKey: CloseBracket} => "]"
+    | {primaryKey: F} => "F"
     | {primaryKey: G} => "G"
+    | {primaryKey: H} => "H"
     | {primaryKey: J} => "J"
     | {primaryKey: K} => "K"
     | {primaryKey: L} => "L"
+    | {primaryKey: Semicolon} => ";"
     | {primaryKey: Z} => "Z"
+    | {primaryKey: X} => "X"
     | {primaryKey: C} => "C"
     | {primaryKey: V} => "V"
     | {primaryKey: B} => "B"
@@ -1433,14 +1443,18 @@ let draw = (state, env) => {
           (state, achievement) =>
             if (achievement.state === Locked && achievement.condition(state, env)) {
               playSound("achievement", state.sounds, env);
+              /*let state = {...state, guns: generateGun(state)};*/
+              /*let state = {...state, guns: generateGun(state)};
               let state = {...state, guns: generateGun(state)};
               let state = {...state, guns: generateGun(state)};
               let state = {...state, guns: generateGun(state)};
               let state = {...state, guns: generateGun(state)};
               let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};
+              let state = {...state, guns: generateGun(state)};*/
               {
                 ...state,
-                /*guns,*/
+                guns: generateGun(state),
                 equippedGun: state.equippedGun + 1,
                 animatingAchievementTime: animatingAchievementMaxTime,
                 animatingAchievement: Some(achievement),
@@ -2164,7 +2178,8 @@ let draw = (state, env) => {
     Draw.rect(~pos=(windowX, windowY), ~width=gameoverW, ~height=gameoverH, env);
     Draw.text(~font=state.mainFont, ~body="PAUSED", ~pos=(windowX + 38, windowY + 36), env)
   };
-  if (state.health <= 0.) {
+  let maxNumberOfGunsToFillScreen = 69;
+  if (state.health <= 0. || List.length(state.guns) >= maxNumberOfGunsToFillScreen) {
     let gameoverW = 300;
     let gameoverH = 300;
     Draw.fill(Utils.color(244, 167, 66, 255), env);
@@ -2172,19 +2187,31 @@ let draw = (state, env) => {
     let windowX = (Env.width(env) - gameoverW) / 2;
     let windowY = (Env.height(env) - gameoverH) / 2;
     Draw.rect(~pos=(windowX, windowY), ~width=gameoverW, ~height=gameoverH, env);
-    Draw.tint(Utils.color(232, 58, 27, 255), env);
-    Draw.text(~font=state.mainFont, ~body="Game Over", ~pos=(windowX + 80, windowY + 40), env);
-    Draw.noTint(env);
+    if (List.length(state.guns) >= maxNumberOfGunsToFillScreen) {
+      Draw.tint(Utils.color(58, 232, 27, 255), env);
+      Draw.text(
+        ~font=state.mainFont,
+        ~body="Congratulations",
+        ~pos=(windowX + 47, windowY + 20),
+        env
+      );
+      Draw.text(~font=state.mainFont, ~body="You Win!", ~pos=(windowX + 95, windowY + 50), env);
+      Draw.noTint(env)
+    } else {
+      Draw.tint(Utils.color(232, 58, 27, 255), env);
+      Draw.text(~font=state.mainFont, ~body="Game Over", ~pos=(windowX + 80, windowY + 40), env);
+      Draw.noTint(env)
+    };
     Draw.text(
       ~font=state.mainFont,
       ~body="You made it to",
-      ~pos=(windowX + 45, windowY + 100),
+      ~pos=(windowX + 54, windowY + 110),
       env
     );
     Draw.text(
       ~font=state.mainFont,
       ~body=Printf.sprintf("wave %d!", state.waveNum),
-      ~pos=(windowX + 95, windowY + 130),
+      ~pos=(windowX + 105, windowY + 140),
       env
     );
     let buttonX = windowX + 85;
