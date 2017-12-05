@@ -972,7 +972,7 @@ let generateWave = (state) => {
     } else {
       enemies
     };
-  let crateCount = state.waveNum > startWaveForMiniBosses - 1 ? Utils.random(0, 2) : 0;
+  let crateCount = state.waveNum > startWaveForMiniBosses - 1 ? Utils.random(0, state.waveNum / 2) : 0;
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
