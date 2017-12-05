@@ -16950,7 +16950,7 @@ function generateAchievements() {
                 /* record */[
                   /* state : Locked */0,
                   /* condition */(function (state, _) {
-                      return +(state[/* stats */22][/* stepTaken */5] >= 800);
+                      return +(state[/* stats */22][/* stepTaken */5] >= 1000);
                     }),
                   /* message */"You walked your first 100 steps!"
                 ],
@@ -17924,7 +17924,7 @@ function draw(state, env) {
       0
     ];
     var numZombies = length(state$1[/* enemies */13]);
-    if ($$float$1(1) + numZombies * 0.00005 > 0.995) {
+    if (numZombies > 0 && $$float$1(1) + numZombies * 0.00005 > 0.995) {
       var match$1 = $$int$1(3);
       var num = match$1 !== 0 ? (
           match$1 !== 1 ? "three" : "two"
@@ -17985,8 +17985,7 @@ function draw(state, env) {
         state$1[/* pos */0][/* y */1] + dy
       ];
       var newrecord$2 = state$1[/* stats */22].slice();
-      var match$6 = +(state$1[/* elapsedTime */16] < 5.0);
-      newrecord$2[/* stepTaken */5] = match$6 !== 0 ? state$1[/* stats */22][/* stepTaken */5] : state$1[/* stats */22][/* stepTaken */5] + playerSpeedDt;
+      newrecord$2[/* stepTaken */5] = state$1[/* stats */22][/* stepTaken */5] + playerSpeedDt;
       newrecord$1[/* stats */22] = newrecord$2;
       state$3 = newrecord$1;
     } else {
@@ -18048,7 +18047,7 @@ function draw(state, env) {
     if (state$5[/* equippedGun */4] >= 0) {
       var curGun = nth(state$5[/* guns */1], state$5[/* equippedGun */4]);
       if (state$5[/* elapsedTime */16] - curGun[/* lastShotTime */1] > curGun[/* fireRate */0] && curGun[/* ammunition */2] > 0) {
-        var match$7 = fold_left((function (param, dir) {
+        var match$6 = fold_left((function (param, dir) {
                 var s = param[0];
                 var match = key(dir, env);
                 if (match !== 0) {
@@ -18066,8 +18065,8 @@ function draw(state, env) {
               state$5,
               /* false */0
             ], directions);
-        var state$7 = match$7[0];
-        if (match$7[1]) {
+        var state$7 = match$6[0];
+        if (match$6[1]) {
           playSound(curGun[/* soundName */9], state$7[/* sounds */12], /* None */0, env);
           state$6 = fireGun(state$7);
         } else {
@@ -18574,7 +18573,7 @@ function draw(state, env) {
     if (length$$1 !== 1) {
       var startX = (width(env) - 50 | 0) / 2 | 0;
       var t = state$16[/* animatingWaveNumberTime */19];
-      var match$8 = t > 1.0 ? /* tuple */[
+      var match$7 = t > 1.0 ? /* tuple */[
           startX,
           200
         ] : /* tuple */[
@@ -18593,8 +18592,8 @@ function draw(state, env) {
                       ]),
                     "Wave %d"
                   ]), state$16[/* waveNum */14]), /* tuple */[
-            match$8[0] | 0,
-            match$8[1] | 0
+            match$7[0] | 0,
+            match$7[1] | 0
           ], env);
       if (t <= 0) {
         text(state$16[/* mainFont */10], _1(sprintf(/* Format */[
@@ -18826,26 +18825,26 @@ function draw(state, env) {
           0
         ]
       ], rev(state$16[/* guns */1]));
-  var match$9 = state$16[/* animatingAchievement */18];
+  var match$8 = state$16[/* animatingAchievement */18];
   var state$17;
-  if (match$9) {
+  if (match$8) {
     var state$18 = handleGunSwitching(state$16, state$16[/* guns */1], 0, env);
     var x$1 = width(env) / 2;
     var y$1 = height(env) / 2;
     var t$1 = state$18[/* animatingAchievementTime */17];
-    var match$10;
+    var match$9;
     if (state$18[/* animatingAchievementTime */17] > 2.8) {
       var width$1 = remapf(t$1, 2.8, 3.2, 550, 550 - 100);
       var height$1 = remapf(t$1, 2.8, 3.2, 300, 300 - 100);
       var opacity = remapf(t$1, 2.8, 3.2, 255, 155) | 0;
-      match$10 = /* tuple */[
+      match$9 = /* tuple */[
         width$1,
         height$1,
         opacity,
         opacity
       ];
     } else if (t$1 > 1) {
-      match$10 = /* tuple */[
+      match$9 = /* tuple */[
         550,
         300,
         255,
@@ -18853,16 +18852,16 @@ function draw(state, env) {
       ];
     } else {
       var opacity$1 = remapf(t$1, 0, 1, 0, 255) | 0;
-      match$10 = /* tuple */[
+      match$9 = /* tuple */[
         550,
         300,
         opacity$1,
         255
       ];
     }
-    var opacity$2 = match$10[2];
-    var height$2 = match$10[1];
-    var width$2 = match$10[0];
+    var opacity$2 = match$9[2];
+    var height$2 = match$9[1];
+    var width$2 = match$9[0];
     fill$4(color(70, 70, 20, opacity$2), env);
     stroke(color(30, 30, 20, opacity$2), env);
     rectf(/* tuple */[
@@ -18870,9 +18869,9 @@ function draw(state, env) {
           y$1 - height$2 / 2
         ], width$2, height$2, env);
     var gun = hd(state$18[/* guns */1]);
-    var match$11 = gun[/* rank */8];
+    var match$10 = gun[/* rank */8];
     var kindName;
-    switch (match$11) {
+    switch (match$10) {
       case 0 : 
           kindName = "POOR";
           break;
@@ -18918,14 +18917,14 @@ function draw(state, env) {
     tint(color(255, 255, 255, opacity$2), env);
     var startX$1 = x$1 - (128 + 12) / 2;
     var startY = y$1 - 50;
-    text(state$18[/* mainFont */10], match$9[0][/* message */2], /* tuple */[
+    text(state$18[/* mainFont */10], match$8[0][/* message */2], /* tuple */[
           x$1 - width$2 / 2 + 20 | 0,
           y$1 + 100 | 0
         ], env);
     var endX = lastGunIterator[/* pos */1][/* x */0] + squareSizeX / 2 - 40;
     var endY = lastGunIterator[/* pos */1][/* y */1] + squareSizeY / 2 - 40;
     var centeredX = t$1 > 2.8 || t$1 > 1 ? startX$1 : remapf(t$1, 0, 1, endX, startX$1);
-    var match$12 = t$1 > 2.8 ? /* tuple */[
+    var match$11 = t$1 > 2.8 ? /* tuple */[
         startY,
         128
       ] : (
@@ -18937,8 +18936,8 @@ function draw(state, env) {
             remapf(t$1, 0, 1, 64, 128)
           ]
       );
-    var gunSize = match$12[1];
-    var centeredY = match$12[0];
+    var gunSize = match$11[1];
+    var centeredY = match$11[0];
     noStroke(env);
     if (!state$18[/* equippedGun */4]) {
       fill$4(color(255, 255, 0, 255), env);
@@ -18952,7 +18951,7 @@ function draw(state, env) {
           centeredX + 5,
           centeredY + 5
         ], gunSize + 6, gunSize + 6, env);
-    tint(color(255, 255, 255, match$10[3]), env);
+    tint(color(255, 255, 255, match$9[3]), env);
     subImagef(state$18[/* mainSpriteSheet */11], /* tuple */[
           centeredX + 10,
           centeredY
@@ -18960,8 +18959,8 @@ function draw(state, env) {
     drawKey(centeredX + 10, centeredY + gunSize - 42, gun, state$18, env);
     drawHealthBar(centeredX + 8 + gunSize / 2, centeredY + gunSize, 11, gunSize + 6, gun[/* ammunition */2], gun[/* maxAmmunition */3], color(220, 220, 0, 255), /* Some */[0], env);
     noTint(env);
-    var match$13 = +(t$1 > 0.4);
-    if (match$13 !== 0) {
+    var match$12 = +(t$1 > 0.4);
+    if (match$12 !== 0) {
       state$17 = state$18;
     } else {
       var newrecord$24 = state$18.slice();
@@ -19052,9 +19051,9 @@ function draw(state, env) {
           buttonY + 10 | 0
         ], env);
     noStroke(env);
-    var match$14 = mouse(env);
-    var my = match$14[1];
-    var mx = match$14[0];
+    var match$13 = mouse(env);
+    var my = match$13[1];
+    var mx = match$13[0];
     if (mousePressed(env) && mx > buttonX && mx < (buttonX + 120 | 0) && my > buttonY && my < (buttonY + 50 | 0)) {
       return /* record */[
               /* pos : float array */[
