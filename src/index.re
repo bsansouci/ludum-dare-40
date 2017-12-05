@@ -628,6 +628,18 @@ let generateGun = {
           (Utils.randomf(0., 1.), Utils.randomf(0., 1.))
         };
       let gunRank = damage +. fireRate;
+      let (rank, color, damage) =
+        if (gunRank > 0. && gunRank < 0.1) {
+          (Poor, Utils.color(188, 191, 187, 255), damage)
+        } else if (gunRank > 0.1 && gunRank < 1.1) {
+          (Common, Utils.color(62, 245, 21, 255), damage)
+        } else if (gunRank > 1.1 && gunRank < 1.7) {
+          (Rare, Utils.color(47, 119, 214, 255), Utils.remapf(damage, 0., 1., 0.8, 1.0))
+        } else if (gunRank > 1.7 && gunRank < 1.9) {
+          (Epic, Utils.color(173, 28, 221, 255), Utils.remapf(damage, 0., 1., 0.95, 1.0))
+        } else {
+          (Legendary, Utils.color(247, 133, 12, 255), 1.)
+        };
       let (kind, fire, fireRate, maxAmmunition, soundName) =
         switch (Utils.random(0, 8)) {
         | 0 => (
@@ -699,18 +711,6 @@ let generateGun = {
             Utils.lerp(1, 10, maxAmmunition),
             "aliengun_threeshots"
           )
-        };
-      let (rank, color) =
-        if (gunRank > 0. && gunRank < 0.1) {
-          (Poor, Utils.color(188, 191, 187, 255))
-        } else if (gunRank > 0.1 && gunRank < 1.1) {
-          (Common, Utils.color(62, 245, 21, 255))
-        } else if (gunRank > 1.1 && gunRank < 1.7) {
-          (Rare, Utils.color(47, 119, 214, 255))
-        } else if (gunRank > 1.7 && gunRank < 1.9) {
-          (Epic, Utils.color(173, 28, 221, 255))
-        } else {
-          (Legendary, Utils.color(247, 133, 12, 255))
         };
       [
         {
@@ -967,12 +967,13 @@ let generateWave = (state) => {
     if (state.waveNum == startWaveForMiniBosses) {
       list_init(enemies, makeMiniBosses, 2)
     } else if (state.waveNum > startWaveForMiniBosses) {
-      let n = max(0, Utils.random(0, state.waveNum));
+      let n = max(0, Utils.random(2, state.waveNum - 2));
       list_init(enemies, makeMiniBosses, n)
     } else {
       enemies
     };
-  let crateCount = state.waveNum > startWaveForMiniBosses - 1 ? Utils.random(0, state.waveNum / 2) : 0;
+  let crateCount =
+    state.waveNum > startWaveForMiniBosses - 1 ? Utils.random(0, state.waveNum / 2) : 0;
   let makeCrate = () => {
     pos: {x: Utils.randomf(50., mapSizePx -. 50.), y: Utils.randomf(50., mapSizePx -. 50.)},
     kind: Obj.magic(Utils.random(0, 8))
@@ -1324,10 +1325,7 @@ let draw = (state, env) => {
           {
             ...state,
             pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
-            stats: {
-              ...state.stats,
-              stepTaken: state.stats.stepTaken +. playerSpeedDt
-            }
+            stats: {...state.stats, stepTaken: state.stats.stepTaken +. playerSpeedDt}
           }
         } else {
           state
@@ -1607,7 +1605,7 @@ let draw = (state, env) => {
             ...state,
             enemies: [
               {
-                pos: {x: 100., y: 250.},
+                pos: {x: 100., y: 20.},
                 damage: 100.,
                 kind: Normal1Z,
                 health: 100.,
