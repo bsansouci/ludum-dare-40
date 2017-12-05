@@ -17506,7 +17506,7 @@ function generateWave(state) {
     enemies$1 = enemies;
   }
   var match = +(state[/* waveNum */14] > 1);
-  var crateCount = match !== 0 ? random$3(0, 2) : 0;
+  var crateCount = match !== 0 ? random$3(0, state[/* waveNum */14] / 2 | 0) : 0;
   var makeCrate = function () {
     return /* record */[
             /* pos : float array */[
