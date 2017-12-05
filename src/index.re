@@ -736,7 +736,7 @@ let generateAchievements = () => {
       [
         {
           state: Locked,
-          condition: (state, _env) => state.stats.stepTaken >= 800.,
+          condition: (state, _env) => state.stats.stepTaken >= 1000.,
           message: "You walked your first 100 steps!"
         },
         ...acc
@@ -1276,7 +1276,7 @@ let draw = (state, env) => {
     if (state.running && state.health > 0.) {
       let offset = {x: 0., y: 0.};
       let numZombies = List.length(state.enemies);
-      if (Random.float(1.) +. float_of_int(numZombies) *. 0.00005 > 0.995) {
+      if (numZombies > 0 && Random.float(1.) +. float_of_int(numZombies) *. 0.00005 > 0.995) {
         let num =
           switch (Random.int(3)) {
           | 0 => "one"
@@ -1326,9 +1326,7 @@ let draw = (state, env) => {
             pos: {x: state.pos.x +. dx, y: state.pos.y +. dy},
             stats: {
               ...state.stats,
-              stepTaken:
-                state.elapsedTime < 5.0 ?
-                  state.stats.stepTaken : state.stats.stepTaken +. playerSpeedDt
+              stepTaken: state.stats.stepTaken +. playerSpeedDt
             }
           }
         } else {
