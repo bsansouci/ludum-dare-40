@@ -17506,7 +17506,7 @@ function generateWave(state) {
   if (state[/* waveNum */14] === 2) {
     enemies$1 = list_init(enemies, makeMiniBosses, 2);
   } else if (state[/* waveNum */14] > 2) {
-    var n = max(0, random$3(2, state[/* waveNum */14] - 2 | 0));
+    var n = max(0, random$3(1, state[/* waveNum */14]));
     enemies$1 = list_init(enemies, makeMiniBosses, n);
   } else {
     enemies$1 = enemies;
