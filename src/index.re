@@ -1296,9 +1296,9 @@ let draw = (state, env) => {
             if (state.invulnCountdown <= 0.
                 && e.health >= 1.
                 && Utils.intersectRectRect(
-                     ~rect1Pos=(state.pos.x -. 20., state.pos.y -. 20.),
-                     ~rect1W=40.,
-                     ~rect1H=40.,
+                     ~rect1Pos=(state.pos.x -. 10., state.pos.y -. 10.),
+                     ~rect1W=30.,
+                     ~rect1H=30.,
                      ~rect2Pos=(e.pos.x -. 20., e.pos.y -. 20.),
                      ~rect2W=40.,
                      ~rect2H=40.
@@ -1445,13 +1445,13 @@ let draw = (state, env) => {
               playSound("achievement", state.sounds, env);
               /*let state = {...state, guns: generateGun(state)};*/
               /*let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};
-              let state = {...state, guns: generateGun(state)};*/
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};
+                let state = {...state, guns: generateGun(state)};*/
               {
                 ...state,
                 guns: generateGun(state),
@@ -2093,7 +2093,7 @@ let draw = (state, env) => {
       Draw.text(
         ~font=state.mainFont,
         ~body=Printf.sprintf("Quality: %s", kindName),
-        ~pos=(int_of_float(x -. 80.), int_of_float(y -. 100.)),
+        ~pos=(int_of_float(x -. 95.), int_of_float(y -. 100.)),
         env
       );
       Draw.tint(Utils.color(255, 255, 255, opacity), env);
