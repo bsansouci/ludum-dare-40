@@ -967,7 +967,7 @@ let generateWave = (state) => {
     if (state.waveNum == startWaveForMiniBosses) {
       list_init(enemies, makeMiniBosses, 2)
     } else if (state.waveNum > startWaveForMiniBosses) {
-      let n = max(0, Utils.random(2, state.waveNum - 2));
+      let n = max(0, Utils.random(1, state.waveNum));
       list_init(enemies, makeMiniBosses, n)
     } else {
       enemies
