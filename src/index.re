@@ -893,7 +893,7 @@ let drawKey = (x, y, gun, state, env) => {
     | _ => failwith("Fuck")
     };
   if (! gun.keyToggle.modifier) {
-    Draw.text(state.mainFont, body, (int_of_float(x), int_of_float(y) + 10), env)
+    Draw.text(~font=state.mainFont, ~body, ~pos=(int_of_float(x), int_of_float(y) + 10), env)
   } else {
     Draw.subImage(
       state.shiftIcon,
@@ -905,7 +905,7 @@ let drawKey = (x, y, gun, state, env) => {
       277,
       env
     );
-    Draw.text(state.mainFont, " " ++ body, (int_of_float(x) + 6, int_of_float(y) + 10), env)
+    Draw.text(~font=state.mainFont, ~body=(" " ++ body), ~pos=(int_of_float(x) + 6, int_of_float(y) + 10), env)
   }
 };
 
@@ -1049,7 +1049,7 @@ let setup = (env) => {
     playerBullets: [],
     achievements: generateAchievements(),
     crates: [],
-    mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", env),
+    mainFont: Draw.loadFont(~filename="assets/molot/font.fnt", ~isPixel=true, env),
     mainSpriteSheet: Draw.loadImage(~filename="assets/spritesheet.png", ~isPixel=true, env),
     shiftIcon: Draw.loadImage(~filename="assets/shift_icon.png", env),
     sounds,
@@ -1928,7 +1928,7 @@ let draw = (state, env) => {
       )
     } else {
       Draw.text(
-        ~font=state.mainFont,
+        /*~font=state.mainFont,*/
         ~body=Printf.sprintf("Run away from the zombie!"),
         ~pos=(50, 120),
         env
