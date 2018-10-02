@@ -9,11 +9,11 @@
     "clean": "bsb -clean-world"
   },
   "dependencies": {
-    "babel-minify": "^0.2.0",
-    "reprocessing": "schmavery/reprocessing"
+    "reprocessing": "0.2.0"
   },
   "devDependencies": {
-    "bs-platform": "bsansouci/bsb-native#2.1.1",
+    "babel-minify": "^0.2.0",
+    "bsb-native": "bsansouci/bucklescript#4.0.6",
     "rollup": "^0.52.0",
     "rollup-plugin-node-resolve": "^3.0.0"
   }
